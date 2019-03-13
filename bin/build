@@ -1,0 +1,49 @@
+#!/bin/bash
+
+set -e
+
+# Clean any previous bundle dir.
+rm -rf ./.bundle
+rm -rf ./vendor/bundle
+rm -rf ./.aws-sam/build
+rm -rf node_modules
+
+# Clean up Rails
+./bin/rails log:clear tmp:clear
+
+# ...
+./bin/yarn
+
+# Ensure native extensions built for platform.
+sam build --use-container
+
+# Clean build dir of unneeded artifacts.
+pushd ./.aws-sam/build/RailsFunction/
+rm -rf .aws-sam \
+  .DS_Store \
+  .git \
+  .gitignore \
+  .ruby-version \
+  Brewfile \
+  node_modules \
+  test \
+  template.yaml \
+  package.json \
+  yarn.lock \
+  tmp
+# Clean up the gem directory. Saves ~50% of payload size.
+pushd vendor/bundle/ruby/2.5.0
+rm -rf cache
+find gems -type d -name "test" -mindepth 2 -maxdepth 2 -exec rm -rf {} \;
+find gems -type d -name "spec" -mindepth 2 -maxdepth 2 -exec rm -rf {} \;
+popd
+popd
+
+# Avoid doing local bundle work if building for deploy.
+if [ -z ${SKIP_LOCAL_BUNDLE+x} ]; then
+  # Copy the build bundle to allow server native extensions to work.
+  cp -R ./.aws-sam/build/RailsFunction/vendor/bundle ./vendor/bundle
+  # Make a comingled bundle dir for build and this platform.
+  rm -rf ./.bundle
+  bundle install --path vendor/bundle
+fi

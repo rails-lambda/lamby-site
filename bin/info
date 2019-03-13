@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -e
+
+export RAILS_ENV=${RAILS_ENV:=development}
+
+aws cloudformation describe-stacks \
+  --stack-name "hello-rails-${RAILS_ENV}" | \
+  jq ".Stacks[0].Outputs"

@@ -1,0 +1,24 @@
+#!/bin/bash
+
+set -e
+
+export SKIP_LOCAL_BUNDLE="1"
+export RAILS_ENV=${RAILS_ENV:="development"}
+export CF_BUCKET_NAME=${CF_BUCKET_NAME:="$(whoami)-cloudformation.757rb.org"}
+
+./bin/build
+
+sam package \
+    --template-file ./.aws-sam/build/template.yaml \
+    --output-template-file ./.aws-sam/build/packaged.yaml \
+    --s3-bucket $CF_BUCKET_NAME \
+    --s3-prefix "hello-rails-${RAILS_ENV}"
+
+sam deploy \
+    --template-file ./.aws-sam/build/packaged.yaml \
+    --stack-name "hello-rails-${RAILS_ENV}" \
+    --capabilities "CAPABILITY_IAM" \
+    --parameter-overrides \
+      RailsEnv=${RAILS_ENV}
+
+./bin/info
