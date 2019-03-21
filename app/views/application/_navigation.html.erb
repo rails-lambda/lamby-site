@@ -1,4 +1,20 @@
 <ul>
+  <li>Region: <%= ENV['AWS_REGION'] %></li>
   <li><%= link_to 'Index Page', root_path %></li>
-  <li><%= link_to 'Test Action', test_path %></li>
+  <li><%= link_to 'Test Page', test_path %></li>
+  <% unless action_name == 'cache' %>
+    <li>
+      Form, Redirect, Session/Cookies:
+      <% if logged_in? %>
+        <%= button_to 'Logout', logout_path, method: 'delete' %>
+      <% else %>
+        <%= form_tag login_path do %>
+          <%= text_field_tag :password, 'password' %>
+          <%= submit_tag 'Login' %>
+        <% end %>
+      <% end %>
+    </li>
+  <% end %>
+  <li><%= link_to 'Cacheable Page', cache_path %></li>
+  <li><%= link_to 'Exception Page', exception_path %></li>
 </ul>
