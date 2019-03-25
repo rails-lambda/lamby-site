@@ -11,6 +11,7 @@ gem 'uglifier'
 
 # Development, Test
 
+gem 'aws-sdk-ssm', require: false
 gem 'puma', require: false
 gem 'listen', require: false
 
