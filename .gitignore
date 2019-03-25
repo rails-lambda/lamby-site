@@ -19,6 +19,8 @@
 !/log/.keep
 !/tmp/.keep
 
+.env.*
+!.env.test
 
 /node_modules
 /yarn-error.log

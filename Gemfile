@@ -4,12 +4,14 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby '2.5.3'
 
 gem 'rails', '~> 5.2.2'
+gem 'dotenv-rails'
 gem 'lamby'
 gem 'sass-rails'
 gem 'uglifier'
 
 # Development, Test
 
+gem 'aws-sdk-ssm', require: false
 gem 'puma', require: false
 gem 'listen', require: false
 

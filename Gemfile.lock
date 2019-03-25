@@ -43,9 +43,25 @@ GEM
       minitest (~> 5.1)
       tzinfo (~> 1.1)
     arel (9.0.0)
+    aws-eventstream (1.0.2)
+    aws-partitions (1.146.0)
+    aws-sdk-core (3.48.2)
+      aws-eventstream (~> 1.0, >= 1.0.2)
+      aws-partitions (~> 1.0)
+      aws-sigv4 (~> 1.1)
+      jmespath (~> 1.0)
+    aws-sdk-ssm (1.41.0)
+      aws-sdk-core (~> 3, >= 3.48.2)
+      aws-sigv4 (~> 1.1)
+    aws-sigv4 (1.1.0)
+      aws-eventstream (~> 1.0, >= 1.0.2)
     builder (3.2.3)
     concurrent-ruby (1.1.4)
     crass (1.0.4)
+    dotenv (2.7.1)
+    dotenv-rails (2.7.1)
+      dotenv (= 2.7.1)
+      railties (>= 3.2, < 6.1)
     erubi (1.8.0)
     execjs (2.7.0)
     ffi (1.10.0)
@@ -53,9 +69,10 @@ GEM
       activesupport (>= 4.2.0)
     i18n (1.5.3)
       concurrent-ruby (~> 1.0)
-    lamby (0.2.0)
-      activesupport
+    jmespath (1.4.0)
+    lamby (0.3.0)
       rack
+      rails
     listen (3.1.5)
       rb-fsevent (~> 0.9, >= 0.9.4)
       rb-inotify (~> 0.9, >= 0.9.7)
@@ -141,6 +158,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  aws-sdk-ssm
+  dotenv-rails
   lamby
   listen
   puma

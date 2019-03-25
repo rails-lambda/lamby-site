@@ -24,6 +24,8 @@ rm -rf .aws-sam \
   .git \
   .gitignore \
   .ruby-version \
+  .env.local \
+  .env.development \
   Brewfile \
   node_modules \
   test \
