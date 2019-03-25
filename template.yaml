@@ -79,6 +79,11 @@ Resources:
             Path: /{resource+}
             Method: ANY
             RestApiId: !Ref RailsApi
+      Tags:
+        env: !Ref RailsEnv
+        group: ecommerce
+        application: lamby
+      Tracing: Active
       AutoPublishAlias: live
 
 Outputs:

@@ -9,6 +9,11 @@ export CLOUDFORMATION_BUCKET=${CLOUDFORMATION_BUCKET:="mycloudformationbucket.ci
 
 ./bin/build
 
+./bin/rake lamby:ssm:dotenv \
+  LAMBY_SSM_PARAMS_PATH="/config/${RAILS_ENV}/lamby/env" \
+  LAMBY_SSM_PARAMS_LABEL="live"
+mv ".env.${RAILS_ENV}" ./.aws-sam/build/RailsFunction/
+
 sam package \
   --region ${AWS_DEFAULT_REGION} \
   --template-file ./.aws-sam/build/template.yaml \
@@ -21,6 +26,10 @@ sam deploy \
   --template-file ./.aws-sam/build/packaged.yaml \
   --stack-name "hello-rails-${RAILS_ENV}-${AWS_DEFAULT_REGION}" \
   --capabilities "CAPABILITY_IAM" \
+  --tags \
+    "env=${RAILS_ENV}" \
+    "group=ecommerce" \
+    "application=lamby" \
   --parameter-overrides \
     RailsEnv=${RAILS_ENV}
 
