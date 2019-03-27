@@ -6,5 +6,5 @@ export RAILS_ENV=${RAILS_ENV:=development}
 export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:=us-east-1}
 
 aws cloudformation describe-stacks \
-  --stack-name "hello-rails-${RAILS_ENV}-${AWS_DEFAULT_REGION}" | \
+  --stack-name "lamby-${RAILS_ENV}-${AWS_DEFAULT_REGION}" | \
   jq ".Stacks[0].Outputs"

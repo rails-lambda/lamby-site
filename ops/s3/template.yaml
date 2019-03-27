@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Lamby Asset Host
+
+Parameters:
+  RailsEnv:
+    Type: String
+    Default: staging
+    AllowedValues:
+      - staging
+      - production
+
+Mappings:
+
+  Domain:
+    staging:
+      Name: lambyassets-staging.metademo.net
+    production:
+      Name: lambyassets.metademo.net
+
+Resources:
+
+  AssetHostBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Fn::Sub: lamby-asset-host-${AWS::Region}-${RailsEnv}
+      Tags:
+        - Key: env
+          Value: !Ref RailsEnv
+        - Key: group
+          Value: ecommerce
+        - Key: application
+          Value: lamby
+  AssetHostBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref AssetHostBucket
+      PolicyDocument:
+        Statement:
+          - Action: 's3:GetObject'
+            Effect: Allow
+            Resource: !Sub 'arn:aws:s3:::${AssetHostBucket}/*'
+            Principal:
+              CanonicalUser: !GetAtt AssetHostDistributionIdentity.S3CanonicalUserId
+
+  AssetHostDistributionIdentity:
+      Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+      Properties:
+        CloudFrontOriginAccessIdentityConfig:
+          Comment: !Ref AssetHostBucket
+
+  AssetHostDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - Fn::FindInMap: [ Domain, !Ref 'RailsEnv', Name ]
+        Comment: !Sub 'lamby-${RailsEnv}-assethost'
+        DefaultCacheBehavior:
+          AllowedMethods: [ HEAD, GET ]
+          CachedMethods: [ HEAD, GET ]
+          Compress: true
+          DefaultTTL: 31536000
+          MinTTL: 31536000
+          ForwardedValues:
+            Cookies:
+              Forward: none
+            QueryString: false
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+        Enabled: true
+        HttpVersion: http2
+        Origins:
+          - DomainName: !GetAtt 'AssetHostBucket.DomainName'
+            Id: S3Origin
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${AssetHostDistributionIdentity}'
+        ViewerCertificate:
+          AcmCertificateArn: '{{resolve:ssm:/cf/lamby/acmcertarn:1}}'
+          SslSupportMethod: sni-only
+      Tags:
+        - Key: env
+          Value: !Ref RailsEnv
+        - Key: group
+          Value: ecommerce
+        - Key: application
+          Value: lamby
