@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Hello Rails Lambda
+Description: Lamby Demo
 
 Parameters:
 
@@ -65,7 +65,7 @@ Resources:
       Environment:
         Variables:
           RAILS_ENV: !Ref RailsEnv
-      FunctionName: !Join [ '', [ 'hello-rails-', !Ref RailsEnv, '-', !Ref 'AWS::Region' ] ]
+      FunctionName: !Join [ '', [ 'lamby-', !Ref RailsEnv, '-', !Ref 'AWS::Region' ] ]
       Events:
         Root:
           Type: Api
