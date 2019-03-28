@@ -5,7 +5,7 @@ ruby '2.5.3'
 
 gem 'rails', '~> 5.2.2'
 gem 'dotenv-rails'
-gem 'lamby'
+gem 'lamby', require: false
 gem 'sass-rails'
 gem 'uglifier'
 

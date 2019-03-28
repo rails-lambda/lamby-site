@@ -13,7 +13,7 @@
 # Test different stages.
 /bin/deploy-me
 /bin/deploy-staging-me
-/bin/deploy-producction-me
+/bin/deploy-production-me
 /ops/s3/deploy-me
 
 # Ignore all logfiles and tempfiles.

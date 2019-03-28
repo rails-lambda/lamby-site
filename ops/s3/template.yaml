@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Lamby Asset Host
+Description: Shared Rails Asset Host
 
 Parameters:
   RailsEnv:
@@ -13,9 +13,9 @@ Mappings:
 
   Domain:
     staging:
-      Name: lambyassets-staging.metademo.net
+      Name: assets-staging.custominktech.com
     production:
-      Name: lambyassets.metademo.net
+      Name: assets.custominktech.com
 
 Resources:
 
@@ -23,14 +23,14 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName:
-        Fn::Sub: lamby-asset-host-${AWS::Region}-${RailsEnv}
+        Fn::Sub: rails-asset-host-${AWS::Region}-${RailsEnv}
       Tags:
         - Key: env
           Value: !Ref RailsEnv
         - Key: group
           Value: ecommerce
         - Key: application
-          Value: lamby
+          Value: rails-assets
   AssetHostBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -55,7 +55,7 @@ Resources:
       DistributionConfig:
         Aliases:
           - Fn::FindInMap: [ Domain, !Ref 'RailsEnv', Name ]
-        Comment: !Sub 'lamby-${RailsEnv}-assethost'
+        Comment: !Sub 'rails-assets-${RailsEnv}'
         DefaultCacheBehavior:
           AllowedMethods: [ HEAD, GET ]
           CachedMethods: [ HEAD, GET ]
@@ -76,7 +76,7 @@ Resources:
             S3OriginConfig:
               OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${AssetHostDistributionIdentity}'
         ViewerCertificate:
-          AcmCertificateArn: '{{resolve:ssm:/cf/lamby/acmcertarn:1}}'
+          AcmCertificateArn: '{{resolve:ssm:/cf/custominktech/certarn:1}}'
           SslSupportMethod: sni-only
       Tags:
         - Key: env
@@ -84,4 +84,5 @@ Resources:
         - Key: group
           Value: ecommerce
         - Key: application
-          Value: lamby
+          Value: rails-assets
+

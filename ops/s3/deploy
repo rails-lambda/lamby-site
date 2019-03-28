@@ -9,13 +9,13 @@ export CLOUDFORMATION_BUCKET=${CLOUDFORMATION_BUCKET:="mycloudformationbucket.ci
 aws cloudformation deploy \
   --region ${AWS_DEFAULT_REGION} \
   --template-file "ops/s3/template.yaml" \
-  --stack-name "lamby-s3-${RAILS_ENV}" \
+  --stack-name "rails-assets-s3-${RAILS_ENV}" \
   --s3-bucket "$CLOUDFORMATION_BUCKET" \
-  --s3-prefix "lamby-s3-${RAILS_ENV}" \
+  --s3-prefix "rails-assets-s3-${RAILS_ENV}" \
   --capabilities "CAPABILITY_IAM" \
   --tags \
     "env=${RAILS_ENV}" \
     "group=ecommerce" \
-    "application=lamby" \
+    "application=rails-assets" \
   --parameter-overrides \
     RailsEnv="$RAILS_ENV"
