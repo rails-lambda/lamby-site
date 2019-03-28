@@ -2,7 +2,7 @@
   <li>Region: <%= ENV['AWS_REGION'] %></li>
   <li><%= link_to 'Index Page', root_path %></li>
   <li><%= link_to 'Test Page', test_path %></li>
-  <% unless action_name == 'cache' %>
+  <% unless response.cache_control[:public] %>
     <li>
       Form, Redirect, Session/Cookies:
       <% if logged_in? %>

@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Hello Rails on Lambda</title>
-    <%= csrf_meta_tags %>
+    <%= csrf_meta_tags unless response.cache_control[:public] %>
     <%= csp_meta_tag %>
     <%= stylesheet_link_tag    'application', media: 'all' %>
     <%= javascript_include_tag 'application' %>
