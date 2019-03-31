@@ -2,26 +2,11 @@
 
 set -e
 
-export SKIP_LOCAL_BUNDLE="1"
 export RAILS_ENV=${RAILS_ENV:="development"}
 export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:=us-east-1}
-export CLOUDFORMATION_BUCKET=${CLOUDFORMATION_BUCKET:="mycloudformationbucket.citech.$(whoami).${AWS_DEFAULT_REGION}"}
+export CLOUDFORMATION_BUCKET=${CLOUDFORMATION_BUCKET:="mycloudformationbucket.example.com"}
 
 ./bin/build
-
-./bin/rake -rlamby lamby:ssm:dotenv \
-  LAMBY_SSM_PARAMS_PATH="/config/${RAILS_ENV}/lamby/env" \
-  LAMBY_SSM_PARAMS_LABEL="live"
-mv ".env.${RAILS_ENV}" ./.aws-sam/build/RailsFunction/
-
-rm -rf ./public/assets
-./bin/rails assets:precompile
-mkdir -p ./.aws-sam/build/RailsFunction/public/assets
-mv $(find ./public/assets -name ".sprockets-manifest-*") \
-  ./.aws-sam/build/RailsFunction/public/assets
-aws s3 sync ./public "s3://rails-asset-host-${AWS_DEFAULT_REGION}-${RAILS_ENV}" \
-  --cache-control "public, max-age=31536000"
-rm -rf ./public/assets
 
 sam package \
   --region ${AWS_DEFAULT_REGION} \

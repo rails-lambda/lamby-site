@@ -5,15 +5,15 @@ ruby '2.5.3'
 
 gem 'rails', '~> 5.2.2'
 gem 'dotenv-rails'
-gem 'lamby', require: false
 gem 'sass-rails'
 gem 'uglifier'
 
-# Development, Test
-
-gem 'aws-sdk-ssm', require: false
-gem 'puma', require: false
-gem 'listen', require: false
+group :development do
+  gem 'aws-sdk-ssm'
+  gem 'lamby', require: false
+  gem 'listen'
+  gem 'puma'
+end
 
 # gem 'byebug', require: false
 # gem 'capybara', require: false

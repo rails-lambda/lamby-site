@@ -11,10 +11,9 @@
 /.aws-sam
 
 # Test different stages.
-/bin/deploy-me
-/bin/deploy-staging-me
-/bin/deploy-production-me
-/ops/s3/deploy-me
+/bin/deploy-staging-ci
+/bin/deploy-production-ci
+/ops/s3/deploy-ci
 
 # Ignore all logfiles and tempfiles.
 /log/*

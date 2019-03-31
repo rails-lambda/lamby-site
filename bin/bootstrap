@@ -2,9 +2,6 @@
 
 set -e
 
-gem uninstall -aIx bundler
-gem install bundler -v 1.17.3
-
 brew bundle check || {
   echo "==> Installing Homebrew dependencies..."
   brew bundle

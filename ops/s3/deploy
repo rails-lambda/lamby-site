@@ -4,7 +4,7 @@ set -e
 
 export RAILS_ENV=${RAILS_ENV:=staging}
 export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:=us-east-1}
-export CLOUDFORMATION_BUCKET=${CLOUDFORMATION_BUCKET:="mycloudformationbucket.citech.$(whoami).${AWS_DEFAULT_REGION}"}
+export CLOUDFORMATION_BUCKET=${CLOUDFORMATION_BUCKET:="mycfbucket.custominktech.$(whoami).${AWS_DEFAULT_REGION}"}
 
 aws cloudformation deploy \
   --region ${AWS_DEFAULT_REGION} \

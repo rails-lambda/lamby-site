@@ -2,22 +2,37 @@
 
 set -e
 
-# Clean any previous bundle dir.
-rm -rf ./.bundle
-rm -rf ./vendor/bundle
-rm -rf ./.aws-sam/build
-rm -rf node_modules
-
-# Clean up Rails
-./bin/rails log:clear tmp:clear
-
-# ...
-./bin/yarn
+# Clean any previous bundle/builds.
+rm -rf ./.bundle \
+  ./vendor/bundle \
+  ./.aws-sam/build \
+  ./node_modules
 
 # Ensure native extensions built for platform.
 sam build --use-container
 
-# Clean build dir of unneeded artifacts.
+# [HOOK] Environments & Configuration
+./bin/bundle
+./bin/rake -rlamby lamby:ssm:dotenv \
+  LAMBY_SSM_PARAMS_PATH="/config/${RAILS_ENV}/lamby/env" \
+  LAMBY_SSM_PARAMS_LABEL="live"
+mv ".env.${RAILS_ENV}" ./.aws-sam/build/RailsFunction/
+
+# [HOOK] Asset Hosts & Precompiling
+pushd ./.aws-sam/build/RailsFunction/
+rm -rf ./public/assets
+docker run -v "$PWD":/var/task \
+  -e RAILS_ENV=$RAILS_ENV \
+  lambci/lambda:build-ruby2.5 \
+  ./bin/rake assets:precompile
+aws s3 sync ./public/assets "s3://rails-asset-host-${AWS_DEFAULT_REGION}-${RAILS_ENV}/products/assets" \
+  --cache-control "public, max-age=31536000"
+rm -rf ./public/assets
+rm -rf ./app/assets
+rm -rf ./vendor/assets
+popd
+
+# Clean un-needed artifacts.
 pushd ./.aws-sam/build/RailsFunction/
 rm -rf .aws-sam \
   .DS_Store \
@@ -26,26 +41,18 @@ rm -rf .aws-sam \
   .ruby-version \
   .env.local \
   .env.development \
-  Brewfile \
-  node_modules \
+  .env.test \
+  doc \
+  log \
   test \
   template.yaml \
-  package.json \
-  yarn.lock \
   tmp
-# Clean up the gem directory. Saves ~50% of payload size.
 pushd vendor/bundle/ruby/2.5.0
 rm -rf cache
 find gems -type d -name "test" -mindepth 2 -maxdepth 2 -exec rm -rf {} \;
 find gems -type d -name "spec" -mindepth 2 -maxdepth 2 -exec rm -rf {} \;
+find bundler/gems -type d -name ".git" -mindepth 2 -maxdepth 2 -exec rm -rf {} \;
+find bundler/gems -type d -name "test" -mindepth 2 -maxdepth 2 -exec rm -rf {} \;
+find bundler/gems -type d -name "spec" -mindepth 2 -maxdepth 2 -exec rm -rf {} \;
 popd
 popd
-
-# Avoid doing local bundle work if building for deploy.
-if [ -z ${SKIP_LOCAL_BUNDLE+x} ]; then
-  # Copy the build bundle to allow server native extensions to work.
-  cp -R ./.aws-sam/build/RailsFunction/vendor/bundle ./vendor/bundle
-  # Make a comingled bundle dir for build and this platform.
-  rm -rf ./.bundle
-  bundle install --path vendor/bundle
-fi
