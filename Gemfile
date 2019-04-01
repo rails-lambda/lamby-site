@@ -5,18 +5,24 @@ ruby '2.5.3'
 
 gem 'rails', '~> 5.2.2'
 gem 'dotenv-rails'
+gem 'lamby', require: false
 gem 'sass-rails'
 gem 'uglifier'
+gem 'webpacker'
 
-group :development do
-  gem 'aws-sdk-ssm'
-  gem 'lamby', require: false
-  gem 'listen'
+group :development, :test do
+  gem 'byebug'
   gem 'puma'
 end
 
-# gem 'byebug', require: false
-# gem 'capybara', require: false
-# gem 'web-console', require: false
-# gem 'selenium-webdriver', require: false
-# gem 'chromedriver-helper', require: false
+group :development do
+  gem 'aws-sdk-ssm'
+  gem 'listen'
+  gem 'web-console'
+end
+
+group :test do
+  gem 'capybara'
+  gem 'selenium-webdriver'
+  gem 'chromedriver-helper'
+end

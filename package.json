@@ -1,0 +1,11 @@
+{
+  "name": "lamby",
+  "private": true,
+  "dependencies": {
+    "@rails/webpacker": "^4.0.2",
+    "muicss": "^0.9.41"
+  },
+  "devDependencies": {
+    "webpack-dev-server": "^3.2.1"
+  }
+}

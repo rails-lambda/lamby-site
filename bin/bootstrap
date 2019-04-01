@@ -2,6 +2,11 @@
 
 set -e
 
+if [ ! -L ~/.puma-dev/lamby ]; then
+  echo "==> Installing lamby in Puma-dev..."
+  ln -s $(pwd) ~/.puma-dev/lamby
+fi
+
 brew bundle check || {
   echo "==> Installing Homebrew dependencies..."
   brew bundle
