@@ -7,8 +7,8 @@ gem 'rails', '~> 5.2.2'
 gem 'dotenv-rails'
 gem 'lamby', require: false
 gem 'sass-rails'
+gem 'sassc'
 gem 'uglifier'
-gem 'webpacker'
 
 group :development, :test do
   gem 'byebug'

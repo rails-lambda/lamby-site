@@ -18,21 +18,16 @@ sam build --use-container
 mv ".env.${RAILS_ENV}" ./.aws-sam/build/RailsFunction/
 
 # [HOOK] Asset Hosts & Precompiling
-npm install
-./bin/rails assets:clobber
-NODE_ENV=$RAILS_ENV ./bin/rails assets:precompile
-cp -rf ./config/manifest.json ./.aws-sam/build/RailsFunction/config/
-cp -rf ./public/assets ./.aws-sam/build/RailsFunction/public/
-cp -rf ./public/packs ./.aws-sam/build/RailsFunction/public/
 pushd ./.aws-sam/build/RailsFunction/
-aws s3 sync ./public/assets "s3://rails-asset-host-${AWS_DEFAULT_REGION}-${RAILS_ENV}/assets" \
-  --cache-control "public, max-age=31536000"
-aws s3 sync ./public/packs "s3://rails-asset-host-${AWS_DEFAULT_REGION}-${RAILS_ENV}/packs" \
+rm -rf ./public/assets
+docker run -v "$PWD":/var/task \
+  -e RAILS_ENV=$RAILS_ENV \
+  lambci/lambda:build-ruby2.5 \
+  ./bin/rake assets:precompile
+aws s3 sync ./public/assets "s3://myapp-asset-host-${AWS_DEFAULT_REGION}-${RAILS_ENV}/products/assets" \
   --cache-control "public, max-age=31536000"
 rm -rf ./public/assets \
-  ./public/packs/js \
   ./app/assets \
-  ./app/javascript \
   ./vendor/assets \
   ./node_modules
 popd

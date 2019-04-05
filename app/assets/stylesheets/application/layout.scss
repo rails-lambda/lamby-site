@@ -1,0 +1,145 @@
+
+/**
+ * Body CSS
+ */
+
+html,
+body {
+  height: 100%;
+  background-color: #eee;
+}
+
+html,
+body,
+input,
+textarea,
+button {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.004);
+}
+
+/**
+ * Layout CSS
+ */
+
+.lb-Header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 2;
+  transition: left 0.2s;
+  &-toggle {
+    color: #fff;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 20px;
+    margin-right: 10px;
+    &:hover {
+      color: #fff;
+      text-decoration: none;
+    }
+  }
+}
+
+.lb-Sidedrawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 200px;
+  left: -200px;
+  overflow: auto;
+  z-index: 2;
+  background-color: #fff;
+  transition: transform 0.2s;
+  &.is-active {
+    transform: translate(200px);
+  }
+}
+
+.lb-Main {
+  min-height: 100%;
+  overflow-x: hidden;
+  margin-left: 0px;
+  transition: margin-left 0.2s;
+  /* sticky bottom */
+  margin-bottom: -160px;
+  padding-bottom: 160px;
+}
+
+.lb-Footer {
+  color: #fff;
+  height: 160px;
+  margin-left: 0px;
+  transition: margin-left 0.2s;
+  background-color: #0288D1;
+}
+
+@media (min-width: 768px) {
+  .lb-Header {
+    left: 200px;
+  }
+
+  .lb-Sidedrawer {
+    transform: translate(200px);
+  }
+
+  .lb-Main {
+    margin-left: 200px;
+  }
+
+  .lb-Footer {
+    margin-left: 200px;
+  }
+
+  body.is-sidedrawerHidden .lb-Header {
+    left: 0;
+  }
+
+  body.is-sidedrawerHidden .lb-Sidedrawer {
+    transform: translate(0px);
+  }
+
+  body.is-sidedrawerHidden .lb-Main {
+    margin-left: 0;
+  }
+
+  body.is-sidedrawerHidden .lb-Footer {
+    margin-left: 0;
+  }
+}
+
+/**
+ * Side drawer CSS
+ */
+
+.lb-Sidedrawer-brand {
+  padding-left: 20px;
+}
+
+.lb-Sidedrawer ul {
+  list-style: none;
+}
+
+.lb-Sidedrawer > ul {
+  padding-left: 0px;
+}
+
+.lb-Sidedrawer > ul > li:first-child {
+  padding-top: 15px;
+}
+
+.lb-Sidedrawer strong {
+  display: block;
+  padding: 15px 22px;
+  cursor: pointer;
+}
+
+.lb-Sidedrawer strong:hover {
+  background-color: #E0E0E0;
+}
+
+.lb-Sidedrawer strong + ul > li {
+  padding: 6px 0px;
+}

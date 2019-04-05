@@ -1,13 +1,39 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Hello Rails on Lambda</title>
+    <title>Lamby - Simple Rails & AWS Lambda Integration using Rack</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <%= csrf_meta_tags unless response.cache_control[:public] %>
     <%= csp_meta_tag %>
     <%= stylesheet_link_tag 'application', media: 'all' %>
-    <%= javascript_pack_tag 'application' %>
+    <%= javascript_include_tag 'application' %>
   </head>
   <body>
-    <%= yield %>
+    <article class="lb-Main">
+      <div class="mui--appbar-height"></div>
+      <div class="mui-container-fluid">
+        <%= yield %>
+      </div>
+    </article>
+    <nav class="lb-Sidedrawer mui--no-user-select">
+      <header class="lb-Sidedrawer-brand mui--appbar-line-height">
+        <span class="mui--text-title">Lamby</span>
+      </header>
+      <span class="mui-divider"></span>
+      <%= render partial: 'navigation' %>
+    </nav>
+    <header class="lb-Header">
+      <div class="mui-appbar mui--appbar-line-height">
+        <div class="mui-container-fluid">
+          <a class="lb-Header-toggle mui--visible-xs-inline-block mui--visible-sm-inline-block" data-js="show-sidedrawer">☰</a>
+          <a class="lb-Header-toggle mui--hidden-xs mui--hidden-sm" data-js="hide-sidedrawer">☰ Lamby</a>
+          <span class="mui--text-title mui--visible-xs-inline-block">Lamby</span>
+        </div>
+      </div>
+    </header>
+    <footer class="lb-Footer">
+      <div class="mui-container-fluid">
+      </div>
+    </footer>
   </body>
 </html>
