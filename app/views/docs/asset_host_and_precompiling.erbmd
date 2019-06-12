@@ -1,0 +1,223 @@
+
+# Asset Host & Precompiling
+
+For those that still [precompile Rails assets](https://guides.rubyonrails.org/asset_pipeline.html#in-production) on their production servers, Lambda may introduce a new way of thinking that forces static assets to be offloaded to a  [CDN or Asset Host](https://guides.rubyonrails.org/asset_pipeline.html#in-production). Using one is actually a great idea and allows your application server to focus solely on itself vs static file requests.
+
+## Overview
+
+Wiring this up is super easy with AWS & Rails using Lamby's [bin/build](<%= doc_lpath(:bin_scripts_build_and_deploy) %>) script. From a high level, here is what we are going to do.
+
+* Create an S3 bucket to host your assets.
+* Create a CloudFront distribution to serve S3 assets with long TTLs.
+* Configure Rails to that distro as an Asset Host.
+* Ship assets to S3 prior to package and deploy.
+
+### Configure Rails Asset Host
+
+Let's start at the end and work our way backwards. In your `production.rb`, or any other environment file that uses an asset host, configure Rails with the domain you intent to use. Most often this is a simple `assets` subdomain if you are running under a [custom domain name](<%= doc_lpath(:custom_domain_name_and_cloudfront) %>). For example:
+
+```ruby
+config.action_controller.asset_host = 'https://assets.example.com'
+```
+
+We also recommend that you asset manifest be removed from the public dir and instead placed in your application config. This way it can be packed and deployed along side your application. In `config/assets.rb`.
+
+```ruby
+Rails.application.config.assets.manifest = Rails.root.join('config/manifest.json')
+```
+
+### Precompile to S3 Bucket
+
+Since the latest AWS Lambda [execution environment](https://aws.amazon.com/blogs/compute/upcoming-updates-to-the-aws-lambda-execution-environment/) no longer contains a JavaScript runtime for ExecJS to use. Hence, we will need to allow Uglifier to only be required and set when compiling assets ONLY during the build phase and NOT the AWS environment.
+
+```ruby
+config.assets.js_compressor = begin
+  if ENV['LAMBY_BUILD']
+    require 'uglifier'
+    Uglifier.new
+  end
+end
+```
+
+Our S3 bucket examples will follow this naming convention `myapp-asset-host-{region}-{env}` and we will show you how to create that bucket in the last step. But in order to get our Rails assets to that bucket we need to hook into our [bin/build](<%= doc_lpath(:bin_scripts_build_and_deploy) %>) script. The snippet below:
+
+* Makes sure the `public/assets` directory is clean from any prior builds.
+* Run Rails `assets:precompile` task using local machine. Setting `LAMBY_BUILD` so we can set Uglifier correctly, details above.
+* Use the AWS CLI [s3 sync](https://docs.aws.amazon.com/cli/latest/reference/s3/sync.html) command to upload the public directory to your S3 bucket. Also sets a cache header for a proper Origin response.
+* Cleans up build project of non-compiled assets to save package space.
+
+```shell
+# [HOOK] Asset Hosts & Precompiling
+rm -rf ./public/assets
+LAMBY_BUILD=1 \
+  NODE_ENV=$RAILS_ENV \
+  ./bin/rails assets:precompile
+aws s3 sync ./public/assets "s3://myapp-asset-host-${AWS_DEFAULT_REGION}-${RAILS_ENV}/products/assets" \
+  --cache-control "public, max-age=31536000"
+rm -rf ./public/assets \
+  ./app/assets \
+  ./vendor/assets
+popd
+```
+
+#### ⚠️ Using The Webpacker Gem?
+
+If you are using the [Webpacker gem](https://github.com/rails/webpacker) for your JavaScript assets while still using Sprockets for CSS. The following precompile script should be helpful since the AWS Docker container for Ruby does not have Node installed.
+
+* Uses local project directory to build assets and copy to build dir.
+* Ensure both sprockets manifest and packs manifest are packaged.
+* Does an S3 sync for both assets and packs.
+
+```shell
+# [HOOK] Asset Hosts & Precompiling
+npm install
+./bin/rails assets:clobber
+NODE_ENV=$RAILS_ENV ./bin/rails assets:precompile
+cp -rf ./config/manifest.json ./.aws-sam/build/RailsFunction/config/
+cp -rf ./public/assets ./.aws-sam/build/RailsFunction/public/
+cp -rf ./public/packs ./.aws-sam/build/RailsFunction/public/
+pushd ./.aws-sam/build/RailsFunction/
+aws s3 sync ./public/assets "s3://rails-asset-host-${AWS_DEFAULT_REGION}-${RAILS_ENV}/assets" \
+  --cache-control "public, max-age=31536000"
+aws s3 sync ./public/packs "s3://rails-asset-host-${AWS_DEFAULT_REGION}-${RAILS_ENV}/packs" \
+  --cache-control "public, max-age=31536000"
+rm -rf ./public/assets \
+  ./public/packs/js \
+  ./app/assets \
+  ./app/javascript \
+  ./vendor/assets \
+  ./node_modules
+popd
+```
+
+### Create S3 Bucket & CloudFront Distro with CloudFormation
+
+This CloudFormation was inspired by by DJ Walkers [Automate Your Static Hosting Environment With AWS CloudFormation](https://forestry.io/blog/automate-your-static-hosting-environment-with-aws-cloudformation/) tutorial but re-written from the ground up to be more inline with a Rails static asset host best practices. Summary:
+
+* Setup to work for `staging` and `production` Rails envs.
+* Examples of using `Mappings` for each env's domain name.
+* Creates a private S3 bucket accessible via CloudFront.
+* Ensures all assets have a 1 year cache length.
+* Uses AWS SSM Parameter Store. For SSL Certificate. Ex: `{{resolve:ssm:/cf/myapp/certarn:1}}`. Replace this with your own certificate ARN or look into how to use [Parameter Store within CloudFormation(http://beta.awsdocs.com/services/cloudformation/cloudformation_ssm_securestring_params/.
+
+Lastly, we recommend that you put project-specific CloudFormation templates into an `ops` directory in your project. For example this file could be in `ops/s3/template.yaml` and you could even make a `ops/s3/deploy` bin script which is described further down.
+
+```yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: MyApp Asset Host
+
+Parameters:
+  RailsEnv:
+    Type: String
+    Default: staging
+    AllowedValues:
+      - staging
+      - production
+
+Mappings:
+  Domain:
+    staging:
+      Name: assets-staging.example.com
+    production:
+      Name: assets.example.com
+
+Resources:
+  AssetHostBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Fn::Sub: myapp-asset-host-${AWS::Region}-${RailsEnv}
+  AssetHostBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref AssetHostBucket
+      PolicyDocument:
+        Statement:
+          - Action: 's3:GetObject'
+            Effect: Allow
+            Resource: !Sub 'arn:aws:s3:::${AssetHostBucket}/*'
+            Principal:
+              CanonicalUser: !GetAtt AssetHostDistributionIdentity.S3CanonicalUserId
+  AssetHostDistributionIdentity:
+      Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+      Properties:
+        CloudFrontOriginAccessIdentityConfig:
+          Comment: !Ref AssetHostBucket
+  AssetHostDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Aliases:
+          - Fn::FindInMap: [ Domain, !Ref 'RailsEnv', Name ]
+        Comment: !Sub 'myapp-${RailsEnv}-assethost'
+        DefaultCacheBehavior:
+          AllowedMethods: [ HEAD, GET ]
+          CachedMethods: [ HEAD, GET ]
+          Compress: true
+          DefaultTTL: 31536000
+          MinTTL: 31536000
+          ForwardedValues:
+            Cookies:
+              Forward: none
+            QueryString: false
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+        Enabled: true
+        HttpVersion: http2
+        Origins:
+          - DomainName: !GetAtt 'AssetHostBucket.DomainName'
+            Id: S3Origin
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${AssetHostDistributionIdentity}'
+        ViewerCertificate:
+          AcmCertificateArn: '{{resolve:ssm:/cf/myapp/certarn:1}}'
+          SslSupportMethod: sni-only
+```
+
+Example `ops/s3/deploy` bash script.
+
+```shell
+#!/bin/bash
+
+set -e
+
+export RAILS_ENV=${RAILS_ENV:=staging}
+export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:=us-east-1}
+export CLOUDFORMATION_BUCKET=${CLOUDFORMATION_BUCKET:="mycloudformationbucket.example.com"}
+
+aws cloudformation deploy \
+  --region ${AWS_DEFAULT_REGION} \
+  --template-file "ops/s3/template.yaml" \
+  --stack-name "myapp-s3-${RAILS_ENV}" \
+  --s3-bucket "$CLOUDFORMATION_BUCKET" \
+  --s3-prefix "myapp-s3-${RAILS_ENV}" \
+  --capabilities "CAPABILITY_IAM"
+```
+
+
+
+
+
+
+
+
+# COMMENT
+
+Making an update to this due to the new execution environment changes (https://aws.amazon.com/blogs/compute/upcoming-updates-to-the-aws-lambda-execution-environment/) which no longer have a JavaScript runtime and hence can not compile JavaScript assets without putting a big gem into the production env. Prior to this change we did:
+
+```shell
+# [HOOK] Asset Hosts & Precompiling
+pushd ./.aws-sam/build/RailsFunction/
+rm -rf ./public/assets
+docker run -v "$PWD":/var/task \
+  -e RAILS_ENV=$RAILS_ENV \
+  lambci/lambda:build-ruby2.5 \
+  ./bin/rake assets:precompile
+aws s3 sync ./public/assets "s3://myapp-asset-host-${AWS_DEFAULT_REGION}-${RAILS_ENV}/products/assets" \
+  --cache-control "public, max-age=31536000"
+rm -rf ./public/assets \
+  ./app/assets \
+  ./vendor/assets \
+  ./node_modules
+popd
+```

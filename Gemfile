@@ -6,8 +6,11 @@ ruby '2.5.3'
 gem 'rails', '~> 5.2.2'
 gem 'dotenv-rails'
 gem 'lamby', require: false
+gem 'redcarpet'
+gem 'rouge'
 gem 'sass-rails'
 gem 'sassc'
+gem 'turbolinks'
 gem 'uglifier'
 
 group :development, :test do

@@ -1,0 +1,16 @@
+
+# Database Connections
+
+If you want to use a database with Rails and Lambda, I would highly suggest using DynamoDB with the excellent [AWS Record](https://github.com/aws/aws-sdk-ruby-record) gem. However, if you want to explore and share how you might use Lamby with PG or MySQL, I'd love to hear about it.
+
+
+# COMMENT
+
+https://github.com/aws-samples/aws-lambda-manage-rds-connections
+
+# COMMENT
+
+News on Data API for Amazon Aurora Serverless a few days ago. This allows you to use HTTP via Lambda without worrying about VPC or connection pools.
+
+* https://aws.amazon.com/blogs/aws/new-data-api-for-amazon-aurora-serverless/
+* https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html

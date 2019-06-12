@@ -1,4 +1,58 @@
 
-<h1>Hello Rails on Lambda (index)</h1>
+<div class="lb-Welcome">
 
-<img src="https://guides.rubyonrails.org/images/getting_started/rails_welcome.png" alt="Hello Rails on Lambda" style="width: 100vw; box-sizing: border-box;">
+  <div class="lb-Welcome-hero">
+    <%= image_tag 'lamby-rails.png', class: 'lb-Welcome-image' %>
+    <h1 class="lb-Welcome-header mui--text-display3">
+      <strong>Simple Rails & AWS Lambda Integration</strong>
+    </h1>
+
+
+    <div class="lb-Welcome-code">
+      <%= code_highlight do %>
+        def handler(event:, context:)
+          Lamby.handler $app, event, context
+        end
+      <% end %>
+    </div>
+
+    <div class="lb-Welcome-points lb-Welcome-points--first">
+      <p class="lb-Welcome-point mui--text-title mui-panel">
+        <strong><span>🌱</span>Compatible with New or Old Rails Applications</strong>
+      </p>
+      <p class="lb-Welcome-point mui--text-title mui-panel">
+        <strong><span>🔩</span>Maintain your Project's Structure & Local Dev</strong>
+      </p>
+      <p class="lb-Welcome-point mui--text-title mui-panel">
+        <strong><span>🚀</span>Simple CI/CD Build & Deploy Scripts</strong>
+      </p>
+    </div>
+
+    <div class="lb-Welcome-ctas">
+      <%= link_to 'Full Documentation', doc_lpath(:installing_aws_sam), class: 'lb-Button mui-btn mui-btn--large mui-btn--raised' %>
+      <%= link_to 'Get Started', doc_lpath(:getting_started), class: 'lb-Button mui-btn mui-btn--large mui-btn--danger mui-btn--raised' %>
+    </div>
+  </div>
+
+  <div class="lb-Welcome-content">
+
+    <div class="lb-Welcome-points lb-Welcome-points--second">
+      <p class="lb-Welcome-point mui--text-title mui-panel">
+        <strong><span>🌱</span>Compatible with New <br>or Old Rails Applications</strong>
+      </p>
+      <p class="lb-Welcome-point mui--text-title mui-panel">
+        <strong><span>🔩</span>Maintain your Project's <br>Structure & Local Dev</strong>
+      </p>
+      <p class="lb-Welcome-point mui--text-title mui-panel">
+        <strong><span>🚀</span>Simple CI/CD <br>Build & Deploy Scripts</strong>
+      </p>
+    </div>
+
+    <div class="lb-Welcome-actions">
+      <%= link_to 'Full Documentation', doc_lpath(:installing_aws_sam), class: 'lb-Button lb-Button-full mui-btn mui-btn--large mui-btn--raised' %>
+      <%= link_to 'Get Started', doc_lpath(:getting_started), class: 'lb-Button lb-Button-full mui-btn mui-btn--large mui-btn--danger mui-btn--raised' %>
+    </div>
+
+  </div>
+
+</div>

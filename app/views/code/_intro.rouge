@@ -1,0 +1,3 @@
+def handler(event:, context:)
+  Lamby.handler $app, event, context
+end

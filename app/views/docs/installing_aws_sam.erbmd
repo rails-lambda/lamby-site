@@ -1,0 +1,21 @@
+
+# Installing AWS SAM, CLI, & Docker
+
+The AWS Serverless Application Model ([SAM](https://aws.amazon.com/serverless/sam/)) is an open-source framework for building serverless applications. It provides shorthand syntax to express functions, APIs, databases, and event source mappings. With just a few lines of configuration, you can define the application you want and model it.
+
+<img src="<%= image_path 'aws_sam_introduction.png' %>" style="width:100%; border-radius:5px;"/>
+
+You will need both SAM and the AWS CLI tools deploy your Lambda application to AWS. SAM also requires the usage of Docker. Here are some links to get you started.
+
+* [Install SAM CLI](https://aws.amazon.com/serverless/sam/)
+* [Installing the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
+* [Install Docker](https://docs.docker.com/install/)
+
+During the Lamby [install process](<%= doc_lpath :getting_started, anchor: 'install-lambys-files' %>), we create a `template.yaml` file which describes your SAM application. Dont worry, we have done some heavy lifiting for you. But, as your application grows, you will be adding more Resources (DynamoDB, S3, etc) or changes to this file. Please take some time to learn how SAM works.
+
+* [What Is the AWS Serverless Application Model (AWS SAM)?](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html)
+* [Quick Intro & Tech Spec for SAM File](https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md)
+* [AWS SAM CLI Command Reference](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-command-reference.html)
+
+<%= doc_next :bin_scripts_build_and_deploy %>
+

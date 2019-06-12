@@ -1,4 +1,26 @@
 
+html, body, * { box-sizing: border-box; }
+
+$lb-footer-height: 50px;
+
+@mixin lb-border() {
+  border-width: 1px;
+  border-style: solid;
+  border-top-color: rgba(255,255,255,0.2);
+  border-right-color: rgba(0,0,0,0.1);
+  border-bottom-color: rgba(0,0,0,0.2);
+  border-left-color: rgba(255,255,255,0.1);
+}
+
+@mixin lb-theme($name) {
+  @at-root {
+    html.lb-Theme--#{$name} & {
+      background-color: $lb-blue;
+      @content;
+    }
+  }
+}
+
 /**
  * Body CSS
  */
@@ -6,18 +28,20 @@
 html,
 body {
   height: 100%;
-  background-color: #eee;
+  background-color: $lb-aqua;
 }
 
-html,
-body,
-input,
-textarea,
-button {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.004);
+html.lb-Theme--blue { background-color: $lb-blue; }
+body.lb-Theme--blue { background-color: $lb-blue; }
+
+p > code,
+ul > code,
+ul > li > code {
+  padding: 2px 4px;
+  background-color: rgba(18, 43, 59, 0.2);
+  border-radius: 3px;
 }
+
 
 /**
  * Layout CSS
@@ -28,8 +52,14 @@ button {
   top: 0;
   right: 0;
   left: 0;
-  z-index: 2;
+  z-index: 1000;
   transition: left 0.2s;
+  background-color: $lb-aqua;
+  @include lb-theme('blue');
+  .mui-appbar {
+    background-color: transparent;
+    @include lb-border;
+  }
   &-toggle {
     color: #fff;
     cursor: pointer;
@@ -51,11 +81,21 @@ button {
   left: -200px;
   overflow: auto;
   z-index: 2;
-  background-color: #fff;
+  background-color: $lb-teal;
   transition: transform 0.2s;
+  background-color: $lb-aqua;
+  @include lb-theme('blue');
+  @include lb-border;
   &.is-active {
     transform: translate(200px);
+    z-index: 999999999;
   }
+}
+
+.lb-Sidedrawer-brand {
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: rgba(0,0,0,0.2);
 }
 
 .lb-Main {
@@ -63,17 +103,59 @@ button {
   overflow-x: hidden;
   margin-left: 0px;
   transition: margin-left 0.2s;
-  /* sticky bottom */
-  margin-bottom: -160px;
-  padding-bottom: 160px;
+  margin-bottom: -$lb-footer-height;
+  padding-bottom: $lb-footer-height;
 }
 
 .lb-Footer {
   color: #fff;
-  height: 160px;
-  margin-left: 0px;
+  height: $lb-footer-height;
+  margin: 2rem 1rem 0 1rem;
   transition: margin-left 0.2s;
-  background-color: #0288D1;
+  bottom: 0;
+  font-size: 12px;
+  vertical-align: bottom;
+  position: relative;
+  @media (min-width: $mui-screen-md-min - 200px) {
+    br {
+      display: none;
+    }
+  }
+  @media (min-width: $mui-screen-md-min) {
+    margin-top: 4rem;
+  }
+  &-madewith {
+    display: inline-block;
+    @media (min-width: $mui-screen-md-min - 200px) {
+      margin-top: 0.5rem;
+    }
+    @media (min-width: $mui-screen-md-min) {
+      margin-left: 3rem;
+    }
+  }
+  &-powered {
+    display: inline-block;
+    @media (min-width: $mui-screen-md-min - 200px) {
+      float: right;
+      margin-top: 0.5rem;
+      margin-right: 3.5rem;
+    }
+    @media (min-width: $mui-screen-md-min) {
+      margin-right: 4rem;
+    }
+  }
+  &-image {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    img {
+      margin-bottom: -5px;
+      height: $lb-footer-height;
+    }
+    @media (min-width: $mui-screen-md-min) {
+      right: 0.5rem;
+    }
+  }
 }
 
 @media (min-width: 768px) {
@@ -123,23 +205,39 @@ button {
 }
 
 .lb-Sidedrawer > ul {
+  margin-top: 0.5rem;
   padding-left: 0px;
 }
 
-.lb-Sidedrawer > ul > li:first-child {
-  padding-top: 15px;
-}
-
-.lb-Sidedrawer strong {
+.lb-Sidedrawer ul li > a,
+.lb-Sidedrawer ul li > span {
   display: block;
   padding: 15px 22px;
   cursor: pointer;
+  font-weight: bold;
+  color: $mui-base-font-color;
+  text-decoration: none;
+  &:hover {
+    background-color: rgba(#f6dd62, 0.1);
+  }
+  &:not(span).is-active:hover {
+    background-color: transparent;
+    cursor: default;
+  }
+  &:not(span).is-active,
+  &:not(span).is-active:active,
+  &:not(span).is-active:hover {
+    color: rgb(178, 253, 109) !important;
+  }
 }
 
-.lb-Sidedrawer strong:hover {
-  background-color: #E0E0E0;
-}
-
-.lb-Sidedrawer strong + ul > li {
-  padding: 6px 0px;
+.lb-Sidedrawer ul li > span + ul {
+  padding: 0;
+  & li > a {
+    font-weight: normal;
+    padding-top: 6px;
+    padding-right: 8px;
+    padding-bottom: 6px;
+    padding-left: 30px;
+  }
 }

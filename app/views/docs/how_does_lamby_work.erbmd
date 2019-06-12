@@ -1,0 +1,17 @@
+
+# How Does Lamby Work?
+
+Since [Rails is on Rack](https://guides.rubyonrails.org/rails_on_rack.html), the Lamby gem relies on converting API Gateway events sent to your `handler` and converting them to a [Rack](https://rack.github.io) `env` object. We then send that object to your application and pass the result back to the Lambda handler which expects a simple object/hash containing the `statusCode`, `body`, and `headers`. It is that simple.
+
+Thanks to the projects and people below which inspired our code and implementation strategies.
+
+* [AWS Sinatra Example](https://github.com/aws-samples/serverless-sinatra-sample)
+* [Rack Lambda Handler Pull Request](https://github.com/rack/rack/pull/1337)
+* [Serverless Rack Plugin](https://github.com/logandk/serverless-rack)
+* [Jets' Rack Implementation](https://github.com/tongueroo/jets/blob/master/lib/jets/controller/rack/env.rb)
+
+Other small details which Lamby helps with.
+
+* Ensure all `Logger` objects use `STDOUT`.
+* Sets the `RAILS_LOG_TO_STDOUT` environment variable.
+* Provides a debug response in development (or when `LAMBY_DEBUG` env set) using `?debug=1` query param.

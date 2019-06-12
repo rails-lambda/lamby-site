@@ -1,0 +1,146 @@
+
+# Bin Scripts (Build, Deploy, & More)
+
+Lamby will install these [Bash scripts](https://en.wikipedia.org/wiki/Bash_(Unix_shell)) when your run the Rake install task.
+
+```shell
+$ ./bin/rake -r lamby lamby:install:api_gateway
+```
+
+* [`bin/build`](#bin-build)
+  - ⚠️ [Does your Gemfile have private gems on GitHub?](#does-your-gemfile-have-private-gems-on-github)
+  - ⚠️ [Git Bundled Gems & Large Packages Sizes?](#git-bundled-gems-large-packages-sizes)
+* [`bin/deploy`](#bin-deploy)
+  - [⚠️ CloudFormation Bucket](#cloudformation-bucket)
+  - [⚠️ Deploying to Multiple Environments?](#deploying-to-multiple-environments)
+* [`bin/server-sam`](#bin-server-sam)
+
+Think of these scripts as starting points! You should add to or adjust each to meet your needs. Well maintained build and deploy scripts will help you maintain good [CI/CD](https://en.wikipedia.org/wiki/CI/CD) practices no matter if they are used from your personal machine or in a more mature system like [AWS CodePipeline](https://aws.amazon.com/codepipeline/).
+
+
+## bin/build
+
+This makes use of the [sam build](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html) command along with the `--use-container` option to ensure gems with native extensions are built for AWS' Linux platform. A short description of each section:
+
+1. Sets up a pristine build environment.
+2. The SAM build. Uses [lambci/docker-lambda](https://github.com/lambci/docker-lambda) containers.
+3. [HOOK] Section for [Environments & Configuration](<%= doc_lpath(:environment_and_configuration) %>) options.
+4. [HOOK] Section for [Asset Hosts & Precompiling](<%= doc_lpath(:asset_host_and_precompiling) %>) options.
+5. Clean unneeded build artifiacts like vendor gems & other un-needed files. [Limits](https://docs.aws.amazon.com/lambda/latest/dg/limits.html).
+
+```shell
+#!/bin/bash
+set -e
+
+# Clean any previous bundle/builds.
+rm -rf ./.aws-sam/build
+
+# Ensure native extensions built for platform.
+sam build --use-container
+
+# [HOOK] Environments & Configuration
+# https://lamby.customink.com/docs/environment_and_configuration
+
+# [HOOK] Asset Hosts & Precompiling
+# https://lamby.customink.com/docs/asset_host_and_precompiling
+
+# Clean un-needed artifacts.
+pushd ./.aws-sam/build/RailsFunction/
+rm -rf .aws-sam \
+  .git \
+  log \
+  test \
+  tmp
+popd
+
+```
+
+### ⚠️ Does your Gemfile have private gems on GitHub?
+
+If so, the SAM containerized build will have auth issues accessing them. One [solution we like](https://medium.com/@frodsan/installing-a-gem-from-a-private-github-repo-heroku-a895073ae7d) requires adding this line prior to the `sam build` command.
+
+```shell
+bundle config --local GITHUB__COM "$(git config github.token):x-oauth-basic"
+```
+
+It sets a Bundler config so the container can use your personal GitHub OAuth token. Make sure to set that up [using this GitHub help article](https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line). Lastly, add this line to your `Gemfile` and switch all private gems to use this `github` source via HTTPS vs the git protocol. Most newer Rails Gemfiles do this already.
+
+```ruby
+git_source(:github) { |repo| "https://github.com/#{repo}.git" }
+```
+
+### ⚠️ Git Bundled Gems & Large Packages Sizes?
+
+Using gems from Git sources can easily increase your Lambda's package size which is [limited to 250MB](https://docs.aws.amazon.com/lambda/latest/dg/limits.html). We recommend cleaning gem's `.git` directories from within the build's `vendor/bundle` directory. Add this prior to the last `popd` in the build script.
+
+```shell
+find vendor/bundle/ruby/2.5.0 \
+  -type d \
+  -name ".git" \
+  -mindepth 2 \
+  -maxdepth 2 \
+  -exec rm -rf {} \;
+```
+
+
+## bin/deploy
+
+Uses both the [sam package](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-package.html) and [sam deploy](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-deploy.html) commands to create or update your Lambda's CloudFormation stack in AWS. During the Lamby install, we will personalize this script and change any occurance of `APPNAMEHERE` to the name of your Rails application.
+
+```shell
+#!/bin/bash
+set -e
+
+export RAILS_ENV=${RAILS_ENV:="production"}
+export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:=us-east-1}
+export CLOUDFORMATION_BUCKET=${CLOUDFORMATION_BUCKET:="lamby.cloudformation.$(whoami)"}
+
+./bin/build
+
+sam package \
+  --region ${AWS_DEFAULT_REGION} \
+  --template-file ./.aws-sam/build/template.yaml \
+  --output-template-file ./.aws-sam/build/packaged.yaml \
+  --s3-bucket $CLOUDFORMATION_BUCKET \
+  --s3-prefix "APPNAMEHERE-${RAILS_ENV}"
+
+sam deploy \
+  --template-file ./.aws-sam/build/packaged.yaml \
+  --stack-name "APPNAMEHERE-${RAILS_ENV}-${AWS_DEFAULT_REGION}" \
+  --capabilities "CAPABILITY_IAM" \
+  --parameter-overrides \
+    RailsEnv=${RAILS_ENV}
+```
+
+### ⚠️ CloudFormation Bucket
+
+Your Lambda code needs to be packaged and uploaded to an S3 bucket prior to being deployed. Typically this single bucket is used for all your application stacks and is organized into "subdirectories" using the `--s3-prefix` option. **It is a great idea for you to change this to something that makes sense for you!** If you have the [AWS CLI](<%= doc_lpath(:installing_aws_sam) %>) installed, creating a bucket is a simple command like so. You can then use this as the default value for the `CLOUDFORMATION_BUCKET` above in all your deploy scripts.
+
+```shell
+$ aws s3 mb cloudformation.mycomany.com
+```
+
+### ⚠️ Deploying to Multiple Environments?
+
+Feel free to make more per-environment deploy scripts. For example `bin/deploy-staging` may look like this. The `AWS_PROFILE` is an useful environment variable that helps you manage different AWS accounts via all CLI tools. Learn more about [AWS Environment Variables](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html).
+
+```shell
+#!/bin/bash
+set -e
+export RAILS_ENV="staging"
+export AWS_PROFILE="staging"
+./bin/deploy
+```
+
+
+## bin/server-sam
+
+Uses the [sam local start-api](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-local-start-api.html) command to serve your Rails application within the Lambda environment via Docker. Make sure that you call `./bin/build` prior so that SAM can use your `.aws-sam/build` directory for the native gems. Important, local changes to your root project will not be shown here. Use this only for QA purposes or SAM-based integration tests.
+
+```shell
+#!/bin/bash
+set -e
+sam local start-api
+```
+
+<%= doc_next :environment_and_configuration %>
