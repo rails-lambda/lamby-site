@@ -2,20 +2,20 @@
 
 set -e
 
-export RAILS_ENV=${RAILS_ENV:=staging}
+export STAGE_ENV=${STAGE_ENV:=staging}
 export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:=us-east-1}
 export CLOUDFORMATION_BUCKET=${CLOUDFORMATION_BUCKET:="mycfbucket.custominktech.$(whoami).${AWS_DEFAULT_REGION}"}
 
 aws cloudformation deploy \
   --region ${AWS_DEFAULT_REGION} \
   --template-file "ops/s3/template.yaml" \
-  --stack-name "rails-assets-s3-${RAILS_ENV}" \
+  --stack-name "lamby-assets-s3-${STAGE_ENV}" \
   --s3-bucket "$CLOUDFORMATION_BUCKET" \
-  --s3-prefix "rails-assets-s3-${RAILS_ENV}" \
+  --s3-prefix "lamby-assets-s3-${STAGE_ENV}" \
   --capabilities "CAPABILITY_IAM" \
   --tags \
-    "env=${RAILS_ENV}" \
-    "group=ecommerce" \
-    "application=rails-assets" \
+    "env=${STAGE_ENV}" \
+    "group=shared" \
+    "application=lamby" \
   --parameter-overrides \
-    RailsEnv="$RAILS_ENV"
+    StageEnv="$STAGE_ENV"

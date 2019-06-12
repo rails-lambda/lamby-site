@@ -24,7 +24,7 @@ docker run -v "$PWD":/var/task \
   -e RAILS_ENV=$RAILS_ENV \
   lambci/lambda:build-ruby2.5 \
   ./bin/rake assets:precompile
-aws s3 sync ./public/assets "s3://rails-asset-host-${AWS_DEFAULT_REGION}-${RAILS_ENV}/assets" \
+aws s3 sync ./public/assets "s3://lamby-assets-${AWS_DEFAULT_REGION}-${RAILS_ENV}/assets" \
   --cache-control "public, max-age=31536000"
 rm -rf ./public/assets \
   ./app/assets \

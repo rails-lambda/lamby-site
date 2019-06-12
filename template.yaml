@@ -81,7 +81,7 @@ Resources:
             RestApiId: !Ref RailsApi
       Tags:
         env: !Ref RailsEnv
-        group: ecommerce
+        group: shared
         application: lamby
       Tracing: Active
       AutoPublishAlias: live
