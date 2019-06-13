@@ -1,8 +1,9 @@
 <div id="disqus_thread"></div>
 <script>
   var disqus_config = function() {
-    this.page.url = '<%= request.path_info %>';
-    this.page.identifier = 'lamby';
+    this.page.url = '<%= "#{request.base_url}#{request.path_info}" %>';
+    this.page.identifier = '<%= request.path_info %>';
+    this.page.title = '<%= doc_name(params[:id]) %>';
   };
   (function() {
   var d = document, s = d.createElement('script');
