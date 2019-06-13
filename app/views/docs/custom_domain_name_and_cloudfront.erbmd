@@ -1,0 +1,100 @@
+
+# Custom Domain Name & CloudFront
+
+If your Rails application is a traditional web application needing a custom domain and caching, we suggest using a `REGIONAL` API Gateway integration (default in Lamby) with AWS Lambda along with a fully-fledged [CloudFront](https://aws.amazon.com/cloudfront/) distribution. Do **NOT** use the [Custom Domain Name](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-custom-domains.html) feature of API Gateway!
+
+After you deploy your Rails application via Lamby & SAM, you will need to do the following 3 steps to get your application running under a custom domain. We assume your domain name is already setup with AWS and available in [Route53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/getting-started.html). Also, we have not created CloudFormation templates yet for this guide. Instead we will rely on [ClickOps™](https://m.subbu.org/clickops-3cf0e5bc5ecf) and have documented the steps you will need to perform within the AWS Console.
+
+* [SSL/TLS Certificate with ACM](#ssl-tls-certificate-with-acm)
+* [CloudFront Distribution](#cloudfront-distribution)
+* [Creating a Custom Domain with Route53](#creating-a-custom-domain-with-route53)
+* [Why Regional vs. Edge?](#why-regional-vs-edge)
+
+
+## SSL/TLS Certificate with ACM
+
+We are going to use [AWS Certificate Manager](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html) to secure your HTTPS traffic under you custom domain. Again, this assumes your domain is setup in Route53 since you will need to validate the certificate and AWS makes that super easy with DNS.
+
+* AWS Console -> Certificate Manager
+* Click "Request a certificate" button.
+* Select "Request a public certificate", and "Request a certificate" button.
+* Domain name: *.example.com
+* Click "Next"
+* Select "DNS validation", and "Review".
+* Click "Confirm and request" button.
+* Click the tiny disclosure triangle beside your domain name.
+* Click the "Create record in Route 53" button then "Create" again in modal.
+* Click "Continue"
+
+Verification will take about 3 minutes. From the Certificate Manager dashboard, you can wait and/or hit the 🔄 button and the Status will change from "Pending validation" to "Issued". Here is an article titled [Caching AWS Lambda behind a custom domain with CloudFront](https://weekly.elfitz.com/2018/11/03/caching-authenticated-custom-domain/) that details the ACM process with screenshots.
+
+
+## CloudFront Distribution
+
+Again, do not use the Custom Domain Name feature of API Gateway which sets up a pseudo CloudFront distribution. That pseudo distro will not allow Rails to have [full control](https://guides.rubyonrails.org/caching_with_rails.html) on edge caching without adding a ton of complexity in API Gateway's parameters. Using a full CloudFront distro will yield more flexibility as your application grows.
+
+First, navigate to your API Gateway in the Console, click on "Stages" then "production" (or your deployed stage/env) and copy/note the "Invoke URL", ex: (https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/production) This will be needed when setting up your CloudFront distribution. Options below assume variations of the defaults. So you only have to focus on changing those in setup.
+
+* AWS Console -> CloudFront -> Create Distribution -> Web -> Get Started
+* Origin Domain Name: xxxxxxxxxx.execute-api.us-east-1.amazonaws.com
+* Origin Path: /production (or your deployed stage/env)
+* Minimum Origin SSL Protocol: TLSv1.2
+* Origin Protocol Policy: HTTPS Only
+* Origin Custom Headers: X-Forwarded-Host www.example.com (⚠️ IMPORTANT)
+* Viewer Protocol Policy: Redirect HTTP to HTTPS
+* Allowed HTTP Methods: GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE
+* Cached HTTP Methods: OPTIONS
+* Cache Based on Selected Request Headers: Whitelist - Accept (⚠️ Allows `respond_to` to work)
+* Object Caching: Use Origin Cache Headers
+* Forward Cookies: All
+* Query String Forwarding and Caching: Forward all, cached based on all
+* Compress Objects Automatically: Yes
+* Alternate Domain Names (CNAMEs): www.example.com
+* SSL Certificate: Custom SSL Certificate (select *.example.com from step above)
+
+So why the ⚠️ comment on the custom header? In order to simulate the integration of the pseudo CloudFront distribution it is critical to allow Rails via API Gateway to know the `Host` you are accessing the site from. Otherwise, Rails will only see the `Host` header and URL redirects will be to your Invoke URL, not your custom domain name. It means you will also see errors like this.
+
+```
+HTTP Origin header didn't match request.base_url
+```
+
+Grab a ☕️ it could take up to 20 minutes to deploy this new CloudFront distribution. While you wait, you can setup your domain name in Route53 in the next step. Here is some additional reading material on this subject.
+
+* [Server Name Indication](https://en.wikipedia.org/wiki/Server_Name_Indication) Used by API Gateway and why the `Host` header is off limits.
+* [Custom Domains in API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-custom-domains.html) - Using the pseudo distro is useful if caching is not important to you.
+* [Rails & X-Forwarded-Host](https://github.com/rails/rails/issues/22965) - A GitHub issue discussion.
+
+
+## Creating a Custom Domain with Route53
+
+Please make sure to copy the "Domain Name" of your newly created CloudFront distribution. It will be needed as a target for your new DNS entry and will look something like this `dxxxxxxxxxxxxx.cloudfront.net`.
+
+* AWS Console -> Route53 -> Hosted zones -> example.com
+* Click "Create Record Set" button.
+* Name: www
+* Type: A - IPv4 address
+* Alias: Yes
+* Alias: Target: dxxxxxxxxxxxxx.cloudfront.net
+
+That's it! 🎉🎊🥳 Once your CloudFront distribution fully deploys, you can access your Rails application on Lambda and everything from forms, redirects, caching, etc will all just work!
+
+
+## Why Regional vs. Edge?
+
+This section is here for academic purposes and research. Basically we suggest using the `REGIONAL` endpoint for API Gateway. A few quick summary and notes.
+
+* Edge and Regional are properties at both the API Gateway and while creating a Custom Domain Name.
+* Property at the API Gateway level makes little difference if your Rails application if only ever used via the Invoke URL.
+* API Gateway's Custom Domain Name pseudo CloudFront distribution does not give Rails control to cache responses differently. The stage setting for "Cache time-to-live (TTL)" will be the only thing used. Configuring keys for every request is not scalable.
+* Using Regional means if you so choose, you can do fancy things like running your Lambda in different regions and use Route53's latency based routing to send regional traffic to each.
+
+More reading on this topic if you are interested.
+
+* [Regional/Edge API Gateway & Custom Domain Names](https://stackoverflow.com/questions/49826230/regional-edge-optimized-api-gateway-vs-regional-edge-optimized-custom-domain-nam) - A really nice user contributed answer to the edge vs. regional choice. Though we still suggest regional.
+* [Amazon API Gateway Supports Regional API Endpoints](https://aws.amazon.com/about-aws/whats-new/2017/11/amazon-api-gateway-supports-regional-api-endpoints/) - Amazon's release notes on Regional support in Lambda.
+* [API Gateway Regional vs. Edge-Optimized Endpoints](http://blog.ryangreen.ca/2017/11/03/api-gateway-regional-vs-edge-optimized-endpoints/) - Nice little blog post on latency based routing.
+* [Routing Traffic to an Amazon API Gateway API by Using Your Domain Name](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-to-api-gateway.html) - Good guide for multi-region lambdas.
+
+
+<%= doc_next :database_connections %>
+<%= disqus %>

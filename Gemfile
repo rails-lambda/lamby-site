@@ -1,14 +1,15 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '2.5.3'
-
 gem 'rails', '~> 5.2.2'
 gem 'dotenv-rails'
 gem 'lamby', require: false
+gem 'redcarpet'
+gem 'rouge'
 gem 'sass-rails'
 gem 'sassc'
-gem 'uglifier'
+gem 'turbolinks'
+gem 'uglifier', require: false
 
 group :development, :test do
   gem 'byebug'

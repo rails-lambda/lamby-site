@@ -2,29 +2,36 @@
 
 set -e
 
-export RAILS_ENV=${RAILS_ENV:="development"}
+export RAILS_ENV=${RAILS_ENV:="staging"}
 export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:=us-east-1}
 export CLOUDFORMATION_BUCKET=${CLOUDFORMATION_BUCKET:="mycloudformationbucket.example.com"}
 
+if [[ $RAILS_ENV == 'prod' ]]; then
+  export RAILS_ENV="production"
+  export STAGE_ENV="prod"
+else
+  export STAGE_ENV="$RAILS_ENV"
+fi
+
 ./bin/build
 
-sam package \
+pipenv run sam package \
   --region ${AWS_DEFAULT_REGION} \
   --template-file ./.aws-sam/build/template.yaml \
   --output-template-file ./.aws-sam/build/packaged.yaml \
   --s3-bucket $CLOUDFORMATION_BUCKET \
   --s3-prefix "lamby-${RAILS_ENV}"
 
-sam deploy \
+pipenv run sam deploy \
   --region ${AWS_DEFAULT_REGION} \
   --template-file ./.aws-sam/build/packaged.yaml \
   --stack-name "lamby-${RAILS_ENV}-${AWS_DEFAULT_REGION}" \
   --capabilities "CAPABILITY_IAM" \
   --tags \
-    "env=${RAILS_ENV}" \
-    "group=ecommerce" \
+    "env=${STAGE_ENV}" \
+    "group=shared" \
     "application=lamby" \
   --parameter-overrides \
-    RailsEnv=${RAILS_ENV}
+    RailsEnv="${STAGE_ENV}"
 
 ./bin/info

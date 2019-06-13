@@ -1,38 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html class="<%= theme_class %>">
   <head>
-    <title>Lamby - Simple Rails & AWS Lambda Integration using Rack</title>
+    <title>Lamby: Simple Rails & AWS Lambda Integration</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta property="og:title" content="Lamby: Simple Rails & AWS Lambda Integration" />
+    <meta property="og:image" content="<%= image_url 'lamby-fullstack-serverless.png' %>" />
     <%= csrf_meta_tags unless response.cache_control[:public] %>
     <%= csp_meta_tag %>
     <%= stylesheet_link_tag 'application', media: 'all' %>
     <%= javascript_include_tag 'application' %>
   </head>
-  <body>
+  <body class="<%= theme_class %>">
     <article class="lb-Main">
       <div class="mui--appbar-height"></div>
-      <div class="mui-container-fluid">
+      <div class="mui-container-fluid lb-Page--<%= controller_name %>">
         <%= yield %>
       </div>
     </article>
     <nav class="lb-Sidedrawer mui--no-user-select">
       <header class="lb-Sidedrawer-brand mui--appbar-line-height">
-        <span class="mui--text-title">Lamby</span>
+        <span class="mui--text-title"><%= link_to 'Lamby', root_path %></er></span>
       </header>
-      <span class="mui-divider"></span>
       <%= render partial: 'navigation' %>
     </nav>
     <header class="lb-Header">
       <div class="mui-appbar mui--appbar-line-height">
         <div class="mui-container-fluid">
-          <a class="lb-Header-toggle mui--visible-xs-inline-block mui--visible-sm-inline-block" data-js="show-sidedrawer">☰</a>
-          <a class="lb-Header-toggle mui--hidden-xs mui--hidden-sm" data-js="hide-sidedrawer">☰ Lamby</a>
-          <span class="mui--text-title mui--visible-xs-inline-block">Lamby</span>
+          <a class="lb-Header-toggle mui--visible-xs-inline-block mui--visible-sm-inline-block" data-js="show-sidedrawer">
+            ☰ <span class="mui--text-title" style="margin-left: 0.5rem;">Lamby</span>
+          </a>
+          <a class="lb-Header-toggle mui--hidden-xs mui--hidden-sm" data-js="toggle-sidedrawer">
+            ☰
+          </a>
+          <span class="mui--text-title mui--visible-xs-inline-block"></span>
+          <span class="mui--appbar-height" style="float:right;">
+            <%= link_to 'GitHub',
+                'https://github.com/customink/lamby',
+                class: 'mui-btn mui-btn--raised mui-btn--small' %>
+
+          </span>
         </div>
       </div>
     </header>
     <footer class="lb-Footer">
-      <div class="mui-container-fluid">
+      <div class="lb-Footer-madewith">
+        Made with ❤️ by <%= link_to 'Custom Ink | Tech ', 'https://technology.customink.com' %>
+      </div>
+      <br>
+      <div class="lb-Footer-powered">
+        Powered by Lamby <%= link_to '[source]', 'https://github.com/customink/lamby_site' %>
+      </div>
+      <div class="lb-Footer-image">
+        <%= image_tag 'lamby-small.png' %>
       </div>
     </footer>
   </body>

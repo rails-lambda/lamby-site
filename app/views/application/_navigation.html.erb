@@ -1,39 +1,18 @@
 <ul>
+  <li><%= nav_link 'Home', root_path %></li>
+  <li><%= nav_link_doc :quick_start %></li>
   <li>
-    <strong class="active">Category 1</strong>
+    <span class="is-active">Guides</span>
     <ul>
-      <li><a class="active" href="#">Item 1</a></li>
-      <li><a href="#">Item 2</a></li>
-      <li><a href="#">Item 3</a></li>
+      <li><%= nav_link_doc :installing_aws_sam %></li>
+      <li><%= nav_link_doc :install_lamby %></li>
+      <li><%= nav_link_doc :bin_scripts_build_and_deploy %></li>
+      <li><%= nav_link_doc :environment_and_configuration %></li>
+      <li><%= nav_link_doc :asset_host_and_precompiling %></li>
+      <li><%= nav_link_doc :custom_domain_name_and_cloudfront %></li>
+      <li><%= nav_link_doc :database_connections %></li>
+      <li><%= nav_link_doc :api_gateway_and_cloudwatch_logs %></li>
+      <li><%= nav_link_doc :how_does_lamby_work %></li>
     </ul>
   </li>
-  <li>
-    <strong>Category 2</strong>
-    <ul>
-      <li><a href="#">Item 1</a></li>
-      <li><a href="#">Item 2</a></li>
-      <li><a href="#">Item 3</a></li>
-    </ul>
-  </li>
-  <!--
-    <li>Region: <%= ENV['AWS_REGION'] %></li>
-    <li><%= link_to 'Index Page', root_path %></li>
-    <li><%= link_to 'Test Page', test_path %></li>
-    <% unless response.cache_control[:public] %>
-      <li>
-        Form, Redirect, Session/Cookies:
-        <% if logged_in? %>
-          <%= button_to 'Logout', logout_path, method: 'delete' %>
-        <% else %>
-          <%= form_tag login_path do %>
-            <%= text_field_tag :password, 'password' %>
-            <%= submit_tag 'Login' %>
-          <% end %>
-        <% end %>
-      </li>
-    <% end %>
-    <li><%= link_to 'Cacheable Page', cache_path %></li>
-    <li><%= link_to 'Exception Page', exception_path %></li>
-    <li>SSM Param: <%= ENV['SSM_PARM_STORE_ENV'] %></li>
-  -->
 </ul>

@@ -1,21 +1,21 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Shared Rails Asset Host
+Description: Lamby Site Asset Host
 
 Parameters:
-  RailsEnv:
+  StageEnv:
     Type: String
     Default: staging
     AllowedValues:
       - staging
-      - production
+      - prod
 
 Mappings:
 
   Domain:
     staging:
-      Name: assets-staging.custominktech.com
-    production:
-      Name: assets.custominktech.com
+      Name: lamby-assets-staging.custominktech.com
+    prod:
+      Name: lamby-assets-prod.custominktech.com
 
 Resources:
 
@@ -23,14 +23,14 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName:
-        Fn::Sub: rails-asset-host-${AWS::Region}-${RailsEnv}
+        Fn::Sub: lamby-assets-${StageEnv}
       Tags:
         - Key: env
-          Value: !Ref RailsEnv
+          Value: !Ref StageEnv
         - Key: group
-          Value: ecommerce
+          Value: shared
         - Key: application
-          Value: rails-assets
+          Value: lamby
 
   AssetHostBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -55,8 +55,8 @@ Resources:
     Properties:
       DistributionConfig:
         Aliases:
-          - Fn::FindInMap: [ Domain, !Ref 'RailsEnv', Name ]
-        Comment: !Sub 'rails-assets-${RailsEnv}'
+          - Fn::FindInMap: [ Domain, !Ref 'StageEnv', Name ]
+        Comment: !Sub 'lamby-assets-${StageEnv}'
         DefaultCacheBehavior:
           AllowedMethods: [ HEAD, GET ]
           CachedMethods: [ HEAD, GET ]
@@ -81,9 +81,9 @@ Resources:
           SslSupportMethod: sni-only
       Tags:
         - Key: env
-          Value: !Ref RailsEnv
+          Value: !Ref StageEnv
         - Key: group
-          Value: ecommerce
+          Value: shared
         - Key: application
-          Value: rails-assets
+          Value: lamby
 

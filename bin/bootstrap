@@ -14,3 +14,7 @@ brew bundle check || {
 
 brew bootstrap-rbenv-ruby
 brew bootstrap-nodenv-node
+
+CFLAGS="-I$(brew --prefix zlib)/include" \
+LDFLAGS="-L$(brew --prefix zlib)/lib" \
+pyenv install --skip-existing $(cat .python-version)

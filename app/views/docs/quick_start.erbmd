@@ -1,0 +1,125 @@
+
+# Quick Start
+
+Lamby can be used with existing or new applications. However, let's make a simple "Hello Rails" application to show how easy adding Lamby to your project can be. The steps are:
+
+* [Installing the AWS CLI & SAM](#installing-the-aws-cli-sam)
+* [Create a New Rails Application](#create-a-new-rails-application)
+* [Add the Lamby Gem](#add-the-lamby-gem)
+* [Install Lamby's Files](#install-lambys-files)
+* [Environment & Configuration](#environment-configuration)
+* [Create S3 Deployment Bucket](#create-s3-deployment-bucket)
+* [First Deploy!](#first-deploy)
+
+
+## Installing the AWS CLI & SAM
+
+This is fairly easy on Macs using Homebrew. For other platforms or first time installers, please follow the [full guides](<%= doc_lpath(:installing_aws_sam) %>) and configure your AWS CLI before proceeding.
+
+```shell
+$ brew install awscli
+$ brew tap aws/tap
+$ brew install aws-sam-cli
+```
+
+## Create a New Rails Application
+
+Lamby works with existing Rails projects. However, our getting started example will create a new application. Here we skip any frameworks not needed for our demo or starter app. Here we are using [rbenv](https://github.com/rbenv/rbenv) to set our Ruby version to match the AWS Ruby runtime prior to creating the new application.
+
+```shell
+$ rbenv local 2.5.5
+$ gem install rails -v 6.0.0.rc1
+$ rails new my_awesome_lambda \
+  --skip-action-mailer --skip-action-mailbox --skip-action-text \
+  --skip-active-record --skip-active-storage --skip-puma \
+  --skip-action-cable --skip-spring --skip-listen --skip-turbolinks \
+  --skip-system-test --skip-bootsnap --skip-webpack-install
+$ cd my_awesome_lambda
+```
+
+Now we will add a root url to the `routes.rb` file which maps to an `index` action in the application controller. This action returns a simple Hello Rails H1 HTML tag.
+
+```ruby
+Rails.application.routes.draw do
+  root to: 'application#index'
+end
+
+class ApplicationController < ActionController::Base
+  def index
+    render html: '<h1>Hello Rails</h1>'.html_safe
+  end
+end
+```
+
+## Add the Lamby Gem
+
+<%= render 'install_lamby_shared' %>
+
+
+## Environment & Configuration
+
+We need to wire up at least one critical environment variable in a cloud-native way. Configuration is a deep topic and in this example will move fast, but if needed, please reference our complete [Environment & Configuration](<%= doc_lpath(:environment_and_configuration) %>) guide.
+
+Lamby recommends using the [Rails Credentials](https://guides.rubyonrails.org/security.html#environmental-security) system. To do so, we need to set the `RAILS_MASTER_KEY` environment variable in your `app.rb` file. The value will be read from AWS Systems Manager [Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) which Lamby can help with. To set the master key value in the cloud, use the following AWS CLI command to read your application's newly created master key.
+
+```shell
+aws ssm put-parameter \
+  --name "/config/my_awesome_lambda/env/RAILS_MASTER_KEY" \
+  --type "SecureString" \
+  --value $(cat config/master.key)
+```
+
+Update your `app.rb` file and add this line right after `require 'lamby'`.
+
+```ruby
+ENV['RAILS_MASTER_KEY'] =
+  Lamby::SsmParameterStore.get!('/config/my_awesome_lambda/env/RAILS_MASTER_KEY')
+```
+
+Finally, update your `template.yaml` CloudFormation/SAM file by adding this to the `Properties` section of your `RailsFunction`. This addition allows your Lambda's runtime policy to read configs from SSM Parameter store.
+
+```yaml
+Policies:
+  - Version: "2012-10-17"
+    Statement:
+      - Effect: Allow
+        Action:
+          - ssm:GetParameter
+          - ssm:GetParameters
+          - ssm:GetParametersByPath
+          - ssm:GetParameterHistory
+        Resource:
+          - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/config/my_awesome_lambda/*
+```
+
+
+## Create S3 Deployment Bucket
+
+Before we deploy, we need an S3 bucket to place our deployment package into. Lamby does this during the `bin/deploy` script. The default name for the bucket would include your computer's username. You can change this in your script (WHICH WE RECOMMEND) to something unique for you or use the `CLOUDFORMATION_BUCKET` environment variable. Assuming you stick with the default, this AWS CLI command will make the S3 bucket.
+
+```shell
+aws s3 mb "s3://lamby.cloudformation.$(whoami)"
+```
+
+
+## First Deploy!
+
+Now your Rails app is ready to be deployed to AWS Lambda via CloudFormation & SAM.
+
+```shell
+$ ./bin/deploy
+```
+
+To see your newly created Lambda's API Gateway URL, log into the AWS Console or run the following command. This will describe the CloudFormation stack we just deployed and the `Outputs` from that template.
+
+```shell
+aws cloudformation describe-stacks \
+  --stack-name "my_awesome_lambda-production-us-east-1" | \
+  grep OutputValue | \
+  grep https
+```
+
+
+<%= doc_next :installing_aws_sam %>
+<%= disqus %>
+
