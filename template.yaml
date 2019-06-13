@@ -1,17 +1,15 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Lamby Demo
+Description: Lamby Product Site
 
 Parameters:
 
   RailsEnv:
     Type: String
-    Default: development
+    Default: staging
     AllowedValues:
-      - development
-      - test
       - staging
-      - production
+      - prod
 
 Resources:
 

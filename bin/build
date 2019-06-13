@@ -13,25 +13,28 @@ sam build --use-container
 # [HOOK] Environments & Configuration
 ./bin/bundle
 ./bin/rake -rlamby lamby:ssm:dotenv \
-  LAMBY_SSM_PARAMS_PATH="/config/${RAILS_ENV}/lamby/env" \
-  LAMBY_SSM_PARAMS_LABEL="live"
-mv ".env.${RAILS_ENV}" ./.aws-sam/build/RailsFunction/
+  LAMBY_SSM_PARAMS_PATH="/config/${STAGE_ENV}/lamby/env" \
+  LAMBY_SSM_PARAMS_LABEL="live" \
+  LAMBY_SSM_PARAMS_FILE=".env"
+mv ".env" ./.aws-sam/build/RailsFunction/
 
 # [HOOK] Asset Hosts & Precompiling
-pushd ./.aws-sam/build/RailsFunction/
+echo '[HOOK] Asset Hosts & Precompiling'
 rm -rf ./public/assets
-docker run -v "$PWD":/var/task \
-  -e RAILS_ENV=$RAILS_ENV \
-  lambci/lambda:build-ruby2.5 \
-  ./bin/rake assets:precompile
-aws s3 sync ./public/assets "s3://lamby-assets-${AWS_DEFAULT_REGION}-${RAILS_ENV}/assets" \
+LAMBY_BUILD=1 \
+  NODE_ENV=$RAILS_ENV \
+  ./bin/rails assets:precompile
+mv ./config/manifest.json ./.aws-sam/build/RailsFunction/config
+pipenv run aws s3 sync ./public/assets "s3://lamby-assets-${STAGE_ENV}/assets" \
   --cache-control "public, max-age=31536000"
+pushd ./.aws-sam/build/RailsFunction/
 rm -rf ./public/assets \
   ./app/assets \
   ./vendor/assets
 popd
 
 # Clean un-needed artifacts.
+echo 'Clean un-needed artifacts.'
 pushd ./.aws-sam/build/RailsFunction/
 rm -rf .aws-sam \
   .DS_Store \

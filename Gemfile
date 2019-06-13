@@ -1,8 +1,6 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '2.5.3'
-
 gem 'rails', '~> 5.2.2'
 gem 'dotenv-rails'
 gem 'lamby', require: false
@@ -11,7 +9,7 @@ gem 'rouge'
 gem 'sass-rails'
 gem 'sassc'
 gem 'turbolinks'
-gem 'uglifier'
+gem 'uglifier', require: false
 
 group :development, :test do
   gem 'byebug'

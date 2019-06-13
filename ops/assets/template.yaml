@@ -13,9 +13,9 @@ Mappings:
 
   Domain:
     staging:
-      Name: lamby-assets.example.com
+      Name: lamby-assets-staging.custominktech.com
     prod:
-      Name: lamby-assets.custominktech.com
+      Name: lamby-assets-prod.custominktech.com
 
 Resources:
 
@@ -23,7 +23,7 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName:
-        Fn::Sub: lamby-assets-${AWS::Region}-${StageEnv}
+        Fn::Sub: lamby-assets-${StageEnv}
       Tags:
         - Key: env
           Value: !Ref StageEnv

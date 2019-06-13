@@ -37,6 +37,7 @@ First, navigate to your API Gateway in the Console, click on "Stages" then "prod
 * AWS Console -> CloudFront -> Create Distribution -> Web -> Get Started
 * Origin Domain Name: xxxxxxxxxx.execute-api.us-east-1.amazonaws.com
 * Origin Path: /production (or your deployed stage/env)
+* Minimum Origin SSL Protocol: TLSv1.2
 * Origin Protocol Policy: HTTPS Only
 * Origin Custom Headers: X-Forwarded-Host www.example.com (⚠️ IMPORTANT)
 * Viewer Protocol Policy: Redirect HTTP to HTTPS

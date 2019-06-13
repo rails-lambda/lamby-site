@@ -4,14 +4,14 @@ set -e
 
 export STAGE_ENV=${STAGE_ENV:=staging}
 export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:=us-east-1}
-export CLOUDFORMATION_BUCKET=${CLOUDFORMATION_BUCKET:="mycfbucket.custominktech.$(whoami).${AWS_DEFAULT_REGION}"}
+export CLOUDFORMATION_BUCKET=${CLOUDFORMATION_BUCKET:="mycfbucket.example.$(whoami).${AWS_DEFAULT_REGION}"}
 
-aws cloudformation deploy \
+pipenv run aws cloudformation deploy \
   --region ${AWS_DEFAULT_REGION} \
-  --template-file "ops/s3/template.yaml" \
-  --stack-name "lamby-assets-s3-${STAGE_ENV}" \
+  --template-file "ops/assets/template.yaml" \
+  --stack-name "lamby-assets-${STAGE_ENV}" \
   --s3-bucket "$CLOUDFORMATION_BUCKET" \
-  --s3-prefix "lamby-assets-s3-${STAGE_ENV}" \
+  --s3-prefix "lamby-assets-${STAGE_ENV}" \
   --capabilities "CAPABILITY_IAM" \
   --tags \
     "env=${STAGE_ENV}" \
