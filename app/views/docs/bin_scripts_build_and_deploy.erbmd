@@ -28,7 +28,7 @@ This makes use of the [sam build](https://docs.aws.amazon.com/serverless-applica
 2. The SAM build. Uses [lambci/docker-lambda](https://github.com/lambci/docker-lambda) containers.
 3. [HOOK] Section for [Environments & Configuration](<%= doc_lpath(:environment_and_configuration) %>) options.
 4. [HOOK] Section for [Asset Hosts & Precompiling](<%= doc_lpath(:asset_host_and_precompiling) %>) options.
-5. Clean unneeded build artifiacts like vendor gems & other un-needed files. [Limits](https://docs.aws.amazon.com/lambda/latest/dg/limits.html).
+5. Clean unneeded build artifacts like vendor gems & other un-needed files. [Limits](https://docs.aws.amazon.com/lambda/latest/dg/limits.html).
 
 ```shell
 #!/bin/bash
@@ -87,7 +87,7 @@ find vendor/bundle/ruby/2.5.0 \
 
 ## bin/deploy
 
-Uses both the [sam package](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-package.html) and [sam deploy](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-deploy.html) commands to create or update your Lambda's CloudFormation stack in AWS. During the Lamby install, we will personalize this script and change any occurance of `APPNAMEHERE` to the name of your Rails application.
+Uses both the [sam package](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-package.html) and [sam deploy](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-deploy.html) commands to create or update your Lambda's CloudFormation stack in AWS. During the Lamby install, we will personalize this script and change any occurrence of `APPNAMEHERE` to the name of your Rails application.
 
 ```shell
 #!/bin/bash

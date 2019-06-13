@@ -3,7 +3,7 @@
 
 If your Rails application is a traditional web application needing a custom domain and caching, we suggest using a `REGIONAL` API Gateway integration (default in Lamby) with AWS Lambda along with a fully-fledged [CloudFront](https://aws.amazon.com/cloudfront/) distribution. Do **NOT** use the [Custom Domain Name](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-custom-domains.html) feature of API Gateway!
 
-After you deploy your Rails application via Lamby & SAM, you will need to do the following 3 steps to get your application running under a custom domain. We assume your domain name is already setup with AWS and available in [Route53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/getting-started.html). Also, we have not created CloudFormation templates yet for this guide. Instead we will rely on [ClickOps™](https://m.subbu.org/clickops-3cf0e5bc5ecf) and have documented the steps you will need to peform within the AWS Console.
+After you deploy your Rails application via Lamby & SAM, you will need to do the following 3 steps to get your application running under a custom domain. We assume your domain name is already setup with AWS and available in [Route53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/getting-started.html). Also, we have not created CloudFormation templates yet for this guide. Instead we will rely on [ClickOps™](https://m.subbu.org/clickops-3cf0e5bc5ecf) and have documented the steps you will need to perform within the AWS Console.
 
 * [SSL/TLS Certificate with ACM](#ssl-tls-certificate-with-acm)
 * [CloudFront Distribution](#cloudfront-distribution)
@@ -58,7 +58,7 @@ So why the ⚠️ comment on the custom header? In order to simulate the integra
 HTTP Origin header didn't match request.base_url
 ```
 
-Grab a ☕️ it could take up to 20 minutes to deploy this new CloudFront distribution. While you wait, you can setup your domain name in Route53 in the next step. Here is some additonal reading material on this subject.
+Grab a ☕️ it could take up to 20 minutes to deploy this new CloudFront distribution. While you wait, you can setup your domain name in Route53 in the next step. Here is some additional reading material on this subject.
 
 * [Server Name Indication](https://en.wikipedia.org/wiki/Server_Name_Indication) Used by API Gateway and why the `Host` header is off limits.
 * [Custom Domains in API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-custom-domains.html) - Using the pseudo distro is useful if caching is not important to you.

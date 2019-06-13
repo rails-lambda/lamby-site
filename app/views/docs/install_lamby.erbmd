@@ -10,7 +10,7 @@ Think of the `app.rb` file the same way Rails has a `config.ru` except for Lambd
 
 * Boot your application.
 * Instantiate a your Rails/Rack app.
-* Define a handler that uses `Lamby` to repsond.
+* Define a handler that uses `Lamby` to respond.
 
 ```ruby
 require_relative 'config/boot'
@@ -25,7 +25,7 @@ def handler(event:, context:)
 end
 ```
 
-Lamby does all the work to convert the `event` and `context` objects it Rack messages that get sent to your Rails application. The details of the [AWS Lambda Function Handler in Ruby](https://docs.aws.amazon.com/lambda/latest/dg/ruby-handler.html) should be left to Lamby, but plese learn about this topic if you are interested.
+Lamby does all the work to convert the `event` and `context` objects it Rack messages that get sent to your Rails application. The details of the [AWS Lambda Function Handler in Ruby](https://docs.aws.amazon.com/lambda/latest/dg/ruby-handler.html) should be left to Lamby, but please learn about this topic if you are interested.
 
 
 <%= doc_next :bin_scripts_build_and_deploy %>

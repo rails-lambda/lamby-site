@@ -3,7 +3,7 @@
 
 Most Rails applications require over a dozen environment variables to configure themselves or popular gems used within. Most notable is ActiveRecord's `DATABASE_URL` but others like `RAILS_MASTER_KEY ` or `SECRET_KEY_BASE` require us to consider how we configure your Lambda.
 
-There are numerous ways to configure environment variables ranging from quick and dirty commits to git (DONT DO THIS) all the way to a strict separation of config from code using countless methods to achieve a proper [Twelve-Factor](https://12factor.net/config) app. This document speaks to two we think fit nicely with AWS and Lambda. But we would love to hear about other options from you.
+There are numerous ways to configure environment variables ranging from quick and dirty commits to git (DO NOT DO THIS) all the way to a strict separation of config from code using countless methods to achieve a proper [Twelve-Factor](https://12factor.net/config) app. This document speaks to two we think fit nicely with AWS and Lambda. But we would love to hear about other options from you.
 
 * [AWS SMS Parameter Store & Dotenv](#aws-sms-parameter-store-dotenv)
   - [Updating Your Project's Files](#updating-your-projects-files)
@@ -44,7 +44,7 @@ require 'dotenv/rails-now'
 # ...
 ```
 
-To ensure Dotenv works under the Lambda execution environment, change your Lamby intstalled `app.rb` file to require and load Dotenv after the boot require and before requiring Lamby.
+To ensure Dotenv works under the Lambda execution environment, change your Lamby installed `app.rb` file to require and load Dotenv after the boot require and before requiring Lamby.
 
 ```ruby
 require_relative 'config/boot'

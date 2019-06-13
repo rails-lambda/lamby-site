@@ -14,7 +14,7 @@ You will need both SAM and the AWS CLI tools deploy your Lambda application to A
 
 ## template.yaml
 
-During the Lamby [install process](<%= doc_lpath :install_lamby %>), we create a `template.yaml` file which describes your SAM application. Dont worry, we have done some heavy lifiting for you. But, as your application grows, you will be adding more Resources (DynamoDB, S3, etc) or changes to this file. Please take some time to learn how SAM works.
+During the Lamby [install process](<%= doc_lpath :install_lamby %>), we create a `template.yaml` file which describes your SAM application. Don't worry, we have done some heavy lifting for you. But, as your application grows, you will be adding more Resources (DynamoDB, S3, etc) or changes to this file. Please take some time to learn how SAM works.
 
 * [What Is the AWS Serverless Application Model (AWS SAM)?](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html)
 * [Quick Intro & Tech Spec for SAM File](https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md)
