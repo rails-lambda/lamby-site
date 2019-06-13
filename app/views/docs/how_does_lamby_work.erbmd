@@ -15,3 +15,7 @@ Other small details which Lamby helps with.
 * Ensure all `Logger` objects use `STDOUT`.
 * Sets the `RAILS_LOG_TO_STDOUT` environment variable.
 * Provides a debug response in development (or when `LAMBY_DEBUG` env set) using `?debug=1` query param.
+
+
+<%= disqus %>
+

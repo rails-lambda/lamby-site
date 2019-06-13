@@ -1,11 +1,13 @@
 
 # Bin Scripts (Build, Deploy, & More)
 
-Lamby will install these [Bash scripts](https://en.wikipedia.org/wiki/Bash_(Unix_shell)) when your run the Rake install task.
+Lamby will install a few bash scripts during the [install task](<%= doc_lpath(:install_lamby) %>).
 
 ```shell
 $ ./bin/rake -r lamby lamby:install:api_gateway
 ```
+
+Essentially these are wrappers `sam build` and `sam deploy` CLI commands. Please read the [AWS SAM CLI Command Reference](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-command-reference.html) for full details on what SAM can do. Details of our wrappers and potential hot spots (⚠️) are below.
 
 * [`bin/build`](#bin-build)
   - ⚠️ [Does your Gemfile have private gems on GitHub?](#does-your-gemfile-have-private-gems-on-github)
@@ -15,7 +17,7 @@ $ ./bin/rake -r lamby lamby:install:api_gateway
   - [⚠️ Deploying to Multiple Environments?](#deploying-to-multiple-environments)
 * [`bin/server-sam`](#bin-server-sam)
 
-Think of these scripts as starting points! You should add to or adjust each to meet your needs. Well maintained build and deploy scripts will help you maintain good [CI/CD](https://en.wikipedia.org/wiki/CI/CD) practices no matter if they are used from your personal machine or in a more mature system like [AWS CodePipeline](https://aws.amazon.com/codepipeline/).
+Lastly, think of these scripts as starting points! You should add to or adjust each to meet your needs. Well maintained build and deploy scripts will help you maintain good [CI/CD](https://en.wikipedia.org/wiki/CI/CD) practices no matter if they are used from your personal machine or in a more mature system like [AWS CodePipeline](https://aws.amazon.com/codepipeline/).
 
 
 ## bin/build
@@ -144,3 +146,4 @@ sam local start-api
 ```
 
 <%= doc_next :environment_and_configuration %>
+<%= disqus %>

@@ -1,14 +1,20 @@
 
 # Environment & Configuration
 
-Most Rails applications require over a dozen environment variables to configure themselves or popular gems. Most notable is the `DATABASE_URL` or others like `RAILS_MASTER_KEY ` or `SECRET_KEY_BASE`.
+Most Rails applications require over a dozen environment variables to configure themselves or popular gems used within. Most notable is ActiveRecord's `DATABASE_URL` but others like `RAILS_MASTER_KEY ` or `SECRET_KEY_BASE` require us to consider how we configure your Lambda.
 
-There are numerous ways to configure environment variables ranging from quick and dirty commits to GitHub all the way to a strict separation of config from code using countless methods to achieve a proper [Twelve-Factor](https://12factor.net/config) app. This document speaks to two we think fits nicely with AWS and Lambda. But we would love to hear more options from others.
+There are numerous ways to configure environment variables ranging from quick and dirty commits to git (DONT DO THIS) all the way to a strict separation of config from code using countless methods to achieve a proper [Twelve-Factor](https://12factor.net/config) app. This document speaks to two we think fit nicely with AWS and Lambda. But we would love to hear about other options from you.
 
 * [AWS SMS Parameter Store & Dotenv](#aws-sms-parameter-store-dotenv)
   - [Updating Your Project's Files](#updating-your-projects-files)
   - [About Lamby's SSM Support](#about-lambys-ssm-support)
 * [Rails Credentials](#rails-credentials)
+
+⚠️ If your application uses other AWS resources like S3, you may be using environment variables like `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`. **Avoid this pattern.** Instead please add explicit IAM policies within your `template.yaml` file. They will be attached to your Lambda's [Execution Role](https://docs.aws.amazon.com/lambda/latest/dg/lambda-intro-execution-role.html) and inherently give your Lambda the needed permissions.
+
+* [AWS::Serverless::Function Policies Spec](https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction)
+* [AWS SAM Policy Templates](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html)
+* [CloudFormation AWS::IAM::Policy](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-policy.html)
 
 
 ## AWS SMS Parameter Store & Dotenv
@@ -17,7 +23,7 @@ AWS Systems Manager [Parameter Store](https://docs.aws.amazon.com/systems-manage
 
 To say Parameter Store is versatile is an understatement. It can be used in CloudFormation templates to the CLI and has unlimited ways to configure IAM for data access. Both Lamby and this guide below follow AWS guides-lines for [Organizing Parameters into Hierarchies](https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-su-organize.html) and a technique called [Labeling Parameters](https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-labels.html). If Parameter store is new to you, please take some time to read up on it afterward.
 
-Lamby supports a few ways to integrate with Parameter Store, but we suggest using our built-in tooling with [Dotenv](https://github.com/bkeepers/dotenv). The end result will write out a `.env.#{RAILS_ENV}` as part of your [deploy script](<%= doc_lpath(:bin_scripts_build_and_deploy, anchor: 'bin-deploy') %>) to ensure all configuration is included in your Lambda package.
+Lamby supports a few ways to integrate with Parameter Store, but we suggest using our built-in tooling with [Dotenv](https://github.com/bkeepers/dotenv). The end result will write out a `.env.#{RAILS_ENV}` as part of your [bin/build](<%= doc_lpath(:bin_scripts_build_and_deploy, anchor: 'bin-build') %>) script to ensure all configuration is included in your Lambda package.
 
 ### Updating Your Project's Files
 
@@ -62,21 +68,23 @@ mv ".env.${RAILS_ENV}" "./.aws-sam/build/RailsFunction/"
 
 ### About Lamby's SSM Support
 
-The above `lamby:ssm:dotenv` Rake task is made possible with our [Lamby:: SsmParameterStore](https://github.com/customink/lamby/blob/master/lib/lamby/ssm_parameter_store.rb) class. But to understand how the above code works, we first need to create a few SSM Parameters. We can use the AWS CLI for that. Here is what we did for the Lamby Demo app's `SECRET_KEY_BASE` env var.
+The above `lamby:ssm:dotenv` Rake task is made possible with our [Lamby:: SsmParameterStore](https://github.com/customink/lamby/blob/master/lib/lamby/ssm_parameter_store.rb) class. But to understand how the above code works, we first need to create a few SSM Parameters. We can use the AWS CLI for that. Here is what you would do for a new Rails app.
 
 ```shell
+# New Rails v6.0
 $ aws ssm put-parameter \
   --name "/config/my_awesome_lambda/env/RAILS_MASTER_KEY" \
   --type "SecureString" \
   --value $(cat config/master.key)
 
+# New Rails v5.2
 aws ssm put-parameter \
   --name "/config/production/myapp/env/SECRET_KEY_BASE" \
   --type "SecureString" \
   --value $(rails secret)
 ```
 
-The `name` option is our path and is an example hierarchy, you can come up with your own. But here is how we have structured ours.
+The `name` option is an example hierarchy, you can come up with your own. But here is how we have structured ours.
 
 * `/config` - This top level for all application configs.
 * `/production` - This path component can change for each `RAILS_ENV`.
@@ -107,11 +115,11 @@ envs.to_env
 
 ## Rails Credentials
 
-If you are using [Rails Credentials](https://guides.rubyonrails.org/security.html#environmental-security) you will need to set the `RAILS_MASTER_KEY` environment variable in your `app.rb` file. All other configurations will then be `Rails.application.credentials` usage. To keep the master key out of source control, we are going to tuck it into AWS Systems Manager [Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) like so.
+If you are using [Rails Credentials](https://guides.rubyonrails.org/security.html#environmental-security) you will need to set the `RAILS_MASTER_KEY` environment variable in your `app.rb` file. All other configurations will then be `Rails.application.credentials` usage within your application. To keep the master key out of source control, we are going to tuck it into AWS Systems Manager [Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) again. However there are other system like [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) too.
 
 ```shell
 $ aws ssm put-parameter \
-  --name "/config/my_awesome_lambda/env/RAILS_MASTER_KEY" \
+  --name "/config/myapp/env/RAILS_MASTER_KEY" \
   --type "SecureString" \
   --value $(cat config/master.key)
 ```
@@ -120,10 +128,10 @@ Now to use this in Lambda, use our SSM Parameter Store wrapper to get the value 
 
 ```ruby
 ENV['RAILS_MASTER_KEY'] =
-  Lamby::SsmParameterStore.get!('/config/my_awesome_lambda/env/RAILS_MASTER_KEY')
+  Lamby::SsmParameterStore.get!('/config/myapp/env/RAILS_MASTER_KEY')
 ```
 
-Finally, updated your `template.yaml` CloudFormation/SAM file by adding this to the `Properties` section of your `RailsFunction`. This addition allows your Lambda's runtime policy to read configs from SSM Parameter store.
+Finally, update your `template.yaml` CloudFormation/SAM file by adding this to the `Properties` section of your `RailsFunction`. This addition allows your Lambda's runtime policy to read configs from SSM Parameter store.
 
 ```yaml
 Policies:
@@ -136,7 +144,10 @@ Policies:
           - ssm:GetParametersByPath
           - ssm:GetParameterHistory
         Resource:
-          - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/config/my_awesome_lambda/*
+          - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/config/myapp/*
 ```
 
-⚠️ Consider using Dotenv and Rails to package ENV variables vs making API calls during Lambda cold starts.
+
+
+<%= doc_next :asset_host_and_precompiling %>
+<%= disqus %>

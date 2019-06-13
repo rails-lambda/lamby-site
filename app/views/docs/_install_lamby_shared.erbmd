@@ -1,0 +1,22 @@
+
+We need to bundle the Lamby gem to your Rails project's `Gemfile`. We use the `require: false` option so Lamby is only loaded in your `app.rb`, more info on that file later. Not requiring Lamby helps keep your local development working normally. For example, your logs still writing to disk vs. using `STDOUT`.
+
+```ruby
+gem 'lamby', require: false
+gem 'aws-sdk-ssm'
+```
+
+## Install Lamby's Files
+
+Lamby provides a simple Rake task to install the files needed for AWS Lambda to run your application within AWS. In this example, we are using [ApiGateway](https://aws.amazon.com/api-gateway/) service. Additional AWS integration like Application Load Balancers are coming soon!
+
+```shell
+$ ./bin/rake -r lamby lamby:install:api_gateway
+```
+
+This will install the following files. We will cover each in more detail later.
+
+* `app.rb` - [[More Info]](<%= doc_lpath(:install_lamby, anchor: 'app-rb') %>) Entry point for the Lambda handler.
+* `template.yaml` - [[More Info]](<%= doc_lpath(:installing_aws_sam, anchor: 'template-yaml') %>) Your AWS Serverless Application Model (SAM) template.
+* `bin/build` - [[More Info]](<%= doc_lpath(:bin_scripts_build_and_deploy, anchor: 'bin-build') %>) Configurable bash script to build your project with SAM.
+* `bin/deploy` - [[More Info]](<%= doc_lpath(:bin_scripts_build_and_deploy, anchor: 'bin-deploy') %>)  Configurable bash script to deploy your app's package with SAM.

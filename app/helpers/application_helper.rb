@@ -34,4 +34,12 @@ module ApplicationHelper
     end
   end
 
+  def disqus
+    render partial: 'disqus' if disqus?
+  end
+
+  def disqus?
+    Rails.env.production?
+  end
+
 end
