@@ -4,7 +4,7 @@
 Lamby will install a few bash scripts during the [install task](<%= doc_lpath(:install_lamby) %>).
 
 ```shell
-$ ./bin/rake -r lamby lamby:install:api_gateway
+$ ./bin/rake -r lamby lamby:install
 ```
 
 Essentially these are wrappers `sam build` and `sam deploy` CLI commands. Please read the [AWS SAM CLI Command Reference](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-command-reference.html) for full details on what SAM can do. Details of our wrappers and potential hot spots (⚠️) are below.
@@ -15,7 +15,6 @@ Essentially these are wrappers `sam build` and `sam deploy` CLI commands. Please
 * [`bin/deploy`](#bin-deploy)
   - [⚠️ CloudFormation Bucket](#cloudformation-bucket)
   - [⚠️ Deploying to Multiple Environments?](#deploying-to-multiple-environments)
-* [`bin/server-sam`](#bin-server-sam)
 
 Lastly, think of these scripts as starting points! You should add to or adjust each to meet your needs. Well maintained build and deploy scripts will help you maintain good [CI/CD](https://en.wikipedia.org/wiki/CI/CD) practices no matter if they are used from your personal machine or in a more mature system like [AWS CodePipeline](https://aws.amazon.com/codepipeline/).
 
@@ -134,16 +133,6 @@ export AWS_PROFILE="staging"
 ./bin/deploy
 ```
 
-
-## bin/server-sam
-
-Uses the [sam local start-api](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-local-start-api.html) command to serve your Rails application within the Lambda environment via Docker. Make sure that you call `./bin/build` prior so that SAM can use your `.aws-sam/build` directory for the native gems. Important, local changes to your root project will not be shown here. Use this only for QA purposes or SAM-based integration tests.
-
-```shell
-#!/bin/bash
-set -e
-sam local start-api
-```
 
 <%= doc_next :environment_and_configuration %>
 <%= disqus %>

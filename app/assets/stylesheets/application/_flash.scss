@@ -1,0 +1,7 @@
+.sp-Flash {
+  text-align: left;
+  background-color: $lb-aqua;
+  &--alert {
+    background-color: mui-color('yellow', '400');
+  }
+}

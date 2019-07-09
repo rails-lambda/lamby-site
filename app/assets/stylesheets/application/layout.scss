@@ -60,6 +60,25 @@ ul > li > code {
     background-color: transparent;
     @include lb-border;
   }
+  &-albEmoji {
+    display: block;
+    float: left;
+    margin-top: 10px;
+    margin-right: 7px;
+    height: 38px;
+    line-height: 38px;
+    font-size: 24px;
+    @media (min-width: $mui-screen-sm-min - 66px) {
+      margin-top: 14px;
+      font-size: 32px;
+    }
+  }
+  &-albText {
+    font-size: 14px;
+    @media (min-width: $mui-screen-sm-min - 66px) {
+      font-size: 16px;
+    }
+  }
   &-toggle {
     color: #fff;
     cursor: pointer;

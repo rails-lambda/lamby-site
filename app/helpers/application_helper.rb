@@ -6,7 +6,7 @@ module ApplicationHelper
 
   def doc_link(slug, options = {})
     name = doc_name(slug)
-    name << options.delete(:link_suffix)
+    name << options.delete(:link_suffix).to_s
     link_to name, doc_lpath(slug), options
   end
 
@@ -16,7 +16,8 @@ module ApplicationHelper
     when :asset_host_and_precompiling then 'Asset Hosts & Precompiling'
     when :environment_and_configuration then 'Environment & Configuration'
     when :bin_scripts_build_and_deploy then 'Build & Deploy'
-    when :custom_domain_name_and_cloudfront then 'Custom Domain Name & CloudFront'
+    when :custom_domain_name_cloudfront_and_ssl_application_load_balancer then 'Custom Domain Name, CloudFront, & SSL'
+    when :custom_domain_name_and_cloudfront_api_gateway then 'Custom Domain Name & CloudFront (API Gateway)'
     when :how_does_lamby_work then 'How Does Lamby Work?'
     when :api_gateway_and_cloudwatch_logs then 'API Gateway & CloudWatch Logs'
     else slug.to_s.titleize

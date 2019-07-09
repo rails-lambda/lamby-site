@@ -27,7 +27,7 @@ $ brew install aws-sam-cli
 Lamby works with existing Rails projects. However, our getting started example will create a new application. Here we skip any frameworks not needed for our demo or starter app. Here we are using [rbenv](https://github.com/rbenv/rbenv) to set our Ruby version to match the AWS Ruby runtime prior to creating the new application.
 
 ```shell
-$ rbenv local 2.5.5
+$ rbenv shell 2.5.5
 $ gem install rails -v 6.0.0.rc1
 $ rails new my_awesome_lambda \
   --skip-action-mailer --skip-action-mailbox --skip-action-text \
