@@ -8,10 +8,10 @@ gem 'aws-sdk-ssm'
 
 ## Install Lamby's Files
 
-Lamby provides a simple Rake task to install the files needed for AWS Lambda to run your application within AWS. In this example, we are using [ApiGateway](https://aws.amazon.com/api-gateway/) service. Additional AWS integration like Application Load Balancers are coming soon!
+Lamby provides a simple Rake task to install the files needed for AWS Lambda to run your application. In this example, we are using the default [Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html) installer but [ApiGateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html) is supported too by using the `lamby:install:api_gateway` task instead.
 
 ```shell
-$ ./bin/rake -r lamby lamby:install:api_gateway
+$ ./bin/rake -r lamby lamby:install
 ```
 
 This will install the following files. We will cover each in more detail later.

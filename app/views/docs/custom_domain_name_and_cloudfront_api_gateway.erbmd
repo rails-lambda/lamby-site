@@ -1,5 +1,11 @@
 
-# Custom Domain Name & CloudFront
+# Custom Domain Name & CloudFront <br>(API Gateway)
+
+<div class="mui-panel sp-Flash">
+  ⚠️ Using Application Load Balancer? Please read
+  <%= doc_link(:custom_domain_name_cloudfront_and_ssl_application_load_balancer) %>
+  instead.
+</div>
 
 If your Rails application is a traditional web application needing a custom domain and caching, we suggest using a `REGIONAL` API Gateway integration (default in Lamby) with AWS Lambda along with a fully-fledged [CloudFront](https://aws.amazon.com/cloudfront/) distribution. Do **NOT** use the [Custom Domain Name](https://docs.aws.amazon.com/apigateway/latest/developerguide/how-to-custom-domains.html) feature of API Gateway!
 
@@ -13,7 +19,7 @@ After you deploy your Rails application via Lamby & SAM, you will need to do the
 
 ## SSL/TLS Certificate with ACM
 
-We are going to use [AWS Certificate Manager](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html) to secure your HTTPS traffic under you custom domain. Again, this assumes your domain is setup in Route53 since you will need to validate the certificate and AWS makes that super easy with DNS.
+We are going to use [AWS Certificate Manager](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html) to secure your HTTPS traffic under your custom domain. Again, this assumes your domain is setup in Route53 since you will need to validate the certificate and AWS makes that super easy with DNS.
 
 * AWS Console -> Certificate Manager
 * Click "Request a certificate" button.
