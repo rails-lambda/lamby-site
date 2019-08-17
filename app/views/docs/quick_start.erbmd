@@ -28,7 +28,7 @@ Lamby works with existing Rails projects. However, our getting started example w
 
 ```shell
 $ rbenv shell 2.5.5
-$ gem install rails -v 6.0.0.rc1
+$ gem install rails
 $ rails new my_awesome_lambda \
   --skip-action-mailer --skip-action-mailbox --skip-action-text \
   --skip-active-record --skip-active-storage --skip-puma \
