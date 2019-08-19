@@ -47,7 +47,7 @@ end
 
 ## Precompile & Sync Assets to S3 During Builds
 
-Our S3 bucket example names will follow this convention `myapp-assets-{env}` where we expect you to replace `myapp` with something that makes sense for you. In order to get our Rails assets to that bucket we need to hook into our [bin/build](<%= doc_lpath(:bin_scripts_build_and_deploy) %>) script. Replace your "Asset Hosts & Precompiling" setion with the script below.
+Our S3 bucket example names will follow this convention `myapp-assets-{env}` where we expect you to replace `myapp` with something that makes sense for you. In order to get our Rails assets to that bucket we need to hook into our [bin/build](<%= doc_lpath(:bin_scripts_build_and_deploy) %>) script. Replace your "Asset Hosts & Precompiling" section with the script below.
 
 ```shell
 # [HOOK] Asset Hosts & Precompiling
