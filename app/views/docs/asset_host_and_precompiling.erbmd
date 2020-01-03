@@ -7,6 +7,7 @@ For those that still [precompile Rails assets](https://guides.rubyonrails.org/as
 * ⚠️ [Compiling JavaScript Assets?](#compiling-javascript-assets)
 * [Precompile & Sync Assets to S3 During Builds](#precompile-sync-assets-to-s3-during-builds)
 * [Create a CloudFront Distro Backed by S3 with CloudFormation](#create-a-cloudfront-distro-backed-by-s3-with-cloudformation)
+* [Serving Static Assets with Rails](#serving-static-assets-with-rails)
 
 
 ## Configure Your Rails Asset Host
@@ -17,7 +18,7 @@ In your `production.rb`, or any other environment file that uses an asset host, 
 config.action_controller.asset_host = 'https://assets.example.com'
 ```
 
-We also recommend that your asset manifest be removed from the public dir and instead placed in your application config. This way it can be packed and deployed along side your application. Open up your `config/assets.rb` file and set the manifest.
+We also recommend that your asset manifest be removed from the public dir and instead placed in your application config. This way it can be packed and deployed along side your application. Open up your `config/initializers/assets.rb` file and set the manifest.
 
 ```ruby
 Rails.application.config.assets.manifest = Rails.root.join('config/manifest.json')
@@ -181,6 +182,24 @@ Details of what this CloudFormation template does:
 * Ensures all assets have a 1-year max-age cache length.
 * Uses AWS SSM Parameter Store for SSL Cert ARN.
 
+
+## Serving Static Assets with Rails
+
+Sometimes a fancy asset host with a CloudFront distribution is overkill. In that case, you can elect to have your Rails application serve static assests. Easy to do with the following additions. First add this to the top of your Lamby `app.rb` file.
+
+```ruby
+ENV['RAILS_SERVE_STATIC_FILES'] = '1'
+```
+
+Next, update your `config/initializers/production.rb` to add default public file server headres. In this case we are setting the cache control to 30 days. The `X-Lamby-Base64` header signals to the Lamby rack adapter that the content requires base64 binary encoding.
+
+```ruby
+#
+config.public_file_server.headers = {
+  'Cache-Control' => "public, max-age=#{30.days.seconds.to_i}",
+  'X-Lamby-Base64' => '1'
+}
+```
 
 <%= doc_next :custom_domain_name_cloudfront_and_ssl_application_load_balancer %>
 <%= disqus %>
