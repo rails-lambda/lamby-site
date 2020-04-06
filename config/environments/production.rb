@@ -83,5 +83,10 @@ Rails.application.configure do
       Uglifier.new harmony: true
     end
   end
-  config.action_controller.asset_host = 'https://lamby-assets-prod.custominktech.com'
+  config.public_file_server.headers = {
+    'Cache-Control' => "public, max-age=#{30.days.seconds.to_i}",
+    'X-Lamby-Base64' => '1'
+  }
+  require 'lograge'
+  config.lograge.enabled = true
 end

@@ -1,0 +1,31 @@
+name: CI/CD
+on: [push]
+jobs:
+  cicd:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Bootstrap
+        run: |
+          ./bin/bootstrap
+      - name: Setup
+        run: |
+          ./bin/setup
+      - name: Test
+        run: |
+          ./bin/test
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Deploy (staging)
+        if: github.ref != 'refs/heads/master'
+        run: |
+          ./bin/deploy-staging
+      - name: Deploy (prod)
+        if: github.ref == 'refs/heads/master'
+        run: |
+          ./bin/deploy-prod

@@ -2,6 +2,5 @@
 set -e
 
 docker-compose run \
-  -p 4040:4040 \
   cicd \
-  ./bin/_server
+  $@

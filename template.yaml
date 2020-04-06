@@ -10,53 +10,10 @@ Parameters:
     AllowedValues:
       - staging
       - prod
-  VpcId:
-    Type: AWS::EC2::VPC::Id
-  Subnets:
-    Type: List<AWS::EC2::Subnet::Id>
 
 Resources:
 
-  RailsApi:
-    Type: AWS::Serverless::Api
-    Properties:
-      StageName: !Ref RailsEnv
-      EndpointConfiguration: REGIONAL
-      MethodSettings:
-        - ResourcePath: '/*'
-          HttpMethod: '*'
-          LoggingLevel: INFO
-          MetricsEnabled: true
-          DataTraceEnabled: true
-      DefinitionBody:
-        swagger: 2.0
-        info: { title: !Ref 'AWS::StackName' }
-        basePath: !Join [ '', [ '/', !Ref RailsEnv ] ]
-        schemes: [ 'https' ]
-        paths:
-          /:
-            x-amazon-apigateway-any-method:
-              x-amazon-apigateway-integration:
-                uri:
-                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RailsFunction.Arn}:live/invocations
-                httpMethod: POST
-                type: aws_proxy
-          /{resource+}:
-            x-amazon-apigateway-any-method:
-              parameters:
-                - name: resource
-                  in: path
-                  required: true
-                  type: string
-              x-amazon-apigateway-integration:
-                uri:
-                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RailsFunction.Arn}:live/invocations
-                httpMethod: POST
-                type: aws_proxy
-        x-amazon-apigateway-binary-media-types:
-          - '*/*'
-
-  RailsFunction:
+  LambyLambda:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: .
@@ -67,33 +24,33 @@ Resources:
       Environment:
         Variables:
           RAILS_ENV: !Ref RailsEnv
-      FunctionName: !Join [ '', [ 'lamby-', !Ref RailsEnv, '-', !Ref 'AWS::Region' ] ]
+      FunctionName: !Sub lamby-${RailsEnv}
       Events:
-        Root:
-          Type: Api
+        LambyHttpApiProxy:
+          Type: HttpApi
           Properties:
-            Path: /
-            Method: ANY
-            RestApiId: !Ref RailsApi
-        RailsAppAll:
-          Type: Api
-          Properties:
-            Path: /{resource+}
-            Method: ANY
-            RestApiId: !Ref RailsApi
+            ApiId: !Ref LambyHttpApi
       Tags:
         env: !Ref RailsEnv
         group: shared
         application: lamby
-      Tracing: Active
       AutoPublishAlias: live
+
+  LambyHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: !Ref RailsEnv
+      Tags:
+        env: !Ref RailsEnv
+        group: shared
+        application: lamby
 
 Outputs:
 
-  RailsApiUrl:
+  LambyHttpApiUrl:
     Description: API Gateway Endpoint
-    Value: !Sub "https://${RailsApi}.execute-api.${AWS::Region}.amazonaws.com/${RailsEnv}/"
+    Value: !Sub "https://${LambyHttpApi}.execute-api.${AWS::Region}.amazonaws.com/${RailsEnv}/"
 
-  RailsFunctionArn:
-    Description: Lambda Function ARN
-    Value: !GetAtt RailsFunction.Arn
+  LambyLambdaResourceArn:
+    Description: Lamby Lambda ARN
+    Value: !GetAtt LambyLambda.Arn
