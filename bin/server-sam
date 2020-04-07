@@ -1,5 +1,0 @@
-#!/bin/bash
-
-set -e
-
-pipenv run sam local start-api

@@ -12,8 +12,7 @@
 
 # Test different stages.
 /bin/deploy-staging-ci
-/bin/deploy-production-ci
-/ops/s3/deploy-ci*
+/bin/deploy-prod-ci
 
 # Ignore all logfiles and tempfiles.
 /log/*

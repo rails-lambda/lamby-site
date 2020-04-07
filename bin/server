@@ -1,5 +1,7 @@
 #!/bin/bash
-
 set -e
 
-./bin/rails server
+docker-compose run \
+  -p 4040:4040 \
+  cicd \
+  ./bin/_server

@@ -1,0 +1,15 @@
+version: '3.7'
+services:
+  cicd:
+    build: .
+    environment:
+      - RAILS_ENV=${RAILS_ENV-development}
+      - CLOUDFORMATION_BUCKET=${CLOUDFORMATION_BUCKET-ci-cf-templates-papa-us-east-1}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION-us-east-1}
+      - SAM_CLI_TELEMETRY=0
+      - DIDPWD=${PWD}
+    volumes:
+      - ~/.ssh:/root/.ssh:delegated
+      - ~/.aws:/root/.aws:delegated
+      - .:/var/task:delegated
+      - /var/run/docker.sock:/var/run/docker.sock

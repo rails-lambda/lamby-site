@@ -1,20 +1,6 @@
 #!/bin/bash
-
 set -e
 
-if [ ! -L ~/.puma-dev/lamby ]; then
-  echo "==> Installing lamby in Puma-dev..."
-  ln -s $(pwd) ~/.puma-dev/lamby
-fi
-
-brew bundle check || {
-  echo "==> Installing Homebrew dependencies..."
-  brew bundle
-}
-
-brew bootstrap-rbenv-ruby
-brew bootstrap-nodenv-node
-
-CFLAGS="-I$(brew --prefix zlib)/include" \
-LDFLAGS="-L$(brew --prefix zlib)/lib" \
-pyenv install --skip-existing $(cat .python-version)
+echo '== Building containers =='
+docker pull lambci/lambda:build-ruby2.5
+docker-compose build

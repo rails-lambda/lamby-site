@@ -1,57 +1,64 @@
 #!/bin/bash
-
 set -e
 
-# Clean any previous bundle/builds.
-rm -rf ./.bundle \
-  ./vendor/bundle \
-  ./.aws-sam/build
+export RAILS_ENV=${RAILS_ENV:="prod"}
 
-# Ensure native extensions built for platform.
-sam build --use-container
+# Clean any previous bundle/builds.
+rm -rf ./.aws-sam \
+       ./.bundle \
+       ./vendor/bundle
+
+# Build SAM
+sam build
 
 # [HOOK] Environments & Configuration
 ./bin/bundle
 ./bin/rake -rlamby lamby:ssm:dotenv \
-  LAMBY_SSM_PARAMS_PATH="/config/${STAGE_ENV}/lamby/env" \
+  LAMBY_SSM_PARAMS_PATH="/config/lamby/env" \
   LAMBY_SSM_PARAMS_LABEL="live" \
   LAMBY_SSM_PARAMS_FILE=".env"
-mv ".env" ./.aws-sam/build/RailsFunction/
+mv ".env" ./.aws-sam/build/LambyLambda/
 
 # [HOOK] Asset Hosts & Precompiling
-echo '[HOOK] Asset Hosts & Precompiling'
-rm -rf ./public/assets
-LAMBY_BUILD=1 \
-  NODE_ENV=$RAILS_ENV \
-  ./bin/rails assets:precompile
-mv ./config/manifest.json ./.aws-sam/build/RailsFunction/config
-pipenv run aws s3 sync ./public/assets "s3://lamby-assets-${STAGE_ENV}/assets" \
-  --cache-control "public, max-age=31536000"
-pushd ./.aws-sam/build/RailsFunction/
-rm -rf ./public/assets \
-  ./app/assets \
-  ./vendor/assets
+pushd ./.aws-sam/build/LambyLambda/
+RAILS_GROUPS=assets LAMBY_BUILD=1 ./bin/rails assets:precompile
+rm -rf ./app/assets/images \
+       ./app/assets/javascripts \
+       ./app/assets/stylesheets \
+       ./vendor/assets
 popd
 
 # Clean un-needed artifacts.
-echo 'Clean un-needed artifacts.'
-pushd ./.aws-sam/build/RailsFunction/
-rm -rf .aws-sam \
-  .DS_Store \
-  .git \
-  .gitignore \
-  .ruby-version \
-  .env.local \
+pushd ./.aws-sam/build/LambyLambda/
+rm -rf \
   .env.development \
   .env.test \
-  doc \
+  docker-compose.yml \
+  Dockerfile \
+  README.md \
   log \
   test \
-  template.yaml \
   tmp
-pushd vendor/bundle/ruby/2.5.0
-rm -rf cache
-find gems -type d -name "test" -mindepth 2 -maxdepth 2 -exec rm -rf {} \;
-find gems -type d -name "spec" -mindepth 2 -maxdepth 2 -exec rm -rf {} \;
+pushd ./vendor/bundle/ruby/2.5.0
+rm -rf \
+  ./cache \
+  ./extensions/sassc-* \
+  ./extensions/websocket-driver-* \
+  ./gems/nokogiri*/ext \
+  ./gems/mail-* \
+  ./gems/nio4r-* \
+  ./gems/activerecord-* \
+  ./gems/websocket-driver-* \
+  ./gems/rb-fsevent-* \
+  ./gems/actioncable-* \
+  ./gems/arel-* \
+  ./gems/activejob-* \
+  ./gems/execjs-* \
+  ./gems/rails-dom-testing-* \
+  ./gems/rb-inotify-* \
+  ./gems/websocket-extensions-* \
+  ./gems/sass-* \
+  ./gems/turbolinks-* \
+  ./gems/uglifier-*
 popd
 popd

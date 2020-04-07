@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+
+rm -rf tmp/pids/server.pid
+
+./bin/rails server \
+  --port 4040 \
+  --binding '0.0.0.0'

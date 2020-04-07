@@ -1,9 +1,0 @@
-#!/bin/bash
-
-set -e
-
-export AWS_PROFILE="ci-papa"
-export STAGE_ENV="prod"
-export CLOUDFORMATION_BUCKET="ci-cf-templates-papa-us-east-1"
-
-./ops/assets/deploy
