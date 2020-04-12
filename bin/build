@@ -39,7 +39,7 @@ rm -rf \
   log \
   test \
   tmp
-pushd ./vendor/bundle/ruby/2.5.0
+pushd ./vendor/bundle/ruby/2.7.0
 rm -rf \
   ./cache \
   ./extensions/sassc-* \
