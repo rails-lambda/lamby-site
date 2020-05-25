@@ -1,125 +1,85 @@
 
 # Quick Start
 
-Lamby can be used with existing or new applications. However, let's make a simple "Hello Rails" application to show how easy adding Lamby to your project can be. The steps are:
+Lamby can be used with existing or new Rails/Rack applications. The quickest way to deploy a new application on AWS Lambda is to use our [cookiecutter project](https://github.com/customink/lamby-cookiecutter) template. A few console commands will have you up and running in a few minutes! Both Docker and an AWS Account with command line access are required.
 
-* [Installing the AWS CLI & SAM](#installing-the-aws-cli-sam)
-* [Create a New Rails Application](#create-a-new-rails-application)
-* [Add the Lamby Gem](#add-the-lamby-gem)
-* [Install Lamby's Files](#install-lambys-files)
-* [Environment & Configuration](#environment-configuration)
-* [Create S3 Deployment Bucket](#create-s3-deployment-bucket)
-* [First Deploy!](#first-deploy)
+* 🚢 [Install Docker](https://github.com/customink/cookiecutter-ruby-workshop#-install-docker)
+* ⛅️ [AWS Account w/CLI Access](https://github.com/customink/cookiecutter-ruby-workshop#%EF%B8%8F-aws-account)
 
+If these tools or AWS Lambda are completely new to you, consider learning how to install Docker, setup an AWS Account, and how Ruby & Lambda work by using this excellent [Ruby AWS Lambda Microservice Workshop](https://github.com/customink/cookiecutter-ruby-workshop#workshop-steps). Otherwise, let's get started.
 
-## Installing the AWS CLI & SAM
+## Steps
 
-This is fairly easy on Macs using Homebrew. For other platforms or first time installers, please follow the [full guides](<%= doc_lpath(:installing_aws_sam) %>) and configure your AWS CLI before proceeding.
+1. [New Rails Application](#new-rails-application)
+2. [Bootstrap & Setup](#bootstrap-setup)
+3. [First Deploy!](#first-deploy)
+4. [What Just Happened?](#what-just-happened)
+
+## New Rails Application
+
+The [AWS SAM CLI](https://aws.amazon.com/serverless/sam/) allows you to initialize a new project from a GitHub repository template, commonly called a [cookiecutter](https://technology.customink.com/blog/2020/03/13/using-aws-sam-cookiecutter-project-templates-to-kickstart-your-ambda-projects/). Assuming you want to use the full Docker solution that avoids needing to install SAM locally, use this command.
 
 ```shell
-$ brew install awscli
-$ brew tap aws/tap
-$ brew install aws-sam-cli
+$ docker run \
+  --rm \
+  --interactive \
+  --volume "${PWD}:/var/task:delegated" \
+  lambci/lambda:build-ruby2.7 \
+  sam init --location "gh:customink/lamby-cookiecutter"
 ```
 
-## Create a New Rails Application
-
-Lamby works with existing Rails projects. However, our getting started example will create a new application. Here we skip any frameworks not needed for our demo or starter app. Here we are using [rbenv](https://github.com/rbenv/rbenv) to set our Ruby version to match the AWS Ruby runtime prior to creating the new application.
+If you have the SAM CLI installed on your system, use can use this command.
 
 ```shell
-$ rbenv shell 2.5.5
-$ gem install rails
-$ rails new my_awesome_lambda \
-  --skip-action-mailer --skip-action-mailbox --skip-action-text \
-  --skip-active-record --skip-active-storage --skip-puma \
-  --skip-action-cable --skip-spring --skip-listen --skip-turbolinks \
-  --skip-system-test --skip-bootsnap --skip-webpack-install
+$ sam init --location "gh:customink/lamby-cookiecutter"
+```
+
+## Bootstrap & Setup
+
+The cookiecutter would have prompted you for your new application name. This guide will assume the name of `my_awesome_lambda` was used. All commands below assume you have changed to that directory
+
+```shell
 $ cd my_awesome_lambda
 ```
 
-Now we will add a root url to the `routes.rb` file which maps to an `index` action in the application controller. This action returns a simple Hello Rails H1 HTML tag.
-
-```ruby
-Rails.application.routes.draw do
-  root to: 'application#index'
-end
-
-class ApplicationController < ActionController::Base
-  def index
-    render html: '<h1>Hello Rails</h1>'.html_safe
-  end
-end
-```
-
-## Add the Lamby Gem
-
-<%= render 'install_lamby_shared' %>
-
-
-## Environment & Configuration
-
-We need to wire up at least one critical environment variable in a cloud-native way. Configuration is a deep topic and in this example will move fast, but if needed, please reference our complete [Environment & Configuration](<%= doc_lpath(:environment_and_configuration) %>) guide.
-
-Lamby recommends using the [Rails Credentials](https://guides.rubyonrails.org/security.html#environmental-security) system. To do so, we need to set the `RAILS_MASTER_KEY` environment variable in your `app.rb` file. The value will be read from AWS Systems Manager [Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) which Lamby can help with. To set the master key value in the cloud, use the following AWS CLI command to read your application's newly created master key.
+Lamby encourages the use of a [normalized script pattern](https://github.blog/2015-06-30-scripts-to-rule-them-all/) when working with projects. These two commands will bootstrap and setup your system. Typically bootstrap is a one time process where as setup is often run when dependencies change.
 
 ```shell
-aws ssm put-parameter \
-  --name "/config/my_awesome_lambda/env/RAILS_MASTER_KEY" \
-  --type "SecureString" \
-  --value $(cat config/master.key)
+$ ./bin/bootstrap
+$ ./bin/setup
 ```
 
-Update your `app.rb` file and add this line right after `require 'lamby'`.
-
-```ruby
-ENV['RAILS_MASTER_KEY'] =
-  Lamby::SsmParameterStore.get!('/config/my_awesome_lambda/env/RAILS_MASTER_KEY')
-```
-
-Finally, update your `template.yaml` CloudFormation/SAM file by adding this to the `Properties` section of your `RailsFunction`. This addition allows your Lambda's runtime policy to read configs from SSM Parameter store.
-
-```yaml
-Policies:
-  - Version: "2012-10-17"
-    Statement:
-      - Effect: Allow
-        Action:
-          - ssm:GetParameter
-          - ssm:GetParameters
-          - ssm:GetParametersByPath
-          - ssm:GetParameterHistory
-        Resource:
-          - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/config/my_awesome_lambda/*
-```
-
-
-## Create S3 Deployment Bucket
-
-Before we deploy, we need an S3 bucket to place our deployment package into. Lamby does this during the `bin/deploy` script. The default name for the bucket would include your computer's username. You can change this in your script (WHICH WE RECOMMEND) to something unique for you or use the `CLOUDFORMATION_BUCKET` environment variable. Assuming you stick with the default, this AWS CLI command will make the S3 bucket.
-
-```shell
-aws s3 mb "s3://lamby.cloudformation.$(whoami)"
-```
-
+For Lamby, these scripts typically build a Docker image. We also do some work to ensure an S3 deployment bucket is created along with setting up Rails encrypted credentials.
 
 ## First Deploy!
 
-Now your Rails app is ready to be deployed to AWS Lambda via CloudFormation & SAM.
+Now your Rails app is ready to be deployed to AWS Lambda via SAM. We make this easy by using a script which builds, packages, and deploys your Rails application.
 
 ```shell
 $ ./bin/deploy
 ```
 
-To see your newly created Lambda's API Gateway URL, log into the AWS Console or run the following command. This will describe the CloudFormation stack we just deployed and the `Outputs` from that template.
+SAM will build your project into a local `.aws-sam` directory, zipping it up to S3, and instructing CloudFormation to create your could resources as defined in your `template.yaml` file. During the end of this process, you will see SAM output similar to what is shown below.
 
-```shell
-aws cloudformation describe-stacks \
-  --stack-name "my_awesome_lambda-production-us-east-1" | \
-  grep OutputValue | \
-  grep https
+```
+CloudFormation outputs from deployed stack
+-------------------------------------------------------------------------------
+Outputs
+-------------------------------------------------------------------------------
+Key           MyAwesomeLambdaHttpApiUrl
+Description   Lambda Invoke URL
+Value         https://7m473epf5f.execute-api.us-east-1.amazonaws.com/production/
 ```
 
+Load the HTTP API URL in your browser and you should see your new Rails app!
 
-<%= doc_next :installing_aws_sam %>
+<img alt="MyAwesomeLambda on AWS Lambda with HTTP API" src="https://user-images.githubusercontent.com/2381/82155897-06f3e000-9846-11ea-839a-627b7a57eafd.png" style="width:100%;">
+
+## What Just Happened?
+
+You just deployed a new Rails v6 application to AWS Lambda's Ruby 2.7 runtime. This project has everything you need for a server-side API and/or client application. Please take some time to explore your Rails app and how Lamby works in the next section.
+
+
+
+<%= doc_next :anatomy %>
 <%= disqus %>
-

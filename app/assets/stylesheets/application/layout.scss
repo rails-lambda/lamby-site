@@ -124,6 +124,13 @@ ul > li > code {
   transition: margin-left 0.2s;
   margin-bottom: -$lb-footer-height;
   padding-bottom: $lb-footer-height;
+  &--docs {
+    h2 {
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px ridge rgba(white, 0.2);
+    }
+  }
 }
 
 .lb-Footer {
