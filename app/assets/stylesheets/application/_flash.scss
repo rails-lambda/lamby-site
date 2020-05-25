@@ -1,7 +1,14 @@
 .sp-Flash {
   text-align: left;
-  background-color: $lb-aqua;
+  background-color: rgba($lb-aqua, 0.8);
+  border-radius: 4px;
   &--alert {
-    background-color: mui-color('yellow', '400');
+    color: #444444;
+    background-color: rgba(#ffee58, 0.8);
+    a {
+      color: #444444;
+      text-decoration: underline;
+      &:hover, &:focus { color: #444444; }
+    }
   }
 }

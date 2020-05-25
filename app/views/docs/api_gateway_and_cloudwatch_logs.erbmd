@@ -1,3 +1,6 @@
+<div class="mui-panel sp-Flash sp-Flash--alert" style="margin-top:1.5rem;">
+  ⚠️ Is this needed for HTTP API? <a href="https://github.com/customink/lamby_site/issues">Let us know</a>.
+</div>
 
 # API Gateway & CloudWatch Logs
 
@@ -50,5 +53,6 @@ As the article above states, you will need to have one API Gateway installed. I 
 * Paste the ARN for the Role you created in "CloudWatch log role ARN" field.
 
 
-<%= doc_next :how_does_lamby_work %>
+
+<%= doc_next :installing_aws_sam %>
 <%= disqus %>

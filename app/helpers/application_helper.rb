@@ -4,6 +4,10 @@ module ApplicationHelper
     'lb-Theme--blue'
   end
 
+  def main_class
+    "lb-Main--#{controller_name}"
+  end
+
   def doc_link(slug, options = {})
     name = doc_name(slug)
     name << options.delete(:link_suffix).to_s
@@ -12,13 +16,12 @@ module ApplicationHelper
 
   def doc_name(slug)
     case slug
+    when :anatomy then "Lamby's Anatomy"
     when :installing_aws_sam then 'Installing AWS SAM'
     when :asset_host_and_precompiling then 'Asset Hosts & Precompiling'
     when :environment_and_configuration then 'Environment & Configuration'
     when :bin_scripts_build_and_deploy then 'Build & Deploy'
-    when :custom_domain_name_cloudfront_and_ssl_application_load_balancer then 'Custom Domain Name, CloudFront, & SSL'
-    when :custom_domain_name_and_cloudfront_api_gateway then 'Custom Domain Name & CloudFront (API Gateway)'
-    when :how_does_lamby_work then 'How Does Lamby Work?'
+    when :custom_domain_names then 'Custom Domain Names, CloudFront, & SSL'
     when :api_gateway_and_cloudwatch_logs then 'API Gateway & CloudWatch Logs'
     else slug.to_s.titleize
     end

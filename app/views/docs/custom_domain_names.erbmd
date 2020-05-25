@@ -1,0 +1,92 @@
+
+# Custom Domain Names, CloudFront, & SSL
+
+The new API Gateway HTTP API makes it easy to configure your application with a custom domain name. If you want your domain name to be a [CloudFront](https://aws.amazon.com/cloudfront/) distribution for edge caching, flip steps #3 and #4 below so that [Route53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/getting-started.html) is the last step you do.
+
+1. [SSL/TLS Certificate with ACM](#ssl-tls-certificate-with-acm)
+2. [API Gateway Custom Domain Name](#api-gateway-custom-domain-name)
+3. [Custom Domain in Route53](#custom-domain-in-route53)
+4. [CloudFront Distribution](#cloudfront-distribution)
+
+## SSL/TLS Certificate with ACM
+
+We are going to use [AWS Certificate Manager](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html) to secure your HTTPS traffic under your custom domain. Again, this assumes your domain is setup in Route53 since you will need to validate the certificate and AWS makes that super easy with DNS.
+
+* AWS Console -> Certificate Manager
+* Click "Request a certificate" button.
+* Select "Request a public certificate", and "Request a certificate" button.
+* Domain name: *.example.com
+* Click "Next"
+* Select "DNS validation", and "Review".
+* Click "Confirm and request" button.
+* Click the tiny disclosure triangle beside your domain name.
+* Click the "Create record in Route 53" button then "Create" again in modal.
+* Click "Continue"
+
+Verification will take about 3 minutes. From the Certificate Manager dashboard, you can wait and/or hit the 🔄 button and the Status will change from "Pending validation" to "Issued".
+
+## API Gateway Custom Domain Name
+
+We need to let API Gateway know that we are going to direct traffic to a custom domain name. When doing so it will ask us for our certificate name above.
+
+* AWS Console -> API Gateway
+* Click "Custom domain names" in the left side nav.
+* Click the "Create" button.
+* Set "Domain name" to *.example.com
+* Set "Endpoint type" to "Regional"
+* Set "Minimum TLS version" to "TLS 1.2"
+* Click the "Create" button
+* ⚠️ Note the "API Gateway domain name:"
+  - Ex: d-ab282asdri9s.execute-api.us-east-1.amazonaws.com
+
+Scroll to the "API mappings" section at the bottom.
+
+* Click "Configure API mappings"
+* Click "Add new mapping"
+* For "API" select your lambda.
+* For "Stage" select the only one. Ex: "production"
+* For "Path" leave blank.
+* Click the "Save" button.
+
+## Custom Domain in Route53
+
+Please make sure to copy the domain name of your newly created API Gateway or CloudFront distribution. It will be needed as a target for your new DNS entry.
+
+* AWS Console -> Route53 -> Hosted zones -> example.com
+* Click "Create Record Set" button.
+* Name: www
+* Type: A - IPv4 address
+* Alias: Yes
+* Alias: Target:
+  - Ex: d-ab282asdri9s.execute-api.us-east-1.amazonaws.com
+  - Ex: dxxxxxxxxxxxxx.cloudfront.net
+
+## CloudFront Distribution
+
+This part is optional and requires doing it prior to setting up DNS in Route53. Only setup up a CloudFront distribution if you need a CDN for edge caching. Assuming you do, make sure to copy the "API Gateway domain name:" from step #2 above. Options below assume variations of the defaults. So you only have to focus on the explicit steps below.
+
+* AWS Console -> CloudFront -> Create Distribution -> Web -> Get Started
+* Origin Domain Name: xxxxxxxxxx.execute-api.us-east-1.amazonaws.com
+* Origin Path: /production (or your deployed stage/env)
+* Minimum Origin SSL Protocol: TLSv1.2
+* Origin Protocol Policy: HTTPS Only
+* Origin Custom Headers: X-Forwarded-Host www.example.com (⚠️ IMPORTANT)
+* Viewer Protocol Policy: Redirect HTTP to HTTPS
+* Allowed HTTP Methods: GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE
+* Cached HTTP Methods: OPTIONS
+* Cache Based on Selected Request Headers: Whitelist - Accept (⚠️ Allows `respond_to` to work)
+* Object Caching: Use Origin Cache Headers
+* Forward Cookies: All
+* Query String Forwarding and Caching: Forward all, cached based on all
+* Compress Objects Automatically: Yes
+* Alternate Domain Names (CNAMEs): www.example.com
+* SSL Certificate: Custom SSL Certificate (select *.example.com from step above)
+
+That's it! 🎉🎊🥳 Once your CloudFront distribution fully deploys, you can access your Rails application on Lambda and everything from forms, redirects, caching, etc will all just work!
+
+
+
+
+
+<%= doc_next :database_connections %>
+<%= disqus %>

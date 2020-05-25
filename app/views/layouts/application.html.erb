@@ -11,7 +11,7 @@
     <%= javascript_include_tag 'application' %>
   </head>
   <body class="<%= theme_class %>">
-    <article class="lb-Main">
+    <article class="lb-Main <%= main_class %>">
       <div class="mui--appbar-height"></div>
       <div class="mui-container-fluid lb-Page--<%= controller_name %>">
         <%= yield %>
@@ -37,9 +37,6 @@
             <span class="lb-Header-alb">
               <span class="lb-Header-albEmoji">🆕</span>
               <span class="lb-Header-albText">HTTP API Support</span>
-              &nbsp;
-              &nbsp;
-              <span class="lb-Header-albText"><a href="https://www.reddit.com/r/rails/comments/gafh0n/deploy_a_new_rails_app_to_aws_lambda_using_lamby/fp1xxhf/">⚠️ New Docs Soon</a>!</span>
               &nbsp;
               &nbsp;
             </span>

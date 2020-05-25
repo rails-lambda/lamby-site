@@ -1,0 +1,108 @@
+
+# Anatomy of a Lamby Project
+
+Lamby can be installed within legacy applications or bootstrapped from our AWS SAM [cookiecutter project](<%= doc_lpath(:quick_start, anchor: 'new-rails-application') %>). This guide attempts to explain the basics of each & how Lamby works.
+
+
+1. [How Lamby Works](#how-lamby-works)
+2. [Core Lamby Files](#core-lamby-files)
+3. [Our SAM Cookiecutter's Features](#our-sam-cookiecutters-features)
+4. [Installing for Legacy Applications](#installing-for-legacy-applications)
+5. [Inspiration](#inspiration)
+
+## How Lamby Works
+
+At its heart, a Rails application on Lambda is still just a normal Rails application. Since [Rails is on Rack](https://guides.rubyonrails.org/rails_on_rack.html), the Lamby gem relies on converting any Lambda HTTP event to compatible [Rack](https://rack.github.io) `env` objects. We then send that object to your application and pass the result back to the Lambda handler. It is that simple.
+
+
+## Core Lamby Files
+
+These files are core to Lamby working in your project. Some further down like our Docker integration, are only included with our Cookiecutter.
+
+### File - `app.rb`
+
+The `app.rb` file is similar to Rails' `config.ru` for Rack. Commonly called your handler, this file should remain relatively simple and look something like this.
+
+```ruby
+require_relative 'config/boot'
+require 'lamby'
+require_relative 'config/application'
+require_relative 'config/environment'
+
+$app = Rack::Builder.new { run Rails.application }.to_app
+
+def handler(event:, context:)
+  Lamby.handler $app, event, context, rack: :alb
+end
+```
+Any code outside the `handler` method is loaded only once, which includes booting your Rails application. After that, Lamby does all the work to convert the `event` and `context` objects it Rack messages that get sent to your Rails application. The details of the [AWS Lambda Function Handler in Ruby](https://docs.aws.amazon.com/lambda/latest/dg/ruby-handler.html) should be left to Lamby, but please learn about this topic if you are interested.
+
+### File - `template.yaml`
+
+This YAML file at the root of your project describes your [SAM application](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html). Don't worry, we have done some heavy lifting for you. But as your application grows you may end up adding resources like S3 Buckets, DynamoDB, or IAM Policies. Please take some time to learn how SAM & CloudFormation works.
+
+* [What Is the AWS Serverless Application Model (AWS SAM)?](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html)
+* [Quick Intro & Tech Spec for SAM File](https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md)
+* [What is AWS CloudFormation?](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html)
+
+### Files - `Dockerfile` & `docker-compose.yml`
+
+These docker files use the [same containers](https://github.com/lambci/docker-lambda) as AWS SAM so that you can develop & deploy using a similar environment as the Lambda runtime itself. Remember, these containers are are the "build" variants which contain more tools than the leaner runtime. We also install Node & Yarn on this Ruby container too since Rails development loves JavaScript.
+
+### Files - `bin`
+
+Because we encourage use of the Lambda docker containers using the Docker files above, we include a host of bin scripts that make development easy for you. **All files with a leading `_` should be run in the container.** For example, `bin/server` is just a docker-compose run command to `bin/_server`. Overall, here iw what you will find in our cookiecutter project.
+
+* Normalized `bootstrap`, `setup`, and `test` scripts.
+* Wrappers around `sam build`, `package`, and `deploy`.
+* A `bin/run` convenience script to run any other command in the container.
+
+## Our SAM Cookiecutter's Features
+
+Our cookiecutter makes starting a Rails application so easy you may have missed some of the interesting things we have done for you. Here is a small list.
+
+* Docker docker docker! Sharing directories & environment variables.
+* Encrypted Credentials with SSM Parameter Store. See <%= doc_link :environment_and_configuration %> for details.
+* Compiles CSS/JS Assets with LibSass & Webpacker. See <%= doc_link :asset_host_and_precompiling %> for details.
+* Creates an S3 bucket for deploy packages. Named stored in the `.bucket-name` file. Change to your own if you have a standard CloudFormation bucket name.
+* Services static assest using `RAILS_SERVE_STATIC_FILES` & `config.public_file_server`.
+* Adds the [lograge](https://github.com/roidrage/lograge) gem to reduce CloudWatch data costs.
+
+## Installing for Legacy Applications
+
+Rails has been on Rack for a long time. So in theory almost any older application can work with Lamby. Assuming it fits with Lambda's constraints (which are always getting smaller) and our current [database constraints](<%= doc_lpath(:database_connections) %>) which too are always evolving. Add the Lamby gem to your `Gemfile`. We use `require: false` here so Lamby is only loaded in your `app.rb`. This keeps your development/test logs still writing to disk vs. using `STDOUT`.
+
+```ruby
+gem 'lamby', require: false
+```
+
+Lamby provides a simple Rake task to install starter files needed to use AWS Lambda for your application. In this example, we are using the default [API Gateway HTTP API](https://aws.amazon.com/blogs/compute/announcing-http-apis-for-amazon-api-gateway/) installer but you can also use Lamby with API Gateway's REST API or an Application Load Balancer.
+
+```shell
+$ ./bin/rake -r lamby lamby:install:http
+# Alternatives
+$ ./bin/rake -r lamby lamby:install:rest
+$ ./bin/rake -r lamby lamby:install:alb
+```
+
+This task will install `app.rb`, `template.yaml`, and starter `bin` files. Please review our cookiecutter's [build scripts](https://github.com/customink/lamby-cookiecutter/blob/master/bin/_build) for examples of what you may want to include as well.
+
+## Inspiration
+
+Thanks to the projects and people below which inspired our code and implementation.
+
+* [AWS Sinatra Example](https://github.com/aws-samples/serverless-sinatra-sample)
+* [Rack Lambda Handler Pull Request](https://github.com/rack/rack/pull/1337)
+* [Serverless Rack Plugin](https://github.com/logandk/serverless-rack)
+* [Jets' Rack Implementation](https://github.com/tongueroo/jets/blob/master/lib/jets/controller/rack/env.rb)
+
+Other small details which Lamby helps with.
+
+* Ensure all `Logger` objects use `STDOUT`.
+* Sets the `RAILS_LOG_TO_STDOUT` environment variable.
+* Provides a debug response in development (or when `LAMBY_DEBUG` env set) using `?debug=1` query param.
+
+
+
+<%= doc_next :bin_scripts_build_and_deploy %>
+<%= disqus %>
