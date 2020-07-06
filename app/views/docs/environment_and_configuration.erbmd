@@ -14,19 +14,19 @@ There are numerous ways to configure environment variables ranging from quick an
 
 ## Our Cookiecutter
 
-After the SAM init process we asked you to run a `bin/setup` script. This calls a `bin/_setup-credentials` script which generates your new application's `RAILS_MASTER_KEY` which Rails places into a `config/master.key` file. This file is git ignored. We store the contents of this secret key securely in AWS using their Systems Manager [Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) service.
+After the SAM init process we asked you to run a `bin/setup` script. This calls a `bin/_setup-credentials` script which generates your new application's `RAILS_MASTER_KEY` which Rails places into a `config/master.key` file. This file is git ignored. We store the contents of this secret key securely in AWS using their [Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) service.
 
-When you deploy your application to application to Lambda, we read the master key back out and write it out to a [Dotenv](https://github.com/bkeepers/dotenv) file located at `.env.${RAILS_ENV}`. This file and hence the `RAILS_MASTER_KEY` environment variable are set early in your application's boot process within the `app.rb` file.
+When you deploy your application to Lambda, we read the master key back and write it out to a [Dotenv](https://github.com/bkeepers/dotenv) file located at `.env.${RAILS_ENV}`. This file and hence the `RAILS_MASTER_KEY` environment variable are set early in your application's boot process within the `app.rb` file.
 
 ## Rails Encrypted Credentials
 
-Given the handling of the `RAILS_MASTER_KEY` above, [Rails Credentials](https://guides.rubyonrails.org/security.html#environmental-security) is a perfect fit for Lambda. It allows you to bundle all configuration aspect within a single file. This also keeps your lambda talking to 3rd party services while they scale up and are started for you. For most users, using `Rails.application.credentials` for all your configs may be all you need.
+Given the handling of the `RAILS_MASTER_KEY` above, [Rails Credentials](https://guides.rubyonrails.org/security.html#environmental-security) is a perfect fit for Lambda. It allows you to bundle all configuration aspects within a single file. This also keeps your lambda talking to 3rd party services while they scale up and are started for you. For most users, using `Rails.application.credentials` for all your configs may be all you need.
 
 Lamby adds the `bin/credentials` file to easily decrypt and edit your credentials using `EDITOR=vim` within your Docker container.
 
 ## Stop Using AWS Keys & Secrets
 
-If your application uses other AWS resources like S3, you may be using environment variables like `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`. **Avoid this pattern.** Instead please add explicit IAM policies within your `template.yaml` file. They will be attached to your Lambda's [Execution Role](https://docs.aws.amazon.com/lambda/latest/dg/lambda-intro-execution-role.html) and inherently give your Lambda the needed permissions.
+If your application uses other AWS resources like S3, you may be using environment variables like `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`. **Avoid this pattern.** Instead, please add explicit IAM policies within your `template.yaml` file. They will be attached to your Lambda's [Execution Role](https://docs.aws.amazon.com/lambda/latest/dg/lambda-intro-execution-role.html) and inherently give your Lambda the needed permissions.
 
 * [Lambda Policies Guide](https://aws.amazon.com/premiumsupport/knowledge-center/lambda-sam-template-permissions/)
 * [AWS SAM Policy Templates](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html)
@@ -38,7 +38,7 @@ Our cookiecutter project integrates the [Dotenv](https://github.com/bkeepers/dot
 
 ## SMS Parameter Store
 
-You may find your want more than just the `RAILS_MASTER_KEY` as an environment during your build & deploy. You may want to consider using AWS' Systems Manager [Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) like we have in our `bin/build` script. For example, these are the AWS CLI commands to put and get values.
+You may find your want more than just the `RAILS_MASTER_KEY` as an environment during your build & deploy. You may want to consider using AWS' [Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) like we have in our `bin/build` script. For example, these are the AWS CLI commands to put and get values.
 
 
 ```shell
