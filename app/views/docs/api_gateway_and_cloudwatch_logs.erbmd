@@ -52,7 +52,5 @@ As the article above states, you will need to have one API Gateway installed. I 
 * Click "Settings" in left menu.
 * Paste the ARN for the Role you created in "CloudWatch log role ARN" field.
 
-
-
 <%= doc_next :installing_aws_sam %>
 <%= disqus %>

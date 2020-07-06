@@ -59,7 +59,5 @@ export RAILS_ENV="staging"
 ./bin/deploy
 ```
 
-
-
 <%= doc_next :environment_and_configuration %>
 <%= disqus %>

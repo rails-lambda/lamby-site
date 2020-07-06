@@ -57,8 +57,5 @@ SOME_OTHER_ENV=$(aws ssm get-parameter \
 )
 ```
 
-
-
-
 <%= doc_next :asset_host_and_precompiling %>
 <%= disqus %>
