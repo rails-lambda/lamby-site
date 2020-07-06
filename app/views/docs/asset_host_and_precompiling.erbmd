@@ -1,7 +1,7 @@
 
 # Asset Host & Precompiling
 
-For those that used to [precompiling assets](https://guides.rubyonrails.org/asset_pipeline.html#in-production) on their production servers, Lambda may introduce a new way of thinking. Instead assets are precompiled during the SAM build phase. We recommend using an `:assets` group in your `Gemfile` and changing your `application.rb` to load this group for development and test environments. ⚠️ Assets require a [custom domain name](<%= doc_lpath(:custom_domain_names) %>) to link properly.
+For those that are used to [precompiling assets](https://guides.rubyonrails.org/asset_pipeline.html#in-production) on their production servers, Lambda may introduce a new way of thinking. Instead, assets are precompiled during the SAM build phase. We recommend using an `:assets` group in your `Gemfile` and changing your `application.rb` to load this group for development and test environments. ⚠️ Assets require a [custom domain name](<%= doc_lpath(:custom_domain_names) %>) to link properly.
 
 ```ruby
 group :assets do
@@ -41,7 +41,7 @@ Your application's assets may be impractical to package and serve from Lambda. O
 
 ### Configure Your Rails Asset Host
 
-In your `production.rb`, or any other environment file that uses an asset host, configure Rails with the domain you intent to use. We also recommend that your asset manifest be removed from the public dir and instead placed in your application config. This way it can be packed and deployed along side your application. Open up your `config/initializers/assets.rb` file and set the manifest.
+In your `production.rb`, or any other environment file that uses an asset host, configure Rails with the domain you intent to use. We also recommend that your asset manifest be removed from the public dir and placed in your application config instead. This way, it can be packed and deployed along side your application. Open up your `config/initializers/assets.rb` file and set the manifest.
 
 ```ruby
 config.action_controller.asset_host = 'https://assets.example.com'
@@ -53,7 +53,7 @@ Rails.application.config.assets.manifest = Rails.root.join('config/manifest.json
 
 ### Sync Assets to S3 During Builds
 
-In order to get the compiled assets to our S3 bucket we need to hook into the [bin/build](<%= doc_lpath(:bin_scripts_build_and_deploy) %>) script. Add this line after the `assets:precompile` line. It uses the AWS CLI [s3 sync](https://docs.aws.amazon.com/cli/latest/reference/s3/sync.html) command to copy new assets to your S3 bucket. Also sets a cache control header for a proper origin response.
+In order to get the compiled assets to our S3 bucket, we need to hook into the [bin/build](<%= doc_lpath(:bin_scripts_build_and_deploy) %>) script. Add this line after the `assets:precompile` line. It uses the AWS CLI [s3 sync](https://docs.aws.amazon.com/cli/latest/reference/s3/sync.html) command to copy new assets to your S3 bucket. It also sets a cache control header for a proper origin response.
 
 ```shell
 aws s3 sync ./public/assets "s3://assets.example.com/assets" \
@@ -62,7 +62,7 @@ aws s3 sync ./public/assets "s3://assets.example.com/assets" \
 
 ### Create a CloudFront Distro Backed by S3 with CloudFormation
 
-To create our CloudFront distribution and S3 bucket we are going to use CloudFormation to express our Infrastructure as Code (IaC). The work here was inspired DJ Walkers [Automate Your Static Hosting Environment With AWS CloudFormation](https://forestry.io/blog/automate-your-static-hosting-environment-with-aws-cloudformation/) tutorial but re-written from the ground up to be more inline with a Rails static asset host best practices. Simply log into the AWS Console, From there go to CloudFormation -> Create stack -> Template is ready -> Upload a template file.
+To create our CloudFront distribution and S3 bucket, we are going to use CloudFormation to express our Infrastructure as Code (IaC). The work here was inspired DJ Walker's [Automate Your Static Hosting Environment With AWS CloudFormation](https://forestry.io/blog/automate-your-static-hosting-environment-with-aws-cloudformation/) tutorial but re-written from the ground up to be more inline with Rails static asset host best practices. Simply log into the AWS Console, and go to CloudFormation -> Create stack -> Template is ready -> Upload a template file.
 
 Prior to executing this template, please use [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/) to create an SSL cert for you domain name and change the `AcmCertificateArn` to the ARN of your certificate. Also make sure to change `assets.example.com` to your domain name.
 
@@ -121,8 +121,6 @@ Resources:
           AcmCertificateArn: YOUR_CERT_ARN_HERE
           SslSupportMethod: sni-only
 ```
-
-
 
 <%= doc_next :custom_domain_names %>
 <%= disqus %>

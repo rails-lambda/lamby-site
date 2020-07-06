@@ -5,7 +5,7 @@ The [AWS Serverless Application Model](https://aws.amazon.com/serverless/sam/) (
 
 <img src="<%= image_path 'aws_sam_introduction.png' %>" style="width:100%; border-radius:5px;"/>
 
-Our [cookiecutter starter](https://github.com/customink/lamby-cookiecutter) project makes use of the same [build containers](https://github.com/lambci/docker-lambda) that SAM uses internally. These containers already have both the AWS CLI and SAM installed too. Checkout our <%= doc_link(:quick_start) %> guide and dig into our [bin scripts](https://github.com/customink/lamby-cookiecutter/tree/master/lambify/bin) if you want to mimic these containers for development, test, and deploys. Alternatively, you can install AWS CLI & SAM globally on your system.
+Our [cookiecutter starter](https://github.com/customink/lamby-cookiecutter) project makes use of the same [build containers](https://github.com/lambci/docker-lambda) that SAM uses internally. These containers already have both AWS CLI, and SAM installed too. Checkout our <%= doc_link(:quick_start) %> guide and dig into our [bin scripts](https://github.com/customink/lamby-cookiecutter/tree/master/lambify/bin) if you want to mimic these containers for development, test, and deploys. Alternatively, you can install AWS CLI, and SAM globally on your system.
 
 * [Install SAM CLI](https://aws.amazon.com/serverless/sam/)
 * [Installing the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)

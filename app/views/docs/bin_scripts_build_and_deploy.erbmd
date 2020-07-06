@@ -49,7 +49,7 @@ $ aws s3 mb cloudformation.mycomany.com
 
 ## Multiple Environments
 
-Feel free to make more per-environment deploy scripts. For example `bin/deploy-staging` may look like this. The `AWS_PROFILE` is an useful environment variable that helps you manage different AWS accounts via all CLI tools. We pass it and `RAILS_ENV` via our docker compose scripts. Learn more about [AWS Environment Variables](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html).
+Feel free to make more per-environment deploy scripts. For example `bin/deploy-staging` may look like this. The `AWS_PROFILE` is an useful environment variable that helps you manage different AWS accounts via all CLI tools. We pass `AWS_PROFILE` and `RAILS_ENV` via our docker compose scripts. Learn more about [AWS Environment Variables](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html).
 
 ```shell
 #!/bin/bash
@@ -58,8 +58,6 @@ export AWS_PROFILE="staging"
 export RAILS_ENV="staging"
 ./bin/deploy
 ```
-
-
 
 <%= doc_next :environment_and_configuration %>
 <%= disqus %>

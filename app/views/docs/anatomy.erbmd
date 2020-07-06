@@ -47,11 +47,11 @@ This YAML file at the root of your project describes your [SAM application](http
 
 ### Files - `Dockerfile` & `docker-compose.yml`
 
-These docker files use the [same containers](https://github.com/lambci/docker-lambda) as AWS SAM so that you can develop & deploy using a similar environment as the Lambda runtime itself. Remember, these containers are are the "build" variants which contain more tools than the leaner runtime. We also install Node & Yarn on this Ruby container too since Rails development loves JavaScript.
+These docker files use the [same containers](https://github.com/lambci/docker-lambda) as AWS SAM so that you can develop & deploy using a similar environment as the Lambda runtime itself. Remember, these containers are the "build" variants which contain more tools than the leaner runtime. We also install Node & Yarn on this Ruby container too since Rails development loves JavaScript.
 
 ### Files - `bin`
 
-Because we encourage use of the Lambda docker containers using the Docker files above, we include a host of bin scripts that make development easy for you. **All files with a leading `_` should be run in the container.** For example, `bin/server` is just a docker-compose run command to `bin/_server`. Overall, here iw what you will find in our cookiecutter project.
+Because we encourage use of the Lambda docker containers using the Docker files above, we include a host of bin scripts that make development easy for you. **All files with a leading `_` should be run in the container.** For example, `bin/server` is just a docker-compose run command to `bin/_server`. Overall, here is what you will find in our cookiecutter project.
 
 * Normalized `bootstrap`, `setup`, and `test` scripts.
 * Wrappers around `sam build`, `package`, and `deploy`.
@@ -59,7 +59,7 @@ Because we encourage use of the Lambda docker containers using the Docker files 
 
 ## Our SAM Cookiecutter's Features
 
-Our cookiecutter makes starting a Rails application so easy you may have missed some of the interesting things we have done for you. Here is a small list.
+Our cookiecutter makes starting a Rails application so easy, you may have missed some of the interesting things we have done for you. Here is a small list.
 
 * Docker docker docker! Sharing directories & environment variables.
 * Encrypted Credentials with SSM Parameter Store. See <%= doc_link :environment_and_configuration %> for details.
@@ -70,7 +70,7 @@ Our cookiecutter makes starting a Rails application so easy you may have missed 
 
 ## Installing for Legacy Applications
 
-Rails has been on Rack for a long time. So in theory almost any older application can work with Lamby. Assuming it fits with Lambda's constraints (which are always getting smaller) and our current [database constraints](<%= doc_lpath(:database_connections) %>) which too are always evolving. Add the Lamby gem to your `Gemfile`. We use `require: false` here so Lamby is only loaded in your `app.rb`. This keeps your development/test logs still writing to disk vs. using `STDOUT`.
+Rails has been on Rack for a long time. So in theory, almost any older application can work with Lamby. Assuming it fits with Lambda's constraints (which are always getting smaller) and our current [database constraints](<%= doc_lpath(:database_connections) %>) which too are always evolving. Add the Lamby gem to your `Gemfile`. We use `require: false` here so Lamby is only loaded in your `app.rb`. This keeps your development/test logs still writing to disk vs. using `STDOUT`.
 
 ```ruby
 gem 'lamby', require: false
@@ -101,8 +101,6 @@ Other small details which Lamby helps with.
 * Ensure all `Logger` objects use `STDOUT`.
 * Sets the `RAILS_LOG_TO_STDOUT` environment variable.
 * Provides a debug response in development (or when `LAMBY_DEBUG` env set) using `?debug=1` query param.
-
-
 
 <%= doc_next :bin_scripts_build_and_deploy %>
 <%= disqus %>
