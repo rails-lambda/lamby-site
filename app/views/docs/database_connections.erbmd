@@ -1,16 +1,17 @@
 
 # Database Connections
 
-<div class="mui-panel sp-Flash">
-  ℹ️ We are working to integrate RDS Proxy for full AcitveRecord support!
+<div class="mui-panel sp-Flash sp-Flash--alert">
+  📣 BRAND NEW! Precompiled <a href="https://github.com/customink/mysql2-lambda">Mysql2 Gem for Lambda</a>. Ready to use with RDS Proxy.
 </div>
 
-If you want to use a database with Rails and Lambda, I would highly suggest using DynamoDB with the excellent [AWS Record](https://github.com/aws/aws-sdk-ruby-record) gem. It leverages simple `ActiveModel` conventions and DynamoDB is a perfect companion for serverless.
+## Native MySQL Connections
 
-Still love ActiveRecord? We got you covered! For smaller applications with variable workloads on MySQL, you can use the [ActiveRecord Adapter for Amazon Aurora Serverless](https://github.com/customink/activerecord-aurora-serverless-adapter) which leverages the [Data API](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/data-api.html) over HTTP.
+Thanks to the recent announcement of [RDS Proxy](https://aws.amazon.com/about-aws/whats-new/2020/06/amazon-rds-proxy-generally-available/) becoming generally available, you can now run Rails in AWS Lambda with either MySQL or PostgreSQL. Lamby makes this really easy with MySQL since we have precompiled and statically linked `libmysqlclient` in an easy to use gem named [mysql2-lambda](https://github.com/customink/mysql2-lambda).
 
 ## Project Links
 
+* [Mysql2 Lambda Gem](https://github.com/customink/mysql2-lambda)
 * [DynamoDB with AWS Record](https://github.com/aws/aws-sdk-ruby-record)
 * [ActiveRecord Adapter for Amazon Aurora Serverless](https://github.com/customink/activerecord-aurora-serverless-adapter)
 
