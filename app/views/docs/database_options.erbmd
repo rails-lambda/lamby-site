@@ -191,7 +191,7 @@ test:
   database: myapp_test
 ```
 
-Open your project's `bin/_setup` file and add this Rails taks right after the bundle/yarn install section.
+Open your project's `bin/_setup` file and add this Rails task right after the bundle/yarn install section.
 
 ```shell
 echo '== Preparing database =='
