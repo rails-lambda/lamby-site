@@ -23,6 +23,8 @@ module ApplicationHelper
     when :bin_scripts_build_and_deploy then 'Build & Deploy'
     when :custom_domain_names then 'Custom Domain Names, CloudFront, & SSL'
     when :api_gateway_and_cloudwatch_logs then 'API Gateway & CloudWatch Logs'
+    when :activejob_and_lambda then 'ActiveJob & Lambda'
+    when :logging_metrics_observability then 'Logging, Metrics, & Observability'
     else slug.to_s.titleize
     end
   end

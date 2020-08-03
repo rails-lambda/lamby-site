@@ -16,6 +16,8 @@ class DocsController < ApplicationController
     case permalink
     when 'how_does_lamby_work', 'install_lamby'
       redirect_to doc_url(id: :anatomy)
+    when 'database_connections'
+      redirect_to doc_url(id: :database_options)
     when 'custom_domain_name_and_cloudfront',
          'custom_domain_name_cloudfront_and_ssl_application_load_balancer',
          'custom_domain_name_and_cloudfront_api_gateway'

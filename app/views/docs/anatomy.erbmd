@@ -1,14 +1,14 @@
 
 # Anatomy of a Lamby Project
 
-Lamby can be installed within legacy applications or bootstrapped from our AWS SAM [cookiecutter project](<%= doc_lpath(:quick_start, anchor: 'new-rails-application') %>). This guide attempts to explain the basics of each & how Lamby works.
+Lamby can be installed within legacy applications or bootstrapped from our AWS SAM [cookiecutter project](<%= doc_lpath(:quick_start) %>). This guide attempts to explain the basics of each & how Lamby works.
 
+* [How Lamby Works](#how-lamby-works)
+* [Core Lamby Files](#core-lamby-files)
+* [Our SAM Cookiecutter's Features](#our-sam-cookiecutters-features)
+* [Installing for Legacy Applications](#installing-for-legacy-applications)
+* [Inspiration](#inspiration)
 
-1. [How Lamby Works](#how-lamby-works)
-2. [Core Lamby Files](#core-lamby-files)
-3. [Our SAM Cookiecutter's Features](#our-sam-cookiecutters-features)
-4. [Installing for Legacy Applications](#installing-for-legacy-applications)
-5. [Inspiration](#inspiration)
 
 ## How Lamby Works
 
@@ -35,6 +35,7 @@ def handler(event:, context:)
   Lamby.handler $app, event, context, rack: :alb
 end
 ```
+
 Any code outside the `handler` method is loaded only once, which includes booting your Rails application. After that, Lamby does all the work to convert the `event` and `context` objects it Rack messages that get sent to your Rails application. The details of the [AWS Lambda Function Handler in Ruby](https://docs.aws.amazon.com/lambda/latest/dg/ruby-handler.html) should be left to Lamby, but please learn about this topic if you are interested.
 
 ### File - `template.yaml`
@@ -59,9 +60,11 @@ Because we encourage use of the Lambda docker containers using the Docker files 
 
 ## Our SAM Cookiecutter's Features
 
+<img src="<%= image_path 'aws_sam_introduction.png' %>" style="width:100%; border-radius:5px;"/>
+
 Our cookiecutter makes starting a Rails application so easy, you may have missed some of the interesting things we have done for you. Here is a small list.
 
-* Docker docker docker! Sharing directories & environment variables.
+* Docker docker docker! Sharing directories, environment variables, and using MySQL.
 * Encrypted Credentials with SSM Parameter Store. See <%= doc_link :environment_and_configuration %> for details.
 * Compiles CSS/JS Assets with LibSass & Webpacker. See <%= doc_link :asset_host_and_precompiling %> for details.
 * Creates an S3 bucket for deploy packages. Named stored in the `.bucket-name` file. Change to your own if you have a standard CloudFormation bucket name.
@@ -70,7 +73,9 @@ Our cookiecutter makes starting a Rails application so easy, you may have missed
 
 ## Installing for Legacy Applications
 
-Rails has been on Rack for a long time. So in theory, almost any older application can work with Lamby. Assuming it fits with Lambda's constraints (which are always getting smaller) and our current [database constraints](<%= doc_lpath(:database_connections) %>) which too are always evolving. Add the Lamby gem to your `Gemfile`. We use `require: false` here so Lamby is only loaded in your `app.rb`. This keeps your development/test logs still writing to disk vs. using `STDOUT`.
+Rails has been on Rack v2 since Rails v5.0. So in theory, any v5.0 or newer application can work with Lamby. Assuming it fits with Lambda's constraints which are always evolving.
+
+Add the Lamby gem to your `Gemfile`. We use `require: false` here so Lamby is only loaded in your `app.rb`. This keeps your development/test logs still writing to disk vs. using `STDOUT`.
 
 ```ruby
 gem 'lamby', require: false
@@ -101,6 +106,8 @@ Other small details which Lamby helps with.
 * Ensure all `Logger` objects use `STDOUT`.
 * Sets the `RAILS_LOG_TO_STDOUT` environment variable.
 * Provides a debug response in development (or when `LAMBY_DEBUG` env set) using `?debug=1` query param.
+
+
 
 <%= doc_next :bin_scripts_build_and_deploy %>
 <%= disqus %>
