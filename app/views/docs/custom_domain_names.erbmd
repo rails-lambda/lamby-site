@@ -88,5 +88,5 @@ That's it! 🎉🎊🥳 Once your CloudFront distribution fully deploys, you can
 
 
 
-<%= doc_next :database_connections %>
+<%= doc_next :database_options %>
 <%= disqus %>

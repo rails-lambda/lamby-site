@@ -36,7 +36,7 @@ If your application uses other AWS resources like S3, you may be using environme
 
 Our cookiecutter project integrates the [Dotenv](https://github.com/bkeepers/dotenv) gem. This can be useful for all Rails environments from development, test, and production. For example, you can commit common development environment variables to `.env.development` or lock down test configurations in `.env.test`. Please take some time to read their documentation.
 
-## SMS Parameter Store
+## SSM Parameter Store
 
 You may find your want more than just the `RAILS_MASTER_KEY` as an environment during your build & deploy. You may want to consider using AWS' [Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) like we have in our `bin/build` script. For example, these are the AWS CLI commands to put and get values.
 
