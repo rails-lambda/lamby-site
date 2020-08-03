@@ -6,6 +6,7 @@
 </div>
 
 * [RDS Proxy MySQL Setup](#rds-proxy-step-by-step-with-mysql)
+* [Using Aurora Serverless](#using-aurora-serverless)
 * [Using DynamoDB](#using-dynamodb)
 * [Other Resources](#other-resources)
 
@@ -210,6 +211,16 @@ $ ./bin/server
 Good question. You simply can not rely on legacy systems that have deploys & schema migrations happening at the same time with Lambda. A better system typically involves changing your schema in a way that works before & after your code changes happen.
 
 That said, there has to be a better way of running a migration vs resorting to DDL statements sent directly to your RDS cluster from a jump server. In the future I will be looking at a tool like [active_record_migration_ui](https://dev.to/zedtux/run-your-rails-migrations-from-the-web-browser-4mod) or maybe some ActiveJob event triggers with SQS.
+
+
+## Using Aurora Serverless
+
+Are you someone with a pet Rails project running on a Free, Hobby, or Professional Heroku plan? Perhaps your company or freelance gig has a valuable, but infrequently used, Rails application? Such applications make great candidates for both AWS Lambda & Aurora Serverless.
+
+This is aimple ActiveRecord Mysql2 adapter extensions to allow Rails to use AWS Aurora Serverless via the `Aws::RDSDataService::Client` interface. Perfect for infrequently accessed applications.
+
+- [ActiveRecord Adapter for Amazon Aurora Serverless](https://github.com/customink/activerecord-aurora-serverless-adapter)
+- [Migrate Your Rails App from Heroku to AWS Lambda](https://technology.customink.com/blog/2020/01/03/migrate-your-rails-app-from-heroku-to-aws-lambda/)
 
 
 ## Using DynamoDB
