@@ -1,19 +1,20 @@
 
 # Quick Start
 
-Lamby can be used with existing or new Rails/Rack applications. The quickest way to deploy a new application on AWS Lambda is to use our [cookiecutter project](https://github.com/customink/lamby-cookiecutter) template. A few console commands will have you up and running in a few minutes! Both Docker and an AWS Account with command line access are required.
+### A new Rails application deployed to AWS [Lambda Containers](https://aws.amazon.com/blogs/aws/new-for-aws-lambda-container-image-support/) in a few minutes!
+
+Lamby can be used with existing or new Rails/Rack applications. The quickest way to deploy a new application on AWS Lambda is to use our [cookiecutter project](https://github.com/customink/lamby-cookiecutter) template. A few console commands will have you up and running in a few minutes! Before you get started, make sure you have both Docker installed & an AWS Account with command line access setup.
 
 * 🚢 [Install Docker](https://github.com/customink/cookiecutter-ruby-workshop#-install-docker)
 * ⛅️ [AWS Account w/CLI Access](https://github.com/customink/cookiecutter-ruby-workshop#%EF%B8%8F-aws-account)
 
-If these tools or AWS Lambda are completely new to you, consider learning how to install Docker, setup an AWS Account, and how Ruby & Lambda work by using this excellent [Ruby AWS Lambda Microservice Workshop](https://github.com/customink/cookiecutter-ruby-workshop#workshop-steps). Otherwise, let's get started.
+If these tools or AWS Lambda are completely new to you, consider learning how to install Docker, setup an AWS Account, and how Ruby & Lambda work by using this excellent [Ruby AWS Lambda Microservice Workshop](https://github.com/customink/cookiecutter-ruby-workshop#workshop-steps) links above. Otherwise, let's get started.
 
 ## Steps
-
-1. [New Rails Application](#new-rails-application)
-2. [Bootstrap & Setup](#bootstrap-setup)
-3. [First Deploy!](#first-deploy)
-4. [What Just Happened?](#what-just-happened)
+- [New Rails Application](#new-rails-application)
+- [Bootstrap & Setup](#bootstrap-setup)
+- [First Deploy!](#first-deploy)
+- [What Just Happened?](#what-just-happened)
 
 ## New Rails Application
 
@@ -36,20 +37,20 @@ $ sam init --location "gh:customink/lamby-cookiecutter"
 
 ## Bootstrap & Setup
 
-The cookiecutter would have prompted you for your new application name. This guide will assume the name of `my_awesome_lambda` was used. All commands below assume you have changed to that directory
+The cookiecutter install would have prompted you for your new application name. This guide will assume the name of `my_awesome_lambda` was used. All commands below assume you have changed to that directory
 
 ```shell
 $ cd my_awesome_lambda
 ```
 
-Lamby encourages the use of a [normalized script pattern](https://github.blog/2015-06-30-scripts-to-rule-them-all/) when working with projects. These two commands will bootstrap and setup your system. Typically bootstrap is a one time process where as setup is often run when dependencies change.
+Lamby's cookiecutter project encourages the use of a [normalized script pattern](https://github.blog/2015-06-30-scripts-to-rule-them-all/) when working with projects. These two commands will bootstrap and setup your system. Typically bootstrap is a one time process where as setup is often run when dependencies change.
 
 ```shell
 $ ./bin/bootstrap
 $ ./bin/setup
 ```
 
-For Lamby, these scripts typically build a Docker image. We also do some work to ensure an S3 deployment bucket is created along with setting up Rails encrypted credentials.
+These scripts typically build a Docker development image and bundle gems. We also do some work to ensure an both an S3 deployment bucket is created along with and [ECR Repository](https://aws.amazon.com/ecr/) for your deployed container image.
 
 ## First Deploy!
 
@@ -59,7 +60,7 @@ Now your Rails app is ready to be deployed to AWS Lambda via SAM. We make this e
 $ ./bin/deploy
 ```
 
-SAM will build your project into a local `.aws-sam` directory, zipping it up to S3, and instructing CloudFormation to create your could resources as defined in your `template.yaml` file. During the end of this process, you will see SAM output similar to what is shown below.
+This will run a Lamby build script that duplicates your current project directory into a local `.lamby` directory and runs typical deployment commands. From there AWS SAM's build command runs which which builds your container image, and instructs CloudFormation to create all your could resources as defined in your `template.yaml` file. During the end of this process, you will see SAM output similar to what is shown below.
 
 ```
 CloudFormation outputs from deployed stack
@@ -71,13 +72,13 @@ Description   Lambda Invoke URL
 Value         https://7m473epf5f.execute-api.us-east-1.amazonaws.com/production/
 ```
 
-Load the HTTP API URL in your browser and you should see your new Rails app!
+This is an API Gateway HTTP API endpoint which invokes your Rails application using Rack. Load it up in your browser and you should see the familiar welcome to Rails screen. 🎉🎉🎉
 
-<img alt="MyAwesomeLambda on AWS Lambda with HTTP API" src="https://user-images.githubusercontent.com/2381/82155897-06f3e000-9846-11ea-839a-627b7a57eafd.png" style="width:100%;">
+<img alt="Yay! You're on Rails with AWS Lambda Containers" src="https://user-images.githubusercontent.com/2381/101292243-36673b80-37dc-11eb-8ea9-35c1c773227c.png" style="width:100%;">
 
 ## What Just Happened?
 
-You just deployed a new Rails v6 application to AWS Lambda's Ruby 2.7 runtime. This project has everything you need for a server-side API and/or client application. Please take some time to explore your Rails app and how Lamby works in the next section.
+You just deployed a new Rails v6 application to AWS Lambda Containers using an AWS Ruby 2.7 base image. This project has everything you need for a server-side API and/or a client JavaScript application. Please take some time to explore your Rails app and how Lamby works in the next section.
 
 
 

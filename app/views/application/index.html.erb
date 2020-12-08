@@ -1,56 +1,50 @@
+<div class="lb-Welcome mui-container-fluid">
 
-<div class="lb-Welcome">
+  <h1 class="lb-Welcome-header mui--text-display3">
+    <strong>Simple Rails & AWS Lambda Integration</strong>
+  </h1>
 
-  <div class="lb-Welcome-hero">
-    <%= image_tag 'lamby-rails.png', class: 'lb-Welcome-image' %>
-    <h1 class="lb-Welcome-header mui--text-display3">
-      <strong>Simple Rails & AWS Lambda Integration</strong>
-    </h1>
+  <h2 class="lb-Welcome-subheader">
+    Event-driven and deeply integrated within AWS, Lambda allows your Rails architecture to be completly reimagined atop fully managed infrastructure resources like API Gateway, SQS, S3, CloudWatch, IAM, and much more. Using Lamby can help your engineering teams learn to "program the cloud".
+  </h2>
 
+  <%= image_tag 'lamby-arch-hero.png', class: 'lb-Welcome-arch', alt: 'Rails on AWS Lambda. Serverless Architecture.' %>
 
-    <div class="lb-Welcome-code">
-      <%= code_highlight do %>
-        def handler(event:, context:)
-          Lamby.handler $app, event, context
-        end
-      <% end %>
-    </div>
+  <%= image_tag 'lamby-rails.png', class: 'lb-Welcome-newsImage' %>
 
-    <div class="lb-Welcome-points lb-Welcome-points--first">
-      <p class="lb-Welcome-point mui--text-title mui-panel">
-        <strong><span>🌱</span>Compatible with New or Old Rack Applications</strong>
-      </p>
-      <p class="lb-Welcome-point mui--text-title mui-panel">
-        <strong><span>🔩</span>Maintain your Project's Structure & Local Dev</strong>
-      </p>
-      <p class="lb-Welcome-point mui--text-title mui-panel">
-        <strong><span>🚀</span>API Gateway HTTP API or REST</strong>
-      </p>
-    </div>
+  <h2 style="margin-top:0;">
+    Coupled with <%= link_to 'AWS SAM', 'https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html' %> and CloudFormation, your Rails projects becomes the Infrastructure as Code (IaC) source of truth in the cloud. SAM allows you to declare these resources & policies so you never have to worry about access keys, secrets, or any manual ClickOps process ever again.
+  </h2>
 
-    <div class="lb-Welcome-ctas">
-      <%= link_to 'Quick Start', doc_lpath(:quick_start), class: 'lb-Button mui-btn mui-btn--large mui-btn--danger mui-btn--raised' %>
-    </div>
+  <div class="lb-Welcome-cta">
+    <%= link_to 'Quick Start', doc_lpath(:quick_start), class: 'lb-Button mui-btn mui-btn--large mui-btn--danger mui-btn--raised' %>
   </div>
 
-  <div class="lb-Welcome-content">
-
-    <div class="lb-Welcome-points lb-Welcome-points--second">
-      <p class="lb-Welcome-point mui--text-title mui-panel">
-        <strong><span>🌱</span>Compatible with New <br>or Old Rack Applications</strong>
-      </p>
-      <p class="lb-Welcome-point mui--text-title mui-panel">
-        <strong><span>🔩</span>Maintain your Project's <br>Structure & Local Dev</strong>
-      </p>
-      <p class="lb-Welcome-point mui--text-title mui-panel">
-        <strong><span>🚀</span>API Gateway HTTP <br>API or REST</strong>
-      </p>
-    </div>
-
-    <div class="lb-Welcome-actions">
-      <%= link_to 'Quick Start', doc_lpath(:quick_start), class: 'lb-Button lb-Button-full mui-btn mui-btn--large mui-btn--danger mui-btn--raised' %>
-    </div>
-
+  <div class="lb-Welcome-news">
+    <h2 class="mui--text-display1">📣 Recent News:</h2>
+    <ul style="font-size:1.2rem; margin-left:0; padding-left:1.2rem;">
+      <li>
+        2020-10-30: <%= link_to 'Using New Relic APM with Rails on AWS Lambda', 'https://dev.to/aws-heroes/using-new-relic-apm-with-rails-on-aws-lambda-51gi' %>
+      </li>
+      <li>
+        2020-10-24: <%= link_to 'Serverless Docker Patterns', 'https://dev.to/aws-heroes/serverless-docker-patterns-4g1p' %>
+      </li>
+      <li>
+        2020-08-02: <%= link_to 'Full Stack Serverless with Rails & AWS SAM/Lambda', 'https://dev.to/aws-heroes/full-stack-serverless-with-rails-aws-sam-lambda-1jcm' %>
+        <ul style="margin-bottom:2px;">
+          <li>ActiveRecord with RDS Proxy using MySQL</li>
+          <li>Event-Driven ActiveJob with SQS</li>
+          <li>CloudWatch Logs, Metrics, & Observability</li>
+        </ul>
+      </li>
+      <li>
+        2020-07-05: <%= link_to 'Mysql2 Ruby Gem for AWS Lambda', 'https://dev.to/aws-heroes/mysql2-ruby-gem-for-aws-lambda-koj' %>
+      </li>
+      <li>
+        2020-06-16: <%= link_to 'Monolithic Ideas For AWS Lambda File Systems', 'https://dev.to/metaskills/monolithic-ideas-for-aws-lambda-file-systems-2igh' %>
+      </li>
+    </ul>
   </div>
+  
 
 </div>

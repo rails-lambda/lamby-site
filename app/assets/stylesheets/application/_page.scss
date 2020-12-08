@@ -1,5 +1,11 @@
 .lb-Page {
   &--docs {
+    h2 code, 
+    h3 code {
+      padding: 2px 4px;
+      background-color: rgba(18, 43, 59, 0.2);
+      border-radius: 3px;
+    }
     h2[id],
     h3[id] {
       padding-top: 80px;

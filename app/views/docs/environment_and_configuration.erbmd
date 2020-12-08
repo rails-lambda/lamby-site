@@ -1,12 +1,11 @@
 
 # Environment & Configuration
 
-Most Rails applications require over a dozen environment variables to configure themselves or popular gems used. Most notable is ActiveRecord's `DATABASE_URL` but others like `RAILS_MASTER_KEY` require us to consider how we configure your Lambda.
+Most Rails applications require over a dozen environment variables to configure itself along with other popular gems used. Most notable is ActiveRecord's `DATABASE_URL` but others like `RAILS_MASTER_KEY` require us to consider how we configure your Lambda.
 
 There are numerous ways to configure environment variables ranging from quick and dirty commits to git (DO NOT DO THIS) all the way to a strict separation of config from code using countless methods to achieve a proper [Twelve-Factor](https://12factor.net/config) app. We want to cover a few topics that may help you pick and choose what works best for you.
 
 * [Our Cookiecutter](#our-cookiecutter)
-* [Rails Encrypted Credentials](#rails-encrypted-credentials)
 * [Stop Using AWS Keys & Secrets](#stop-using-aws-keys-secrets)
 * [Using Dotenv & Rails](#using-dotenv-rails)
 * [SSM Parameter Store](#ssm-parameter-store)
@@ -14,15 +13,7 @@ There are numerous ways to configure environment variables ranging from quick an
 
 ## Our Cookiecutter
 
-After the SAM init process we asked you to run a `bin/setup` script. This calls a `bin/_setup-credentials` script which generates your new application's `RAILS_MASTER_KEY` which Rails places into a `config/master.key` file. This file is git ignored. We store the contents of this secret key securely in AWS using their [Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) service.
-
-When you deploy your application to Lambda, we read the master key back and write it out to a [Dotenv](https://github.com/bkeepers/dotenv) file located at `.env.${RAILS_ENV}`. This file and hence the `RAILS_MASTER_KEY` environment variable are set early in your application's boot process within the `app.rb` file.
-
-## Rails Encrypted Credentials
-
-Given the handling of the `RAILS_MASTER_KEY` above, [Rails Credentials](https://guides.rubyonrails.org/security.html#environmental-security) is a perfect fit for Lambda. It allows you to bundle all configuration aspects within a single file. This also keeps your lambda talking to 3rd party services while they scale up and are started for you. For most users, using `Rails.application.credentials` for all your configs may be all you need.
-
-Lamby adds the `bin/credentials` file to easily decrypt and edit your credentials using `EDITOR=vim` within your Docker container.
+We disable encrypted credentials in favor of a more simple `SECRET_KEY_BASE` setting. The starter project places a temporary value for this environment variable in the `config/initializers/secret_key_base.rb` file. Please remove the `ENV['SECRET_KEY_BASE'] = '0123...'` line and use SSM Parameter Store described below.
 
 ## Stop Using AWS Keys & Secrets
 
@@ -38,24 +29,18 @@ Our cookiecutter project integrates the [Dotenv](https://github.com/bkeepers/dot
 
 ## SSM Parameter Store
 
-You may find your want more than just the `RAILS_MASTER_KEY` as an environment during your build & deploy. You may want to consider using AWS' [Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) like we have in our `bin/build` script. For example, these are the AWS CLI commands to put and get values.
-
-
-```shell
-$ aws ssm put-parameter \
-  --name "/myapp/SOME_OTHER_ENV" \
-  --type "SecureString" \
-  --value "somesecretvalue"
-```
+Please consider using AWS' [Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) to store your credentials for each stage of your deploy and leverage our place holder in `bin/_build` under the "Environments & Configuration" section to pull your configurations into a Dotenv file to be packaged for deploy. Lamby provides a Rake task to help with this. For example, this will take every parameter under the `/my_awesome_lambda/production/env` path and save it to a `.env.production` file.
 
 ```shell
-SOME_OTHER_ENV=$(aws ssm get-parameter \
-  --name "/myapp/SOME_OTHER_ENV" \
-  --with-decryption \
-  --query "Parameter.Value" \
-  --output text 2> /dev/null | echo "$(</dev/stdin)"
-)
+echo "== Environments & Configuration =="
+$ ./bin/rails \
+  -rlamby \
+  lamby:ssm:dotenv \
+  LAMBY_SSM_PARAMS_PATH="/my_awesome_lambda/${RAILS_ENV}/env"
 ```
+
+Optionally, if you use GitHub Actions, there are [numerous AWS SSM to .env](https://github.com/marketplace/actions/aws-ssm-to-env) projects out there so your CI/CD pipeline could handle this too.
+
 
 <%= doc_next :asset_host_and_precompiling %>
 <%= disqus %>

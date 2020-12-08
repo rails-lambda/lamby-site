@@ -14,10 +14,21 @@ Lamby can be installed within legacy applications or bootstrapped from our AWS S
 
 At its heart, a Rails application on Lambda is still just a normal Rails application. Since [Rails is on Rack](https://guides.rubyonrails.org/rails_on_rack.html), the Lamby gem relies on converting any Lambda HTTP event to compatible [Rack](https://rack.github.io) `env` objects. We then send that object to your application and pass the result back to the Lambda handler. It is that simple.
 
+```ruby
+def handler(event:, context:)
+  Lamby.handler $app, event, context
+end
+```
+
+Lamby can convert the following Lambda event integrations to Rack events.
+
+* API Gateway HTTP API (both v1 & v2 payload formats)
+* API Gateway REST API
+* Application Load Balancer Target
 
 ## Core Lamby Files
 
-These files are core to Lamby working in your project. Some further down like our Docker integration, are only included with our Cookiecutter.
+These files are core to Lamby allowing your Rails application to work on AWS Lambda. Some are specific to AWS SAM while others are opinionated files included if you used our Cookiecutter getting started project. These mostly help with Docker.
 
 ### File - `app.rb`
 
@@ -32,11 +43,11 @@ require_relative 'config/environment'
 $app = Rack::Builder.new { run Rails.application }.to_app
 
 def handler(event:, context:)
-  Lamby.handler $app, event, context, rack: :alb
+  Lamby.handler $app, event, context, rack: :http
 end
 ```
 
-Any code outside the `handler` method is loaded only once, which includes booting your Rails application. After that, Lamby does all the work to convert the `event` and `context` objects it Rack messages that get sent to your Rails application. The details of the [AWS Lambda Function Handler in Ruby](https://docs.aws.amazon.com/lambda/latest/dg/ruby-handler.html) should be left to Lamby, but please learn about this topic if you are interested.
+Any code outside the `handler` method is loaded only once, which includes booting your Rails application. After that, Lamby does all the work to convert the `event` and `context` objects to Rack messages that get sent to your Rails application. The details of the [AWS Lambda Function Handler in Ruby](https://docs.aws.amazon.com/lambda/latest/dg/ruby-handler.html) should be left to Lamby, but please learn about this topic if you are interested.
 
 ### File - `template.yaml`
 
@@ -46,9 +57,17 @@ This YAML file at the root of your project describes your [SAM application](http
 * [Quick Intro & Tech Spec for SAM File](https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md)
 * [What is AWS CloudFormation?](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/Welcome.html)
 
-### Files - `Dockerfile` & `docker-compose.yml`
+### Files - `Dockerfile`, `Dockerfile-build`, & `docker-compose.yml`
 
-These docker files use the [same containers](https://github.com/lambci/docker-lambda) as AWS SAM so that you can develop & deploy using a similar environment as the Lambda runtime itself. Remember, these containers are the "build" variants which contain more tools than the leaner runtime. We also install Node & Yarn on this Ruby container too since Rails development loves JavaScript.
+Your `Dockerfile` should use one of the AWS [provided runtimes](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-build.html) from their public ECR repository and typically do a simple copy of your built project. For example:
+
+```dockerfile
+FROM public.ecr.aws/lambda/ruby:2.7
+COPY . .
+CMD ["app.handler"]
+```
+
+The `Dockerfile-build` facilitates both the local development and the build environment to prepare the copy above. This follows a typical good practice for Docker called [multi-stage](https://docs.docker.com/develop/develop-images/multistage-build/) builds. We recommend using SAM's build images (ex: `amazon/aws-sam-cli-build-image-ruby2.7`) for your development needs. Installing additional tooling like a SAM version and JavaScript for compiling assets should be done in this image. All docker compose commands leverage this image.
 
 ### Files - `bin`
 
@@ -65,17 +84,17 @@ Because we encourage use of the Lambda docker containers using the Docker files 
 Our cookiecutter makes starting a Rails application so easy, you may have missed some of the interesting things we have done for you. Here is a small list.
 
 * Docker docker docker! Sharing directories, environment variables, and using MySQL.
-* Encrypted Credentials with SSM Parameter Store. See <%= doc_link :environment_and_configuration %> for details.
+* Simple `SECRET_KEY_BASE` and SSM Parameter Store placeholders. See <%= doc_link :environment_and_configuration %> for details.
 * Compiles CSS/JS Assets with LibSass & Webpacker. See <%= doc_link :asset_host_and_precompiling %> for details.
 * Creates an S3 bucket for deploy packages. Named stored in the `.bucket-name` file. Change to your own if you have a standard CloudFormation bucket name.
-* Services static assest using `RAILS_SERVE_STATIC_FILES` & `config.public_file_server`.
-* Adds the [lograge](https://github.com/roidrage/lograge) gem to reduce CloudWatch data costs.
+* Serving static assets using `RAILS_SERVE_STATIC_FILES` & `config.public_file_server`.
+* Adds the [lograge](https://github.com/roidrage/lograge) gem to reduce CloudWatch data costs while easily allowing CloudWatch Insights or [Embedded Metrics](https://github.com/customink/aws-embedded-metrics-customink) to be used. These are major observability wins!
 
 ## Installing for Legacy Applications
 
-Rails has been on Rack v2 since Rails v5.0. So in theory, any v5.0 or newer application can work with Lamby. Assuming it fits with Lambda's constraints which are always evolving.
+Rails has been on Rack v2 since Rails v5.0. So in theory, any v5.0 or newer application can work with Lamby.
 
-Add the Lamby gem to your `Gemfile`. We use `require: false` here so Lamby is only loaded in your `app.rb`. This keeps your development/test logs still writing to disk vs. using `STDOUT`.
+Add the Lamby gem to your `Gemfile`. We use `require: false` here so Lamby is only loaded in your `app.rb`. This keeps your development/test logs working vs. using `STDOUT`.
 
 ```ruby
 gem 'lamby', require: false
