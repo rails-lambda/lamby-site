@@ -2,8 +2,11 @@
 
 set -e
 
-rm -rf ./.aws-sam \
-       ./.bundle \
-       ./vendor/bundle
+if [[ $UPDATE_CLEAN == "1" ]]; then
+  rm -rf ./.aws-sam \
+         ./.bundle \
+         ./vendor/bundle-dev
+fi
 
+./bin/bootstrap
 ./bin/setup

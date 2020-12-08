@@ -1,187 +1,43 @@
 .lb-Welcome {
-  &-hero {
-    margin-bottom: 1rem;
-    &::after {
-      content: "";
-      clear: both;
-      display: table;
-    }
-  }
-  &-image {
-    float: left;
-    height: 100vw;
-    margin-top: 1rem;
-    @media (min-width: $mui-screen-sm-min) {
-      //
-    }
-    @media (min-width: $mui-screen-md-min) {
-      height: 70vw;
-    }
-    @media (min-width: $mui-screen-lg-min) {
-      margin-left: 1rem;
-    }
-    @media (min-width: $mui-screen-xl-min) {
-      margin-left: 1.5rem;
-      height: 65vw;
-    }
-  }
-
   &-header {
-    float: left;
-    width: 63%;
+    width: 90%;
     font-size: 10vw;
     line-height: 1.15;
     margin-top: 2rem;
-    padding-left: 0.75rem;
-    padding-right: 0.5rem;
     @media (min-width: $mui-screen-sm-min) {
       font-size: 9.5vw;
-      padding-left: 1.5rem;
     }
     @media (min-width: $mui-screen-md-min) {
-      font-size: 7.5vw;
-    }
-    @media (min-width: $mui-screen-lg-min) {
-      padding-left: 3rem;
       font-size: 6.5vw;
     }
-    @media (min-width: $mui-screen-xl-min) {
-      padding-left: 4rem;
-      font-size: 4.5vw;
-    }
-  }
-
-  &-ctas {
-    display: none;
     @media (min-width: $mui-screen-lg-min) {
-      display: block;
-      float: left;
-      margin-top: 1rem;
-      margin-left: 3.4rem;
-      a {
-        font-size: 1.5vw;
-        line-height: 5vw;
-        height: 5vw;
-        &:first-child { margin-right: 1vw; };
-      }
+      font-size: 5.5vw;
+      width: 80%;
     }
     @media (min-width: $mui-screen-xl-min) {
-      margin-top: 1rem;
-      margin-left: 4rem;
+      font-size: 4.5vw;
+      width: 70%;
     }
   }
-
-  &-content {
-    //
+  &-subheader {
+    color: $lb-yellow;
+    margin-top: 0;
+    margin-bottom: 1rem;
   }
-
-  &-code {
-    float: left;
+  &-arch {
     width: 100%;
-    margin-top: 1rem;
-    @media (min-width: $mui-screen-sm-min) {
-      width: auto;
-      margin-left: 1.5rem;
-    }
-    @media (min-width: $mui-screen-sm-min + 55px) {
-      width: auto;
-      margin-left: 1.5rem;
-    }
-    @media (min-width: $mui-screen-md-min) {
-
-    }
-    @media (min-width: $mui-screen-lg-min) {
-      margin-top: 2rem;
-      margin-left: 3.4rem;
-      font-size: 1.75vw;
-    }
-    @media (min-width: $mui-screen-xl-min) {
-      margin-left: 4rem;
-      margin-bottom: 1rem;
-      font-size: 1.4vw;
-    }
+    border-radius: 3px;
+    margin-bottom: 1rem;
   }
-
-
-  &-points {
-    margin-bottom: 2rem;
-    &--first {
-      display: none;
-      @media (min-width: $mui-screen-xl-min) {
-        display: flex;
-        float: left;
-        width: 52vw;
-        margin-left: 4rem;
-        margin-bottom: 0;
-      }
-      @media (min-width: $mui-screen-xl-min + 50px) {
-        width: 55vw;
-      }
-      @media (min-width: $mui-screen-xl-min + 100px) {
-        width: 56vw;
-      }
-      @media (min-width: $mui-screen-xl-min + 200px) {
-        width: 57vw;
-      }
-      @media (min-width: $mui-screen-xl-min + 300px) {
-        width: 58vw;
-      }
-    }
-    &--second {
-      @media (min-width: $mui-screen-lg-min) {
-        display: flex;
-      }
-      @media (min-width: $mui-screen-xl-min) {
-        display: none;
-      }
-    }
+  &-news { }
+  &-newsImage {
+    float: right;
+    width: 20%;
   }
-  &-point {
-    flex: 1;
-    font-size: 5.8vw;
-    line-height: 1.2;
-    text-align: center;
-    &.mui-panel {
-      border-radius: 3px;
-      background-color: rgba(white, 0.1);
-    }
-    span {
-      display: block;
-      font-size: 12vw;
-      line-height: 1.0;
-      margin-top: 1vw;
-      margin-bottom: 1vw;
-    }
-    @media (min-width: $mui-screen-sm-min) {
-      //
-    }
-    @media (min-width: $mui-screen-md-min) {
-      font-size: 4.5vw;
-      span {
-        font-size: 9vw;
-      }
-    }
-    @media (min-width: $mui-screen-lg-min) {
-      font-size: 2.5vw;
-      margin-right: 1.75vw;
-      &:last-child { margin-right: 0; }
-      span {
-        font-size: 6vw;
-      }
-    }
-    @media (min-width: $mui-screen-xl-min) {
-      font-size: 1.5vw;
-      margin-right: 1.5vw;
-      span {
-        font-size: 4vw;
-      }
-    }
-  }
-
+  &-cta { }
   &-actions {
     @media (min-width: $mui-screen-lg-min) {
       display: none;
     }
   }
-
 }

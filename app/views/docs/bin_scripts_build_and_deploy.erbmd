@@ -18,16 +18,16 @@ Think of our provided bin scripts as starting points! You should add to or adjus
 Remember, our Docker usage plays a major role here. Especially with shared git/aws credentials & environment variables.
 
 * Cleanup `vendor/bundle` directory.
-* Copy project to nested `.aws-sam` directory.
+* Copy project to nested `.lamby` directory.
 * Bundle install for deployment.
-* Retrieve `RAILS_MASTER_KEY` from SSM. Write to env file.
+* Retrieve secrets from SSM Parameter Store. Write to env file.
 * Precompile assets. Clean app & vendor assets for space.
 * Clean unused gems from vendor bundle directory.
 * Package and Deploy via SAM.
 
 ## Using Private Gems on GitHub
 
-Even though we do share your git setup with the Docker container, you may have auth issues accessing them. This may be more so true on CI/CD systems. One [solution we like](https://medium.com/@frodsan/installing-a-gem-from-a-private-github-repo-heroku-a895073ae7d) requires adding this line prior to the build's bundle deployment step.
+Even though we do [share your git/ssh setup](https://dev.to/aws-heroes/serverless-docker-patterns-4g1p) with the Docker container, you may have auth issues accessing them. This may be more so true on CI/CD systems. One [solution we like](https://github.com/webfactory/ssh-agent) helps with GitHub Actions. Other options include switching out your Gemfile and process to [use HTTPS with token](https://medium.com/@frodsan/installing-a-gem-from-a-private-github-repo-heroku-a895073ae7d).
 
 ```shell
 bundle config --local GITHUB__COM "$(git config github.token):x-oauth-basic"
@@ -39,9 +39,13 @@ It sets a Bundler config to use your personal GitHub OAuth token. Make sure to s
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ```
 
-## CloudFormation Bucket
+## ECR Repository & CloudFormation Bucket
 
-Your code needs to be packaged and uploaded to an S3 bucket prior to being deployed. We dynamically create a bucket name during the cookiecutter bootstrap script. This bucket name is saved in a `.bucket-name` file in your project. **It is a great idea for you to change this to something that makes sense for you!** If you have the [AWS CLI](<%= doc_lpath(:installing_aws_sam) %>) installed, creating a bucket is a simple command like so.
+The default package type is to use a container image and deploy that image to [Amazon Elastic Container Registry](https://aws.amazon.com/ecr/). During the cookiecutter's bootstrap process we create a placeholder ECR repository for you. Please customize this as needed.
+
+The S3 bucket is only needed for the ZIP deployment package. However, [there might be a bug in AWS SAM](https://github.com/aws/aws-sam-cli/issues/2450) that requires it to be there. 
+
+If the [deployment package type](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html#sam-function-packagetype) is ZIP, your code needs to be packaged and uploaded to an S3 bucket prior to being deployed. We dynamically create a bucket name during the cookiecutter bootstrap script. This bucket name is saved in a `.bucket-name` file in your project. **It is a great idea for you to change this to something that makes sense for you!** If you have the [AWS CLI](<%= doc_lpath(:installing_aws_sam) %>) installed, creating a bucket is a simple command like so.
 
 ```shell
 $ aws s3 mb cloudformation.mycomany.com

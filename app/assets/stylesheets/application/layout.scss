@@ -60,7 +60,7 @@ ul > li > code {
     background-color: transparent;
     @include lb-border;
   }
-  &-albEmoji {
+  &-newEmoji {
     display: block;
     float: left;
     margin-top: 10px;
@@ -73,10 +73,29 @@ ul > li > code {
       font-size: 32px;
     }
   }
-  &-albText {
+  &-newText {
     font-size: 14px;
     @media (min-width: $mui-screen-sm-min - 66px) {
       font-size: 16px;
+    }
+  }
+  &-newText-lambda {
+    display: none;
+    @media (min-width: $mui-screen-sm-min - 66px) {
+      display: inline;
+    }
+  }
+  &-gitHubLink { }
+  &-gitHubImage {
+    width: 32px;
+    height: 32px;
+    display: inline;
+    text-align: center;
+    vertical-align: middle;
+    @media (min-width: $mui-screen-sm-min - 66px) {
+      width: 38px;
+      height: 38px;
+      margin-bottom: 2px;
     }
   }
   &-toggle {

@@ -4,7 +4,7 @@
     <title>Lamby: Simple Rails & AWS Lambda Integration</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta property="og:title" content="Lamby: Simple Rails & AWS Lambda Integration" />
-    <meta property="og:image" content="<%= image_url 'lamby-fullstack-serverless.png' %>" />
+    <meta property="og:image" content="<%= image_url 'lamby-arch-hero.png' %>" />
     <%= csrf_meta_tags unless response.cache_control[:public] %>
     <%= csp_meta_tag %>
     <%= stylesheet_link_tag 'application', media: 'all' %>
@@ -34,16 +34,19 @@
           </a>
           <span class="mui--text-title mui--visible-xs-inline-block"></span>
           <span class="mui--appbar-height" style="float:right;">
-            <span class="lb-Header-alb">
-              <span class="lb-Header-albEmoji">🆕</span>
-              <span class="lb-Header-albText">HTTP API Support</span>
+            <span class="lb-Header-new">
+              <span class="lb-Header-newEmoji">🆕</span>
+              <span class="lb-Header-newText">
+                <a href="https://aws.amazon.com/blogs/aws/new-for-aws-lambda-container-image-support/">
+                  <span class="lb-Header-newText-lambda">Lambda</span> Containers
+                </a>
+              </span>
               &nbsp;
               &nbsp;
             </span>
-            <%= link_to 'GitHub',
-                'https://github.com/customink/lamby',
-                class: 'mui-btn mui-btn--raised mui-btn--small' %>
-
+            <a href="https://github.com/customink/lamby" class="lb-Header-gitHubLink" title="Lamby on GitHub">
+              <%= image_tag 'github-white.png', class: 'lb-Header-gitHubImage' %>
+            </a>
           </span>
         </div>
       </div>

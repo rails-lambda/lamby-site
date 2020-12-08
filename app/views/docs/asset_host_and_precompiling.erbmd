@@ -53,7 +53,7 @@ Rails.application.config.assets.manifest = Rails.root.join('config/manifest.json
 
 ### Sync Assets to S3 During Builds
 
-In order to get the compiled assets to our S3 bucket, we need to hook into the [bin/build](<%= doc_lpath(:bin_scripts_build_and_deploy) %>) script. Add this line after the `assets:precompile` line. It uses the AWS CLI [s3 sync](https://docs.aws.amazon.com/cli/latest/reference/s3/sync.html) command to copy new assets to your S3 bucket. It also sets a cache control header for a proper origin response.
+In order to get the compiled assets to our S3 bucket, we need to hook into the [bin/_build](<%= doc_lpath(:bin_scripts_build_and_deploy) %>) script. Add this line after the `assets:precompile` line. It uses the AWS CLI [s3 sync](https://docs.aws.amazon.com/cli/latest/reference/s3/sync.html) command to copy new assets to your S3 bucket. It also sets a cache control header for a proper origin response.
 
 ```shell
 aws s3 sync ./public/assets "s3://assets.example.com/assets" \
