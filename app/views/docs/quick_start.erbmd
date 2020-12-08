@@ -60,7 +60,7 @@ Now your Rails app is ready to be deployed to AWS Lambda via SAM. We make this e
 $ ./bin/deploy
 ```
 
-This will run a Lamby build script that duplicates your current project directory into a local `.lamby` directory and runs typical deployment commands. From there AWS SAM's build command runs which which builds your container image, and instructs CloudFormation to create all your could resources as defined in your `template.yaml` file. During the end of this process, you will see SAM output similar to what is shown below.
+This will run a Lamby build script that duplicates your current project directory into a local `.lamby` directory and runs typical deployment commands. From there AWS SAM's build command runs which which builds your container image, and instructs CloudFormation to create all your cloud resources as defined in your `template.yaml` file. During the end of this process, you will see SAM output similar to what is shown below.
 
 ```
 CloudFormation outputs from deployed stack
