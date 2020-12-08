@@ -50,7 +50,7 @@ $ ./bin/bootstrap
 $ ./bin/setup
 ```
 
-These scripts typically build a Docker development image and bundle gems. We also do some work to ensure an both an S3 deployment bucket is created along with and [ECR Repository](https://aws.amazon.com/ecr/) for your deployed container image.
+These scripts typically build a Docker development image and bundle gems. We also do some work to ensure an both an S3 deployment bucket is created along with an [ECR Repository](https://aws.amazon.com/ecr/) for your deployed container image.
 
 ## First Deploy!
 
