@@ -18,7 +18,7 @@ module ApplicationHelper
     case slug
     when :anatomy then "Lamby's Anatomy"
     when :installing_aws_sam then 'Installing AWS SAM'
-    when :asset_host_and_precompiling then 'Asset Hosts & Precompiling'
+    when :asset_host_and_precompiling then 'Precompiling CSS & JavaScript Assets'
     when :environment_and_configuration then 'Environment & Configuration'
     when :bin_scripts_build_and_deploy then 'Build & Deploy'
     when :custom_domain_names then 'Custom Domain Names, CloudFront, & SSL'

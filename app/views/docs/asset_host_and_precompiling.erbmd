@@ -1,26 +1,36 @@
 
-# Asset Host & Precompiling
+# Precompiling CSS & JavaScript Assets
 
-For those that are used to [precompiling assets](https://guides.rubyonrails.org/asset_pipeline.html#in-production) on their production servers, Lambda may introduce a new way of thinking. Instead, assets are precompiled during the SAM build phase. We recommend using an `:assets` group in your `Gemfile` and changing your `application.rb` to load this group for development and test environments. ⚠️ Assets require a [custom domain name](<%= doc_lpath(:custom_domain_names) %>) to link properly.
+<div class="mui-panel sp-Flash sp-Flash--alert" style="margin-top:1.5rem;">
+  ⚠️ Assets require a <a href="<%= doc_lpath(:custom_domain_names) %>">Custom Domain Name</a> to link properly.
+</div>
+
+Some might remember a process where [precompiling Rails CSS & JavaScript assets](https://guides.rubyonrails.org/asset_pipeline.html#in-production) meant having Node and other dependencies installed on our production servers. In contrast, Lambda Containers embraces a modern and secure way by precompiling assets during the SAM build phase. This is why Node.js is installed in our starter's `Dockerfile-build`. Afterward the the project, including the `public/assets` directory is copied to the final production ECR image. This helps keep the production image small and secure.
+
+## CSS & JavaScript Ready!
+
+Our Rails starter is ready to hit the ground running with Webpacker and other Rails defaults like Sass. Here is a quick example using the [TailwindCSS Rails](https://github.com/rails/tailwindcss-rails) gem. First, add `tailwindcss-rails` to your Gemfile.
 
 ```ruby
-group :assets do
-  gem 'sass-rails'
-  gem 'uglifier', require: false
-end
+gem 'tailwindcss-rails'
 ```
 
-```ruby
-Bundler.require(*Rails.groups.tap { |groups|
-  if Rails.env.development? || Rails.env.test?
-    groups << 'assets'
-  end
-})
+Change the starter project's `app/views/application/index.html.erb` file to:
+
+```html
+<h1 class="
+      text-center
+      text-9xl
+      text-blue-400
+      mt-5
+    ">Hello TailwindCSS</h1>
 ```
 
-## Our Cookiecutter & Serving Static Assets
+<img width="770" alt="Hello TailwindCSS Demo Page" src="https://user-images.githubusercontent.com/2381/105119729-ea780980-5a9e-11eb-8010-cecced812376.png" style="width:30%; float:right; margin-left:1rem; margin-left:1rem; box-shadow: -7px 9px 22px -11px rgba(0,0,0,0.75)"> Make sure to setup your <a href="<%= doc_lpath(:custom_domain_names) %>">Custom Domain Name</a> so the paths to the assets work. Redeploy your application. You should see this "Hello TailwindCSS" page pictured to the right. Not a fan of TailwindCSS? No problem, feel free to use Sass or any other CSS or JavaScript of your choosing. Everything should work as expected.
 
-Our <%= doc_link(:quick_start) %> cookiecutter project uses the above technique and keeps things simple by leveraging Rails built in ability to serve static assets. We do this by setting this environment variable in `app.rb`.
+## Serving Static Assets
+
+Our <%= doc_link(:quick_start) %> cookiecutter project leverages Rails' built in ability to serve static assets. We do this by setting this environment variable in `app.rb`.
 
 ```ruby
 ENV['RAILS_SERVE_STATIC_FILES'] = '1'
