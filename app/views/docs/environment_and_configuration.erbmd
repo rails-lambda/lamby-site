@@ -29,7 +29,11 @@ Our cookiecutter project integrates the [Dotenv](https://github.com/bkeepers/dot
 
 ## SSM Parameter Store
 
-Please consider using AWS' [Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) to store your credentials for each stage of your deploy and leverage our place holder in `bin/_build` under the "Environments & Configuration" section to pull your configurations into a Dotenv file to be packaged for deploy. Lamby provides a Rake task to help with this. For example, this will take every parameter under the `/my_awesome_lambda/production/env` path and save it to a `.env.production` file.
+Please consider using AWS' [Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) to store your credentials for each stage of your deploy and leverage our place holder in `bin/_build` under the "Environments & Configuration" section to pull your configurations into a Dotenv file to be packaged for deploy. Lamby provides a Rake task to help with this. For example, this will take every parameter under the `/my_awesome_lambda/production/env` path and save it to a `.env.production` file. The Lamby starter includes this SSM gem already. But make sure you check it is there.
+
+```ruby
+gem 'aws-sdk-ssm'
+```
 
 ```shell
 echo "== Environments & Configuration =="
