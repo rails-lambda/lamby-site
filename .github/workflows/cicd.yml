@@ -21,10 +21,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           ./bin/setup-aws
-      - name: Deploy (staging)
-        if: github.ref != 'refs/heads/master'
-        run: |
-          ./bin/deploy-staging
       - name: Deploy (prod)
         if: github.ref == 'refs/heads/master'
         run: |
