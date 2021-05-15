@@ -23,7 +23,9 @@ If your application uses other AWS resources like S3, you may be using environme
 
 ## Using Dotenv & Rails
 
-Our cookiecutter project integrates the [Dotenv](https://github.com/bkeepers/dotenv) gem. This can be useful for all Rails environments from development, test, and production. For example, you can commit common development environment variables to `.env.development` or lock down test configurations in `.env.test`. Please take some time to read their documentation.
+Our cookiecutter project integrates the [Dotenv](https://github.com/bkeepers/dotenv) gem. This can be useful for all Rails environments from development, test, and production. For example, you can commit common development environment variables to `.env.development` or lock down test configurations in `.env.test`.
+
+Please take some time to read their documentation. Alternatively, you can remove Dotenv all together and replace it with any other system that makes sense for you. Our starter project is just that, a starting point.
 
 ## SSM Parameter Store
 
