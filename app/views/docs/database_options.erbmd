@@ -1,5 +1,7 @@
 # Database Options
 
+If you are using the Lamby starter project, remember to open `application.rb` and uncomment the require for the `active_record/railtie`. You may also need to create a `database.yml` as well.
+
 - [Simple MySQL Setup](#simple-mysql-setup)
 - [RDS Proxy MySQL Setup](#rds-proxy-step-by-step-with-mysql)
 - [Using Aurora Serverless](#using-aurora-serverless)
