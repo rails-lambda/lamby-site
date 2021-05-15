@@ -1,7 +1,7 @@
 <div class="lb-Welcome mui-container-fluid">
 
   <h1 class="lb-Welcome-header mui--text-display3">
-    <strong>Simple Rails & AWS Lambda Integration</strong>
+    <strong>Simple Rails & AWS Lambda Integration using Rack</strong>
   </h1>
 
   <h2 class="lb-Welcome-subheader">
@@ -13,7 +13,11 @@
   <%= image_tag 'lamby-rails.png', class: 'lb-Welcome-newsImage' %>
 
   <h2 style="margin-top:0;">
-    Coupled with <%= link_to 'AWS SAM', 'https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html' %> and CloudFormation, your Rails project becomes the Infrastructure as Code (IaC) source of truth in the cloud. SAM allows you to declare these resources & policies so you never have to worry about access keys, secrets, or any manual ClickOps process ever again.
+    Lamby is as a Rack adapter that converts AWS Lambda integration events into native <%= link_to 'Rack Environment', 'https://github.com/rack/rack/blob/master/SPEC.rdoc#the-environment-' %> objects which are sent directly to your application. Lamby can do this when using either API Gateway REST API, API Gateway HTTP API's v1/v2 payloads, or even Application Load Balancer (ALB) integrations.
+  </h2>
+
+  <h2>
+    Coupled with <%= link_to 'AWS SAM', 'https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html' %> and CloudFormation, your Rails project becomes the Infrastructure as Code (IaC) source of truth for all your AWS Resources. SAM allows you to declare these resources & policies so you never have to worry about access keys, secrets, or any manual ClickOps process ever again.
   </h2>
 
   <div class="lb-Welcome-cta">
@@ -23,6 +27,9 @@
   <div class="lb-Welcome-news">
     <h2 class="mui--text-display1">📣 Recent News:</h2>
     <ul style="font-size:1.2rem; margin-left:0; padding-left:1.2rem;">
+      <li>
+        2021-05-14: <%= link_to 'Enhance Deploy with CI/CD Best Practices', 'https://github.com/customink/lamby-cookiecutter/pull/10' %>
+      </li>
       <li>
         2021-01-17: <%= link_to 'AWS as a Framework', 'https://medium.com/galvanize/aws-as-a-framework-9abd2b1f6dc1' %>
       </li>

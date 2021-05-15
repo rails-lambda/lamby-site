@@ -1,59 +1,44 @@
-
 # Bin Scripts (Build & Deploy)
 
 Our <%= doc_link(:quick_start) %> cookiecutter includes a single `bin/deploy` script that wraps three SAM commands needed to deploy your application.
 
-* [sam build](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html)
-* [sam package](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-package.html)
-* [sam deploy](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-deploy.html)
+- [sam build](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-build.html)
+- [sam package](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-package.html)
+- [sam deploy](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-deploy.html)
 
-Think of our provided bin scripts as starting points! You should add to or adjust each to meet your needs. Well maintained deploy scripts are critical to good [CI/CD](https://en.wikipedia.org/wiki/CI/CD) practices no matter if they are used from your personal machine or automated via [GitHub Actions](https://technology.customink.com/blog/2019/09/02/from-travis-ci-to-github-actions/). From a Lamby perspective, here are a few helpful topics about our deploy process.
+Think of our provided bin scripts as starting points! You should add to or adjust each to meet your needs. From a Lamby perspective, here are a few helpful topics about our deploy process and other options you may need.
 
 - [Overview of Deploy Process](#overview-of-deploy-process)
-- [CloudFormation Bucket](#cloudformation-bucket)
+- [Using Private Gems on GitHub](#using-private-gems-on-github)
+- [ECR Repository](#ecr-repository)
 - [Multiple Environments](#multiple-environments)
 
 ## Overview of Deploy Process
 
-Remember, our Docker usage plays a major role here. Especially with shared git/aws credentials & environment variables.
+The Lamby deploy process is tightly coupled to using Docker images for development, test, and deployments. We leverage the AWS SAM build images which are much larger than the production runtime images since they include common build tools. In general the process is:
 
-* Cleanup `vendor/bundle` directory.
-* Copy project to nested `.lamby` directory.
-* Bundle install for deployment.
-* Retrieve secrets from SSM Parameter Store. Write to env file.
-* Precompile assets. Clean app & vendor assets for space.
-* Clean unused gems from vendor bundle directory.
-* Package and Deploy via SAM.
+- Cleans the `vendor/bundle` directory for deployment bundle.
+- Performs a bundle install for production.
+- Retrieve secrets from SSM Parameter Store. Writes to a Dotenv file.
+- Precompiles static CSS & JavaScript assets.
+- Copies your project to a base Lambda Container image via AWS SAM.
+- Pushes your final image to ECR with AWS SAM.
+
+⚠️ When deploying from your own machine, you must reset your local environment by using `./bin/setup` after each deploy. It is recommended that you use a CI/CD pipeline such as GitHub Actions as described in our <%= doc_link(:quick_start) %> section.
 
 ## Using Private Gems on GitHub
 
-Even though we do [share your git/ssh setup](https://dev.to/aws-heroes/serverless-docker-patterns-4g1p) with the Docker container, you may have auth issues accessing them. This may be more so true on CI/CD systems. One [solution we like](https://github.com/webfactory/ssh-agent) helps with GitHub Actions. Other options include switching out your Gemfile and process to [use HTTPS with token](https://medium.com/@frodsan/installing-a-gem-from-a-private-github-repo-heroku-a895073ae7d).
+Our current starter shares your `~/.aws` directory with the dev/build image to facilitate local deployments. Depending on your needs, accessing private dependencies for both local development and CI/CD pipelines will require additional code.
 
-```shell
-bundle config --local GITHUB__COM "$(git config github.token):x-oauth-basic"
-```
+Please see this post titled [Serverless Docker Patterns](https://dev.to/aws-heroes/serverless-docker-patterns-4g1p) which has a section called [Cross-Platform SSH Agent for CI/CD](https://dev.to/aws-heroes/serverless-docker-patterns-4g1p#crossplatform-ssh-agent-for-cicd) that outlines a simple process using docker compose and GitHub Actions.
 
-It sets a Bundler config to use your personal GitHub OAuth token. Make sure to set that up [using this GitHub help article](https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line). Lastly, make sure your `Gemfile` uses this git source format. Most newer Rails apps do this already.
+## ECR Repository
 
-```ruby
-git_source(:github) { |repo| "https://github.com/#{repo}.git" }
-```
-
-## ECR Repository & CloudFormation Bucket
-
-The default package type is to use a container image and deploy that image to [Amazon Elastic Container Registry](https://aws.amazon.com/ecr/). During the cookiecutter's bootstrap process we create a placeholder ECR repository for you. Please customize this as needed.
-
-The S3 bucket is only needed for the ZIP deployment package. However, [there might be a bug in AWS SAM](https://github.com/aws/aws-sam-cli/issues/2450) that requires it to be there. 
-
-If the [deployment package type](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html#sam-function-packagetype) is ZIP, your code needs to be packaged and uploaded to an S3 bucket prior to being deployed. We dynamically create a bucket name during the cookiecutter bootstrap script. This bucket name is saved in a `.bucket-name` file in your project. **It is a great idea for you to change this to something that makes sense for you!** If you have the [AWS CLI](<%= doc_lpath(:installing_aws_sam) %>) installed, creating a bucket is a simple command like so.
-
-```shell
-$ aws s3 mb cloudformation.mycomany.com
-```
+Lamby focuses solely on the [Lambda Containers](https://aws.amazon.com/blogs/aws/new-for-aws-lambda-container-image-support/) package format. Our `./bin/bootstrap` script will leverage the AWS CLI to create an [Amazon Elastic Container Registry](https://aws.amazon.com/ecr/) (ECR) repository for your deployed images. At some point in the near future AWS SAM will [do this automatically](https://github.com/aws/aws-sam-cli/issues/2856) for us.
 
 ## Multiple Environments
 
-Feel free to make more per-environment deploy scripts. For example `bin/deploy-staging` may look like this. The `AWS_PROFILE` is an useful environment variable that helps you manage different AWS accounts via all CLI tools. We pass `AWS_PROFILE` and `RAILS_ENV` via our docker compose scripts. Learn more about [AWS Environment Variables](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html).
+Feel free to make more per-environment deploy scripts or CI/CD workflows. For example `bin/deploy-staging` may look like this where leveraging your local `AWS_PROFILE` environment variable. Our starter passes both `AWS_PROFILE` and `RAILS_ENV` via our docker compose scripts.
 
 ```shell
 #!/bin/bash
@@ -62,6 +47,8 @@ export AWS_PROFILE="staging"
 export RAILS_ENV="staging"
 ./bin/deploy
 ```
+
+For GitHub Actions, you could setup additional workflows or extend the existing deploy workflow to use branch conditions and/or extra GitHub Secrets to a different deploy user in another AWS account.
 
 <%= doc_next :environment_and_configuration %>
 <%= disqus %>

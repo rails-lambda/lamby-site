@@ -1,15 +1,13 @@
-
 # Environment & Configuration
 
 Most Rails applications require over a dozen environment variables to configure itself along with other popular gems used. Most notable is ActiveRecord's `DATABASE_URL` but others like `RAILS_MASTER_KEY` require us to consider how we configure your Lambda.
 
-There are numerous ways to configure environment variables ranging from quick and dirty commits to git (DO NOT DO THIS) all the way to a strict separation of config from code using countless methods to achieve a proper [Twelve-Factor](https://12factor.net/config) app. We want to cover a few topics that may help you pick and choose what works best for you.
+There are numerous ways to configure environment variables ranging from "quick and dirty" by adding secrets to your git repo (DO NOT DO THIS) all the way to a strict "separation of config" from code using countless methods to achieve a proper [Twelve-Factor](https://12factor.net/config) app. We want to cover a few topics that may help you pick and choose what works best for you.
 
-* [Our Cookiecutter](#our-cookiecutter)
-* [Stop Using AWS Keys & Secrets](#stop-using-aws-keys-secrets)
-* [Using Dotenv & Rails](#using-dotenv-rails)
-* [SSM Parameter Store](#ssm-parameter-store)
-
+- [Our Cookiecutter](#our-cookiecutter)
+- [Stop Using AWS Keys & Secrets](#stop-using-aws-keys-secrets)
+- [Using Dotenv & Rails](#using-dotenv-rails)
+- [SSM Parameter Store](#ssm-parameter-store)
 
 ## Our Cookiecutter
 
@@ -19,9 +17,9 @@ We disable encrypted credentials in favor of a more simple `SECRET_KEY_BASE` set
 
 If your application uses other AWS resources like S3, you may be using environment variables like `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`. **Avoid this pattern.** Instead, please add explicit IAM policies within your `template.yaml` file. They will be attached to your Lambda's [Execution Role](https://docs.aws.amazon.com/lambda/latest/dg/lambda-intro-execution-role.html) and inherently give your Lambda the needed permissions.
 
-* [Lambda Policies Guide](https://aws.amazon.com/premiumsupport/knowledge-center/lambda-sam-template-permissions/)
-* [AWS SAM Policy Templates](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html)
-* [CloudFormation AWS::IAM::Policy](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-policy.html)
+- [Lambda Policies Guide](https://aws.amazon.com/premiumsupport/knowledge-center/lambda-sam-template-permissions/)
+- [AWS SAM Policy Templates](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html)
+- [CloudFormation AWS::IAM::Policy](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-policy.html)
 
 ## Using Dotenv & Rails
 
@@ -44,7 +42,6 @@ $ ./bin/rails \
 ```
 
 Optionally, if you use GitHub Actions, there are [numerous AWS SSM to .env](https://github.com/marketplace/actions/aws-ssm-to-env) projects out there so your CI/CD pipeline could handle this too.
-
 
 <%= doc_next :asset_host_and_precompiling %>
 <%= disqus %>

@@ -5,7 +5,7 @@ set -e
 if [[ $UPDATE_CLEAN == "1" ]]; then
   rm -rf ./.aws-sam \
          ./.bundle \
-         ./vendor/bundle-dev
+         ./vendor/bundle
 fi
 
 ./bin/bootstrap
