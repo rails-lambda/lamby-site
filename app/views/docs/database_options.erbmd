@@ -1,63 +1,20 @@
-# Database Options
+# <%= doc_name(:database_options) %>
 
-If you are using the Lamby starter project, remember to open `application.rb` and uncomment the require for the `active_record/railtie`. You may also need to create a `database.yml` as well.
+Any database supported by Ruby or Rails can be used with Lambda assuming your VPC/Network allows those connections.
 
+Our goal is to cover high level aspects on how to get started using Databases with AWS SAM & Lamby without getting into the various ways to create them. As such, these guides assume you are familiar setting up AWS Resources like RDS, Aurora, or DynamoDB. Likewise, how to [use docker-compose](https://dev.to/chavesrodolfo/mysql-with-docker-compose-5cp0) for local database services is not covered.
+
+- [Starter Project Changes](#starter-project-changes)
+- [VPC Configuration](#vpc-configuration)
 - [Simple MySQL Setup](#simple-mysql-setup)
-- [RDS Proxy MySQL Setup](#rds-proxy-step-by-step-with-mysql)
+- [Rails Database Migrations](#rails-database-migrations)
 - [Using Aurora Serverless](#using-aurora-serverless)
 - [Using DynamoDB](#using-dynamodb)
 - [Other Resources](#other-resources)
 
-## Simple MySQL Setup
+## Starter Project Changes
 
-Using MySQL with Lambda is super easy since we have a precompiled and statically linked `libmysqlclient` in a gem named [mysql2-lambda](https://github.com/customink/mysql2-lambda). Simply add the gem to your `Gemfile` and create a `DATABASE_URL` with SSM Parameter Store using our <%= doc_link :environment_and_configuration %> guide.
-
-```ruby
-gem 'mysql2-lambda'
-```
-
-Technically the gem above is not needed with container deployment package types since you could install the needed system dependencies via yum in both your project's development and production docker files.
-
-## RDS Proxy Step by Step with MySQL
-
-Standard Rails database connections will work just fine with Lambda. However it is possible due that Lambda's concurrency model can negatively effect your database during high traffic spikes. In this case, tools like [RDS Proxy](https://aws.amazon.com/blogs/aws/amazon-rds-proxy-now-generally-available/) are useful. Assuming you have already run through our <%= doc_link :quick_start %> guide, here are the steps needed to setup RDS Proxy with MySQL.
-
-1. [Create Your RDS Instance & Proxy](#1-create-your-rds-instance-proxy)
-2. [Update Your Lamby Project](#2-update-your-lamby-project)
-3. [Configure AWS SAM](#3-configure-aws-sam)
-4. [The DATABASE_URL Environment Variable](#4-the-database_url-environment-variable)
-5. [Deploy & Test](#5-deploy-test)
-6. [Local MySQL Development](#6-local-mysql-development)
-7. [What About Migrations?](#7-what-about-migrations)
-
-### 1️⃣ Create Your RDS Instance & Proxy
-
-We have created a [CDK](https://aws.amazon.com/cdk/) stack at [customink/lamby-rds-proxy](https://github.com/customink/lamby-rds-proxy) which can quickly get you up and running with RDS Proxy. For most, the default VPC in your aws account will do. However if needed, we created the [customink/lamby-vpc](https://github.com/customink/lamby-vpc) CDK stack to create a fresh VPC.
-
-Before running these RDS Proxy CDK commands, log into your AWS console, navigate to Services -> VPC -> Your VPCs to get the the value for the `VPC_ID` where your RDS instance & proxy will be created. Set the `DB_NAME` value to something that makes sense for you. Like the name of your app.
-
-```shell
-$ git clone https://github.com/customink/lamby-rds-proxy.git
-$ cd lamby-rds-proxy
-$ ./bin/bootstrap && ./bin/setup
-$ DB_NAME=myapp \
-  VPC_ID=vpc-01a23b45c67d89e01 \
-  ./bin/deploy
-```
-
-<a href="https://user-images.githubusercontent.com/2381/89107477-48386c80-d3ff-11ea-8e66-43034976b7b6.png" target="_blank"><img style="width:30%; float:right; margin-left:1rem; margin-left:1rem; box-shadow: -7px 9px 22px -11px rgba(0,0,0,0.75)" src="https://user-images.githubusercontent.com/2381/89107477-48386c80-d3ff-11ea-8e66-43034976b7b6.png"/></a>Once completed the stack will output useful information about the resources it created. Make a note of the `MyDbProxyDbUrlParameterName` whose value will be needed later on for your `DATABASE_URL`. You will also need the subnet groups and security group(s) in later steps. You can find these in the "Proxy configurations" section in the AWS Console as seen in the image to the right.
-
-These stacks are for learning purposes & create resources in public subnets. Consult the [project's README](https://github.com/customink/lamby-rds-proxy#readme) for security details.
-
-### 2️⃣ Update Your Lamby Project
-
-Add the precompiled for Amazon Linux [mysql2-lambda](https://github.com/customink/mysql2-lambda) to your `Gemfile`.
-
-```ruby
-gem 'mysql2-lambda'
-```
-
-Enable ActiveRecord. Open `config/application.rb` and uncomment this line.
+Our <%= doc_link(:quick_start) %> cookiecutter project uses the `--skip-active-record` when creating a new Rails project. If you are using our starter, here are the steps you need to perform to enable ActiveRecord. First, open the `config/application.rb` file and uncomment this line.
 
 ```ruby
 require "active_record/railtie"
@@ -87,24 +44,15 @@ class ApplicationRecord < ActiveRecord::Base
 end
 ```
 
-One last thing! It will be nice to know this all works after our next deploy. Open the `app/views/application/index.html.erb` file and change the `<h1>` tag's welcome to Lamby message to:
+Finally, you may need to [create a database.yml](https://github.com/rails/rails/tree/main/railties/lib/rails/generators/rails/app/templates/config/databases) file matching your target adapter in the `config` directory. We recommend you create a `DATABASE_URL` environment variable with SSM Parameter Store using our <%= doc_link :environment_and_configuration %> guide.
 
-<div class="highlight"><pre class="highlight erb"><code><span class="nt">&lt;h1&gt;</span>
-  RDS Proxy Active: &lt;%= ApplicationRecord.connection.active? %&gt;
-<span class="nt">&lt;/h1&gt;</span></code></pre>
-</div>
+## VPC Configuration
 
-### 3️⃣ Configure AWS SAM
-
-We are going to need a few changes to your AWS SAM `template.yaml` file. We need a policy for your Lambda to access your VPC. AWS SAM makes this easy with the `AWSLambdaVPCAccessExecutionRole` [policy template](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html) which can be added to a `Policies` property of your Rails Lambda. Next you will need a `VpcConfig` using the subnets and security group(s) created in step 1️⃣ above. Both of these should be added underneath the `Properties` section, for example:
+Most Rails applications within AWS are deployed to a private subnet(s) within a VPC which allows you to have direct network access to your relational database. For most folks, this is [the default VPC](https://docs.aws.amazon.com/vpc/latest/userguide/default-vpc.html) which means finding your subnet ids and security groups is fairly easy. Once you have those, add this [VpcConfig](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-lambda-function-vpcconfig.html) to your project's `template.yaml` file within the existing globals section.
 
 ```yaml
-RailsLambda:
-  # ...
-  Properties:
-    # ..
-    Policies:
-      - AWSLambdaVPCAccessExecutionRole
+Globals:
+  Function:
     VpcConfig:
       SubnetIds:
         - subnet-09792e6cd06dd59ad
@@ -113,105 +61,57 @@ RailsLambda:
         - sg-07be99aff5fb14557
 ```
 
-### 4️⃣ The DATABASE_URL Environment Variable
-
-We now need to set the `DATABASE_URL` environment variable so Rails can connect to the RDS Proxy. The CDK stack in step 1️⃣ above created this string which contains everything from the DBs user/password to the host in an Parameter Store as described in our <%= doc_link :environment_and_configuration %> guide.
-
-This works because our starter project uses <a href="/docs/environment_and_configuration#using-dotenv-rails">Dotenv</a>. This variable will be stored in a `.env.production` file which is packaged as part of your Lambda's code and loaded when Rails boots.
-
-### 5️⃣ Deploy & Test
-
-<a href="https://user-images.githubusercontent.com/2381/89114010-f49d4180-d445-11ea-86b9-24898a616f1e.png" target="_blank"><img style="width:30%; float:right; margin-left:1rem; box-shadow: -7px 9px 22px -11px rgba(0,0,0,0.75)" src="https://user-images.githubusercontent.com/2381/89114010-f49d4180-d445-11ea-86b9-24898a616f1e.png"/></a>With all these changes done, you can now run the `bin/deploy` script again. If everything is working, the `<h1>` tag should say "RDS Proxy Active: true". If not or you see an error, check your CloudWatch logs for hints as to what went wrong.
-
-### 6️⃣ Local MySQL Development
-
-The Lamby cookiecutter makes heavy use of Docker for local development. Adding a MySQL container to our Docker Compose setup is pretty straight forward. When finished, all existing scripts will automatically start your MySQL server which can actually be shared with other projects too. Here are the steps to update your project.
-
-Open your `docker-compose.yml` file and replace with this. Essentially we are adding a `depends_on` and `links` to the `cicd` service to use a new `mysql` service. In this example we are using MySQL v5.7. This version can be changed to match your needs.
+Adding it here will ensure every function within your stack has a common VPC setting. Doing this in `Globals` ensures every function, like your <%= link_to 'ActiveJob', doc_lpath(:activejob_and_lambda) %> ones, will be on the same VPC without duplication. Using a `VpcConfig` should **automatically** add the `AWSLambdaVPCAccessExecutionRole` managed policy to your Lambda's execution role. If not, you can manually add it to your [Policies](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html#sam-function-policies) section.
 
 ```yaml
-version: "3.7"
-services:
-  cicd:
-    build: .
-    environment:
-      - RUBYOPT=-W0
-      - RAILS_ENV=${RAILS_ENV-development}
-      - SAM_CLI_TELEMETRY=0
-      - AWS_PROFILE=${AWS_PROFILE-default}
-      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION-us-east-1}
-    volumes:
-      - ~/.aws:/root/.aws:delegated
-      - ~/.gitconfig:/root/.gitconfig:ro
-      - .:/var/task:delegated
-    depends_on:
-      - mysql
-    links:
-      - mysql
-  mysql:
-    image: mysql:5.7
-    container_name: mysql57
-    restart: always
-    environment:
-      - MYSQL_ROOT_PASSWORD=root
-    ports:
-      - "3307:3306"
-    volumes:
-      - "dbdata:/var/lib/mysql"
-volumes:
-  dbdata:
+RailsLambda:
+  # ...
+  Properties:
+    # ..
+    Policies:
+      - AWSLambdaVPCAccessExecutionRole
 ```
 
-Create a `config/database.yml` file in your project with the following contents. Change `myapp` database prefixes or any default configs that make sense for you. The `host` must match the service/links in the docker compose file.
+## Simple MySQL Setup
 
-```yaml
-default: &default
-  adapter: mysql2
-  encoding: utf8mb4
-  charset: utf8mb4
-  collation: utf8mb4_unicode_ci
-  host: mysql
-  username: root
-  password: root
+Using MySQL with Lambda is super easy since we have a precompiled and statically linked `libmysqlclient` in a gem named [mysql2-lambda](https://github.com/customink/mysql2-lambda). Simply add the gem to your `Gemfile`.
 
-development:
-  <<: *default
-  database: myapp_development
-
-test:
-  <<: *default
-  database: myapp_test
+```ruby
+gem 'mysql2-lambda'
 ```
 
-Open your project's `bin/_setup` file and add this Rails task right after the bundle/yarn install section.
+Technically the gem above is not needed with container deployment package types since you could install the needed system dependencies via yum in both your project's development and production docker files.
 
-```shell
-echo '== Preparing database =='
-./bin/rails db:setup
+## Rails Database Migrations
+
+A best practice for containerized Rails applications should be that [any migration being deployed should be compatible with the code that is already running](https://www.cloudbees.com/blog/rails-migrations-zero-downtime/). Once a migration is deployed and ready to run, Lamby supports this by sending an event to your Lambda function in the following command runner format.
+
+```json
+{
+  "lamby": {
+    "runner": "./bin/rails db:migrate"
+  }
+}
 ```
 
-You are now all set up! You will need to run through your bootstrap & setup scripts again to get everything working.
+This event can happen in any way that makes sense for you. For example, you could use the [AWS CLI's invoke](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/invoke.html) feature in a deploy pipeline. Another simple method would be to use the [test feature for Lambda](https://aws.amazon.com/blogs/compute/improved-testing-on-the-aws-lambda-console/) within the AWS Console.
 
-```shell
-$ ./bin/bootstrap
-$ ./bin/setup
-$ ./bin/server
+The runner has a default expression check of `%r{\A\./bin/(rails|rake) db:migrate.*}` which limits the type of commands that can be run by those whom have IAM capabilities to invoke your function. This can be removed to allow any commands or you can add addition patterns via the Lamby config in a Rails initializer. For example:
+
+```ruby
+Lamby.config.runner_patterns.clear
+Lamby.config.runner_patterns.push %r{\A/bin/foo.*}
 ```
 
-### 7️⃣ What About Migrations?
-
-Good question. You simply can not rely on legacy systems that have deploys & schema migrations happening at the same time with Lambda. A better system typically involves changing your schema in a way that works before & after your code changes happen.
-
-That said, there has to be a better way of running a migration vs resorting to DDL statements sent directly to your RDS cluster from a jump server. In the future I will be looking at a tool like [active_record_migration_ui](https://dev.to/zedtux/run-your-rails-migrations-from-the-web-browser-4mod) or maybe some ActiveJob event triggers with SQS.
+Lastly, you may want to consider changing the `Timeout` property of your `RailsLambda` resource from 30s to something longer. A Lambda function can have a maximum of 15m execution time for an invoke. Just remember that API Gateway integration will always be limited to 30s above the function's timeout. So these timeouts can operate independently.
 
 ## Using Aurora Serverless
 
-Are you someone with a pet Rails project running on a Free, Hobby, or Professional Heroku plan? Perhaps your company or freelance gig has a valuable, but infrequently used, Rails application? Such applications make great candidates for both AWS Lambda & Aurora Serverless.
+⚠️ Aurora Serverless v2 is [coming soon](https://aws.amazon.com/rds/aurora/serverless/).
 
-This is a simple ActiveRecord Mysql2 adapter extensions to allow Rails to use AWS Aurora Serverless via the `Aws::RDSDataService::Client` interface. Perfect for infrequently accessed applications.
+Is your Rails project is used infrequently with sporadic access patterns? Such applications make great candidates for Aurora Serverless v1. The [ActiveRecord Adapter for Amazon Aurora Serverless](https://github.com/customink/activerecord-aurora-serverless-adapter) is a simple ActiveRecord Mysql2 adapter extensions that allow Rails to use AWS Aurora Serverless v1 the `Aws::RDSDataService::Client` interface.
 
-- [ActiveRecord Adapter for Amazon Aurora Serverless](https://github.com/customink/activerecord-aurora-serverless-adapter)
-- [Migrate Your Rails App from Heroku to AWS Lambda](https://technology.customink.com/blog/2020/01/03/migrate-your-rails-app-from-heroku-to-aws-lambda/)
+- 📚 [Migrate Your Rails App from Heroku to AWS Lambda](https://technology.customink.com/blog/2020/01/03/migrate-your-rails-app-from-heroku-to-aws-lambda/)
 
 ## Using DynamoDB
 

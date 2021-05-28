@@ -25,6 +25,7 @@ module ApplicationHelper
     when :api_gateway_and_cloudwatch_logs then 'API Gateway & CloudWatch Logs'
     when :activejob_and_lambda then 'ActiveJob & Lambda'
     when :logging_metrics_observability then 'Logging, Metrics, & Observability'
+    when :database_options then 'Database & VPCs'
     else slug.to_s.titleize
     end
   end
