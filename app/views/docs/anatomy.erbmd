@@ -5,12 +5,15 @@ Lamby can be installed within legacy Rails/Rack applications or pre-installed in
 - [How Lamby Works](#how-lamby-works)
 - [Core Lamby Files](#core-lamby-files)
 - [Our SAM Cookiecutter's Features](#our-sam-cookiecutters-features)
+- [Switch To REST API](#switch-to-rest-api)
+- [Switch To Application Load Balancer](#switch-to-application-load-balancer)
+- [Switch To REST API (private)](#switch-to-rest-api-private)
 - [Installing for Legacy Applications](#installing-for-legacy-applications)
 - [Inspiration](#inspiration)
 
 ## How Lamby Works
 
-Lamby is as a Rack adapter that converts AWS Lambda integration events into native <%= link_to 'Rack Environment', 'https://github.com/rack/rack/blob/master/SPEC.rdoc#the-environment-' %> objects which are sent directly to your application. Lamby can do this when using either API Gateway REST API, API Gateway HTTP API's v1/v2 payloads, or even Application Load Balancer (ALB) integrations.
+Lamby is as a Rack adapter that converts AWS Lambda integration events into native <%= link_to 'Rack Environment', 'https://github.com/rack/rack/blob/master/SPEC.rdoc#the-environment-' %> objects which are sent directly to your application. Lamby can do this when using either API Gateway [HTTP API's](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api.html) (the default) v1/v2 payloads, API Gateway REST API, or even Application Load Balancer (ALB) integrations.
 
 This means Lamby removes the need for any [Rack Web Server](https://github.com/rack/rack#supported-web-servers-) including WEBrick, Passenger, or Puma. It also means that Lamby can be used by any [Rack Web Application](https://github.com/rack/rack#supported-web-frameworks-) such as Sinatra, Hanami, and even Rails as long as that framework is using Rack `v2.0` or higher. For Rails, this means you need to be running `v5.0` or higher. It does all of this in a simple one line interface.
 
@@ -19,6 +22,10 @@ def handler(event:, context:)
   Lamby.handler $app, event, context
 end
 ```
+
+- [Switch To REST API](#switch-to-rest-api)
+- [Switch To Application Load Balancer](#switch-to-application-load-balancer)
+- [Switch To REST API (private)](#switch-to-rest-api-private)
 
 ## Core Lamby Files
 
@@ -78,7 +85,7 @@ Because we encourage use of the Lambda docker containers using the Docker files 
 
 <img src="<%= image_path 'aws_sam_introduction.png' %>" style="width:100%; border-radius:5px;"/>
 
-Our cookiecutter makes starting a Rails application so easy, you may have missed some of the interesting things we have done for you. Here is a small list.
+Our cookiecutter makes starting a Rails application with API Gateway HTTP API so easy, you may have missed some of the interesting things we have done for you. Here is a small list:
 
 - Docker docker docker! Using AWS SAM build container for development since it closely mirrors the production Runtime container environment. Shares your project directory, environment variables, and allows easy use of container resources like MySQL.
 - Encourage good CI/CD practices with GitHub Actions. Includes a test and deploy workflow with caching for fast integration and code delivery. See the <%= doc_link(:quick_start) %> for more details.
@@ -89,6 +96,152 @@ Our cookiecutter makes starting a Rails application so easy, you may have missed
 - Sets the `RAILS_LOG_TO_STDOUT` environment variable. Also ensures that all `Logger` objects are forced to use `STDOUT`.
 - Adds the [lograge](https://github.com/roidrage/lograge) gem to reduce CloudWatch data costs while easily allowing CloudWatch Insights or [Embedded Metrics](https://github.com/customink/aws-embedded-metrics-customink) to be used. These are major observability wins!
 
+## Switch To REST API
+
+By default our starter uses API Gateway's latest HTTP API which is faster, cheaper, and far easier to configure. However, you may have a need to use [REST API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-rest-api.html). Here is how to switch your project to using it.
+
+Open your `template.yaml` file and replace your `RailsHttpApi` resource with this `RailsApi` one. It is a little more verbose, but it essentially sets up a simple proxy that Lamby can use.
+
+```yaml
+RailsApi:
+  Type: AWS::Serverless::Api
+  Properties:
+    DefinitionBody:
+      swagger: 2.0
+      info:
+        title: !Ref "AWS::StackName"
+        basePath: !Sub "/${RailsEnv}"
+      schemes: ["https"]
+      paths:
+        /:
+          x-amazon-apigateway-any-method:
+            x-amazon-apigateway-integration:
+              uri:
+                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RailsLambda.Arn}:live/invocations
+              httpMethod: POST
+              type: aws_proxy
+        /{resource+}:
+          x-amazon-apigateway-any-method:
+            parameters:
+              - name: resource
+                in: path
+                required: true
+                type: string
+            x-amazon-apigateway-integration:
+              uri:
+                Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RailsLambda.Arn}:live/invocations
+              httpMethod: POST
+              type: aws_proxy
+      x-amazon-apigateway-binary-media-types:
+        - "*/*"
+    StageName: !Ref RailsEnv
+```
+
+The integration `uri` lines above use the `:live` alias since our starter defaults to using an `AutoPublishAlias: live`. Now your Lambda function needs to respond to these REST API events. Find your `RailsLambda` resource and change the `Events` to use these vs the `HttpApiProxy` from our starter.
+
+```yaml
+RailsRoot:
+  Type: Api
+  Properties:
+    Path: /
+    Method: ANY
+    RestApiId: !Ref RailsApi
+RailsAll:
+  Type: Api
+  Properties:
+    Path: /{resource+}
+    Method: ANY
+    RestApiId: !Ref RailsApi
+```
+
+Lastly, update your `RailsApiUrl` in the `Outputs` section. Replace the resource `RailsHttpApi` in the `Value` section with the new logical name of `RailsApi`. Example:
+
+```yaml
+RailsApiUrl:
+  Description: API Gateway Endpoint
+  Value: !Sub "https://${RailsApi}.execute-api.${AWS::Region}.amazonaws.com/${RailsEnv}/"
+```
+
+## Switch To Application Load Balancer
+
+Using Lambda's [ALB Integration](https://docs.aws.amazon.com/lambda/latest/dg/services-alb.html) is a great way to setup your application on a private VPC. ⚠️ Currently ALBs limit response payloads to less than 1MB vs. the 6MB limit for API Gateway. Using [Rack::Deflater](https://gist.github.com/metaskills/363e39e2e8cbccf280b5d5804b384bd2) can help with this if needed.
+
+Next, replace your `RailsHttpApi` resource with these load balancer resources. These make use of the VPC subnets and security groups from above. It also assumes your Lambda function in your template has a Logical ID of `RailsLambda`. Make sure to use the same `SubnetIds` and `SecurityGroupIds` described in our <%= doc_link(:database_options, anchor: 'vpc-configuration') %> guide. Likewise you will need to ensure the `CertificateArn` value is a valid Certificate Manager ARN as described in our <%= doc_link(:custom_domain_names) %> guide.
+
+```yaml
+RailsLoadBalancer:
+  Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+  Properties:
+    Scheme: internal
+    SubnetIds:
+      - subnet-09792e6cd06dd59ad
+      - subnet-0501f3136415021da
+    SecurityGroupIds:
+      - sg-07be99aff5fb14557
+
+RailsLoadBalancerHttpsListener:
+  Type: AWS::ElasticLoadBalancingV2::Listener
+  Properties:
+    Certificates:
+      - CertificateArn: arn:aws:acm:us-east-1:123456789012:certificate/38613b58-c21e-11eb-8529-0242ac130003
+    DefaultActions:
+      - TargetGroupArn: !Ref RailsLoadBalancerTargetGroup
+        Type: forward
+    LoadBalancerArn: !Ref RailsLoadBalancer
+    Port: 443
+    Protocol: HTTPS
+
+RailsLoadBalancerTargetGroup:
+  Type: AWS::ElasticLoadBalancingV2::TargetGroup
+  DependsOn: RailsLambdaInvokePermission
+  Properties:
+    TargetType: lambda
+    TargetGroupAttributes:
+      - Key: lambda.multi_value_headers.enabled
+        Value: true
+    Targets:
+      - Id: !GetAtt RailsLambda.Arn
+
+RailsLambdaInvokePermission:
+  Type: AWS::Lambda::Permission
+  Properties:
+    FunctionName: !GetAtt RailsLambda.Arn
+    Action: "lambda:InvokeFunction"
+    Principal: elasticloadbalancing.amazonaws.com
+```
+
+Find your `RailsLambda` resource and remove the `Events` property completely. An ALB will trigger your Lambda for you via the target group.
+
+Lastly, update your `RailsApiUrl` in the `Outputs` section. With the example below that uses the Application Load Balancer's DNS name. Example:
+
+```yaml
+RailsApiUrl:
+  Description: Load Balancer DNS Name
+  Value: !GetAtt RailsLoadBalancer.DNSName
+```
+
+## Switch To REST API (private)
+
+Unfortunately there is no turn-key way to setup the modern HTTP API to be private. However there is a way to use REST API on a private VPC if your application needs the 6MB response limit capability. ⚠️ This setup is a mix of the REST API & ALB setup above and can be more costly since it requires a handful of resources. It is also not trivial to setup! Using this [Building a Private REST API](https://docs.aws.amazon.com/apigateway/latest/developerguide/private-api-tutorial.html) tutorial can walk you thru a few of the steps like creating a VPC Endpoint.
+
+The CloudFormation changes to your `template.yaml` file must include BOTH the REST API & ALB changes above with the following changes. First, find your `RailsLambda` resource and remove the `Events` property. This will not be needed since the ALB integration will take care of this for us once you map a <%= doc_link(:custom_domain_names) %> that matches the API Gateway DNS name pointed to the ALB's DNS Name.
+
+Now, add these to the `Properties` section of your REST API `RailsApi` resource. Make sure to use your own VPC Endpoint ID created in the tutorial above.
+
+```yaml
+Auth:
+  ResourcePolicy:
+    CustomStatements:
+      - Effect: Allow
+        Principal: "*"
+        Action: execute-api:Invoke
+        Resource: ["execute-api:/*"]
+EndpointConfiguration:
+  Type: PRIVATE
+  VPCEndpointIds:
+    - vpce-17d53d19eb38b879c
+```
+
 ## Installing for Legacy Applications
 
 The **most comprehensive** method to install Lamby is to perform the same steps within our getting started cookiecutter project. We break these into two steps, the first adds Lamby files, the second inserts additional code. Follow the steps and files in these scripts/directories.
@@ -98,11 +251,7 @@ The **most comprehensive** method to install Lamby is to perform the same steps 
 - [Insert Script](https://github.com/customink/lamby-cookiecutter/blob/master/bin/_inserts)
 - [Insert Files](https://github.com/customink/lamby-cookiecutter/tree/master/inserts)
 
-The above files assume the most common use case of a public facing Rails application using API Gateway's HTTP API. For...
-
-[TODO] Add conversion docs...
-
-Alternatively, Lamby provides a simple Rake task to install very basic starter files needed to use AWS Lambda for your application. One for each integration method.
+The above files assume the most common use case of a public facing Rails application using API Gateway's HTTP API. This serves as the base for the guides above to switch to REST API and/or an ALB. Alternatively, Lamby provides a simple Rake task to install very basic starter files needed to use AWS Lambda for your application. One for each integration method.
 
 ```shell
 $ ./bin/rake -r lamby lamby:install:http

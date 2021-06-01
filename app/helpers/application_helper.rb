@@ -11,7 +11,7 @@ module ApplicationHelper
   def doc_link(slug, options = {})
     name = doc_name(slug)
     name << options.delete(:link_suffix).to_s
-    link_to name, doc_lpath(slug), options
+    link_to name, doc_lpath(slug, options), options
   end
 
   def doc_name(slug)

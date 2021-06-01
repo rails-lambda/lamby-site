@@ -1,147 +1,121 @@
-
 # Custom Domain Names, CloudFront, & SSL
 
-The new API Gateway HTTP API makes it easy to configure your application with a custom domain name using CloudFormation. These steps will get you there.
+Mapping your Lambda application to a custom domain name can help you access it without the API Gateway stage path prefix. This in turn helps Rails leverage paths and cookies. Depending on your <%= link_to 'applications setup', doc_lpath(:anatomy) %> (HTTP API, REST API, or an Application Load Balancer) creating a Custom Domain Name involves a few manual steps.
 
-1. [Route53 Information](#route53-information)
-2. [SSL/TLS Certificate with ACM](#ssl-tls-certificate-with-acm)
-3. [SSM Template Parameters](#ssm-template-parameters)
-4. [CloudFormation Code](#cloudformation-code)
+- [SSL/TLS Certificate with ACM](#ssl-tls-certificate-with-acm)
+- [API Gateway Custom Domain Names (Everyone)](#api-gateway-custom-domain-names-everyone)
+- [Route53 for Public API Gateway (HTTP or REST)](#route53-for-public-api-gateway-http-or-rest)
+- [Route53 for Private API Gateway (ALB Only or REST with ALB)](#route53-for-private-api-gateway-alb-only-or-rest-with-alb)
+- [Optional CloudFront Distribution](#optional-cloudfront-distribution)
 
-If your custom domain name needs a [CloudFront](https://aws.amazon.com/cloudfront/) distribution for edge caching use this guide with one small change to step #4 above.
-
-1. [CloudFront Distribution](#cloudfront-distribution)
-
-## Route53 Information
-
-The following steps assume you have a domain managed by [Route53](https://aws.amazon.com/route53/). Before proceeding you will need the Hosted Zone ID for the domain zone you are going to use.
-
-* AWS Console -> Route53
-* Click on "Hosted zones"
-* Click on your hosted zone. Ex: `example.com`
-* Click on "Hosted zone details" at the top.
-* Note the "Hosted zone ID". Ex: `ZSZCGGTST3201`
+But why ClickOps vs code? When doing major changes, like runtime upgrades, it is common to create a new stack and switch API Gateway's mapping to the new function. If this mapping were done in a CloudFormation stack, there would be no way to move to a new stack without deleting the old.
 
 ## SSL/TLS Certificate with ACM
 
 We are going to use [AWS Certificate Manager](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html) to secure your HTTPS traffic under your custom domain. Again, this assumes your domain is setup in Route53 since you will need to validate the certificate and AWS makes that super easy with DNS.
 
-* AWS Console -> Certificate Manager
-* Click "Request a certificate" button.
-* Select "Request a public certificate", and "Request a certificate" button.
-* Domain name. Ex: `*.example.com`
-* Click "Next"
-* Select "DNS validation", and "Review".
-* Click "Confirm and request" button.
-* Click the tiny disclosure triangle beside your domain name.
-* Click the "Create record in Route 53" button then "Create" again in modal.
-* Click "Continue"
+- AWS Console -> Certificate Manager
+- Click "Request a certificate" button.
+- Select "Request a public certificate", and "Request a certificate" button.
+- Domain name. Ex: `*.example.com`
+- Click "Next"
+- Select "DNS validation", and "Review".
+- Click "Confirm and request" button.
+- Click the tiny disclosure triangle beside your domain name.
+- Click the "Create record in Route 53" button then "Create" again in modal.
+- Click "Continue"
 
 Verification will take about 3 minutes. From the Certificate Manager dashboard, you can wait and/or hit the 🔄 button and the Status will change from "Pending validation" to "Issued".
 
-## SSM Template Parameters
+## API Gateway Custom Domain Names (Everyone)
 
-ℹ️ Skip this section if you do not need to deploy your application to distinct staging & production AWS accounts. If so, make sure to replace the references to both `CertificateArn` and `HostedZoneId` in step #4's CloudFormation code.
+No mater if you have HTTP API, REST API Public, or REST API Private with an ALB; you will need to specify a Custom Domain Name in API Gateway. The only exception would be if you are using an Application Load Balancer without REST API. Here are the ClickOps steps to setup an API Gateway Custom Domain Name:
 
-In this example we are going to use a more interesting form of <%= doc_link :environment_and_configuration %>. Instead of environment variables for our application, we want to leverage another CloudFormation [Parameter](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html) for our SAM `template.yaml` file. Using [SSM parameter types](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html#aws-ssm-parameter-types) will allow the template to use differnt domain names when deployed to different AWS accounts. Add these to the `Parameters:` section of your `template.yaml` file.
+- AWS Console -> API Gateway
+- Click "Custom domain names" in the left panel.
+- Click "Create" button
+- Enter domain name. Ex: `myapp.example.com`
+- Use default `TLS 1.2 (recommended)`.
+- Endpoint type `Regional`.
+- ACM certificate. Select wildcard matching domain from above.
+- Click "Create domain name"
 
-```yaml
-HostedZoneId:
-  Type: 'AWS::SSM::Parameter::Value<String>'
-  Default: '/config/route53/example.com'
+After this has been created, the mappings tab should be selected. From here we need to create an API Mapping to point to your specific API Gateway and stage/path. Assuming it is selected:
 
-CertificateArn:
-  Type: 'AWS::SSM::Parameter::Value<String>'
-  Default: '/config/ssl/cert/example.com'
-```
+- Click the "API mappings" tab.
+- You should see "No API mappings have been configured..." message
+- Click "Configure API mappings" button.
+- Click "Add new mapping" button.
+- Select your API: Ex: `myapp-main (HTTP - 511n0spvi9)`.
+- Select your Stage: Ex: `staging`.
+  - If you see `Stage` and `staging` ignore Stage. Known REST bug.
+- Leave `Path` empty.
+- Click the "Save" button.
 
-Open up SSM in each AWS account and create a new parameter for each path above. The value for `HostedZoneId` would be from step #1 above and `CertificateArn` would be from step #2.
+From here there are various ways to setup Route53 and route traffic to your Lambda application. This work simply sets up API Gateway to understand how traffic is routed via what is called [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication). Choose one of the methods below matching your need for Route53.
 
-## CloudFormation Code
+## Route53 for Public API Gateway (HTTP or REST)
 
-Once we have both our Hosted Zone ID and the ARN of our SSL certificate, we can use CloudFormation in our SAM `template.yaml` file to create our custom domain name. We are going to use the following resources.
+✅ Make sure to complete the "API Gateway Custom Domain Names" section first.
 
-* [AWS::ApiGatewayV2::DomainName](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigatewayv2-domainname.html)
-* [AWS::ApiGatewayV2::ApiMapping](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigatewayv2-apimapping.html)
-* [AWS::Route53::RecordSetGroup](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-route53-recordsetgroup.html)
+From here all we need is a simple DNS entry in Route53 that points to the "API Gateway domain name" we created in the step above. That domain name looks something like: `d-byp3km86t3.execute-api.us-east-1.amazonaws.com`
 
-Add this YAML code to the `Resources:` section of your `template.yaml` file. Remember to:
+- AWS Console -> API Gateway
+- Click "Switch to wizard" if not selected already.
+- Select "Simple routing"
+- Click "Next"
+- Click "Define simple record"
+- Record name. Ex: `myapp`
+- Record type: `A - Routes traffic to an IPv4 address and some AWS resources`
+- Value/Route traffic to: `Alias to API Gateway API`
+- Choose Region: Ex: `us-east-1`
+- Choose endpoint: Should autofill, Ex: `d-byp3km86t3.execute-api.us-east-1.amazonaws.com`
+- Evaluate target health: `No`
+- Click "Define simple record"
+- Click "Create records"
 
-* Replace `www.example.com` with your domain name.
-* If your HTTP API resource differs from `RailsHttpApi`, use that name instead.
-* If you opted out of step #3, replace these with your literal values:
-  - `!Ref HostedZoneId`
-  - `!Ref CertificateArn`
+## Route53 for Private API Gateway (ALB Only or REST with ALB)
 
-```yaml
-RailsDomainName:
-  Type: AWS::ApiGatewayV2::DomainName
-  Properties:
-    DomainName: www.example.com
-    DomainNameConfigurations:
-      - CertificateArn: !Ref CertificateArn
-        EndpointType: REGIONAL
-        SecurityPolicy: TLS_1_2
+✅ Make sure to complete the "API Gateway Custom Domain Names" section first if you are using the "REST with ALB". Ignore doing so if you are using an "ALB Only".
 
-RailsApiMapping:
-  Type: AWS::ApiGatewayV2::ApiMapping
-  DependsOn: RailsDomainName
-  Properties:
-    ApiId: !Ref RailsHttpApi
-    DomainName: www.example.com
-    Stage: !Ref RailsEnv
+From here all we need is a simple DNS entry in Route53 that points to our Application Load Balancer's DNS name CloudFormation output. That domain name looks something like: `internal-myapp-rails-bj5cmdxb307p-856336498.us-east-1.elb.amazonaws.com`
 
-RailsRecordSet:
-  Type: AWS::Route53::RecordSetGroup
-  DependsOn: RailsApiMapping
-  Properties:
-    HostedZoneId: !Ref HostedZoneId
-    RecordSets:
-      - Name: www.example.com
-        Type: A
-        AliasTarget:
-          HostedZoneId: !GetAtt RailsDomainName.RegionalHostedZoneId
-          DNSName: !GetAtt RailsDomainName.RegionalDomainName
-          EvaluateTargetHealth: false
-```
+- AWS Console -> API Gateway
+- Click "Switch to wizard" if not selected already.
+- Select "Simple routing"
+- Click "Next"
+- Click "Define simple record"
+- Record name. Ex: `myapp`
+- Record type: `A - Routes traffic to an IPv4 address and some AWS resources`
+- Value/Route traffic to: `Alias to Application and Classic Load Balancer`.
+- Choose Region: Ex: `us-east-1`
+- Choose endpoint: Should autofill, Ex: `internal-myapp-rails-bj5cmdxb307p-856336498.us-east-1.elb.amazonaws.com`
+- Evaluate target health: `No`
+- Click "Define simple record"
+- Click "Create records"
 
-From here you can do a `./bin/deploy`. You can now access your Rails application's API Gateway HTTP API using a custom domain name.
+## Optional CloudFront Distribution
 
-## CloudFront Distribution
+This part is optional and can be used with any integration method. Instead of creating a Route53 entry for API Gateway's custom domain (`d-xxxxxxxxxx.execute-api.us-east-1.amazonaws.com`) or an ALB's DNS Name (`internal-myapp-rails-bj5cmdxb307p-856336498.us-east-1.elb.amazonaws.com`) you would instead use those as the CloudFront's origin. The final CloudFront distribution name (`dxxxxxxxxxxxxx.cloudfront.net`) would be the Route53 target instead. Here are the steps to create your CloudFront Distribution:
 
-This part is optional and requires a small chage to step #4 above by removing the `RailsRecordSet` resource from your `template.yaml` file. The goal here is to set your domain name `www.example.com` as an alias to this CloudFront distribution.
+- AWS Console -> CloudFront -> Create Distribution -> Web -> Get Started
+- Origin Domain Name: d-xxxxxxxxxx.execute-api.us-east-1.amazonaws.com
+- Origin Path: /production (or your deployed stage/env)
+- Minimum Origin SSL Protocol: TLSv1.2
+- Origin Protocol Policy: HTTPS Only
+- Origin Custom Headers: X-Forwarded-Host myapp.example.com (⚠️ IMPORTANT)
+- Viewer Protocol Policy: Redirect HTTP to HTTPS
+- Allowed HTTP Methods: GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE
+- Cached HTTP Methods: OPTIONS
+- Cache Based on Selected Request Headers: Whitelist - Accept (⚠️ Allows `respond_to` to work)
+- Object Caching: Use Origin Cache Headers
+- Forward Cookies: All
+- Query String Forwarding and Caching: Forward all, cached based on all
+- Compress Objects Automatically: Yes
+- Alternate Domain Names (CNAMEs): myapp.example.com
+- SSL Certificate: Custom SSL Certificate (select \*.example.com from step above)
 
-Before you begin, you need the "API Gateway domain name" that was created via the `AWS::ApiGatewayV2::DomainName` resource above. You can find it by doing the following. It will look something like `d-xxxxxxxxxx.execute-api.us-east-1.amazonaws.com`.
-
-* AWS Console -> API Gateway
-* Click "Custom domain names" on the left panel.
-* Select your domain name in the list.
-* Under "Endpoint configuration" find "API Gateway domain name"
-
-Here are the steps to create your CloudFront Distribution:
-
-* AWS Console -> CloudFront -> Create Distribution -> Web -> Get Started
-* Origin Domain Name: d-xxxxxxxxxx.execute-api.us-east-1.amazonaws.com
-* Origin Path: /production (or your deployed stage/env)
-* Minimum Origin SSL Protocol: TLSv1.2
-* Origin Protocol Policy: HTTPS Only
-* Origin Custom Headers: X-Forwarded-Host www.example.com (⚠️ IMPORTANT)
-* Viewer Protocol Policy: Redirect HTTP to HTTPS
-* Allowed HTTP Methods: GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE
-* Cached HTTP Methods: OPTIONS
-* Cache Based on Selected Request Headers: Whitelist - Accept (⚠️ Allows `respond_to` to work)
-* Object Caching: Use Origin Cache Headers
-* Forward Cookies: All
-* Query String Forwarding and Caching: Forward all, cached based on all
-* Compress Objects Automatically: Yes
-* Alternate Domain Names (CNAMEs): www.example.com
-* SSL Certificate: Custom SSL Certificate (select *.example.com from step above)
-
-This process takes a while to fully deploy. Once done you will have a CloudFront domain name looking something like `dxxxxxxxxxxxxx.cloudfront.net`. Head to Route53 and create an alias for `www.example.com` to this CloudFront distibution domain name.
-
-
-
-
+This process takes a while to fully deploy. Once done you will have a CloudFront domain name looking something like `dxxxxxxxxxxxxx.cloudfront.net`. Head to Route53 and create an alias for `myapp.example.com` to this CloudFront distibution domain name.
 
 <%= doc_next :database_options %>
 <%= disqus %>

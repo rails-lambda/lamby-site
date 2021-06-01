@@ -5,7 +5,7 @@ div.highlight {
   box-shadow: 0 2px 2px 0 rgba(mui-color('black'), 0.16),
               0 0px 2px 0 rgba(mui-color('black'), 0.12);
   margin-bottom: 1rem;
-  background-color: transparent;
+  background-color: rgba(18, 43, 59, 0.5);
   pre.highlight {
     border-radius: 6px;
     padding: 0.75rem;
@@ -14,6 +14,6 @@ div.highlight {
     padding-left: 1rem;
     margin-top: 0;
     margin-bottom: 0;
-    background-color: rgba(18, 43, 59, 0.5);
+    background-color: transparent;
   }
 }
