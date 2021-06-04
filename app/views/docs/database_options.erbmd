@@ -96,7 +96,7 @@ A best practice for containerized Rails applications should be that [any migrati
 
 This event can happen in any way that makes sense for you. For example, you could use the [AWS CLI's invoke](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/invoke.html) feature in a deploy pipeline. Another simple method would be to use the [test feature for Lambda](https://aws.amazon.com/blogs/compute/improved-testing-on-the-aws-lambda-console/) within the AWS Console.
 
-The runner has a default expression check of `%r{\A\./bin/(rails|rake) db:migrate.*}` which limits the type of commands that can be run by those whom have IAM capabilities to invoke your function. This can be removed to allow any commands or you can add addition patterns via the Lamby config in a Rails initializer. For example:
+The runner has a default expression check of `%r{\A\./bin/(rails|rake) db:migrate.*}` which limits the type of commands that can be run by those whom have IAM capabilities to invoke your function. This can be removed to allow any commands or you can add addition patterns via the Lamby config by adding lines like these in your `app.rb` file below the Lamby require. For example:
 
 ```ruby
 Lamby.config.runner_patterns.clear
