@@ -5,7 +5,7 @@ Cold starts (or init times) are an [incredibly addictive](https://docs.aws.amazo
 ⚠️ It is important to remember that modest sized Rails applications generally boot within 3 to 5 seconds. This happens exactly once for the duration of the function's lifecycle which could last for an hour or more before being ♻️ recycled.
 
 - [Monitoring with CloudWatch](#monitoring-with-cloudwatch)
-- [Rails Bootsnap by Shopify](#rails-bootsnap)
+- [Rails Bootsnap by Shopify](#rails-bootsnap-by-shopify)
 - [Provisioned Concurrency (Deleting Cold Starts)](#provisioned-concurrency)
 - [Other Cold Start Factors](#other-cold-start-factors)
 
