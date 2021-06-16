@@ -1,0 +1,168 @@
+# Cold Starts
+
+Cold starts (or init times) are an [incredibly addictive](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html#runtimes-lifecycle) topic. In many cases they can be ignored as an optimization to perform when the time and data suggests action. In practice, the more traffic your function handles the less likely cold starts are an issue since they statistically disappear under the [99th percentile](https://aws.amazon.com/blogs/aws/amazon-cloudwatch-update-percentile-statistics-and-new-dashboard-widgets/). However in rare cases, you may want to optimize for them, and this guide can help you make decisions on how to go about it.
+
+⚠️ It is important to remember that modest sized Rails applications generally boot within 3 to 5 seconds. This happens exactly once for the duration of the function's lifecycle which could last for an hour or more before being ♻️ recycled.
+
+- [Monitoring with CloudWatch](#monitoring-with-cloudwatch)
+- [Rails Bootsnap by Shopify](#rails-bootsnap)
+- [Provisioned Concurrency (Deleting Cold Starts)](#provisioned-concurrency)
+- [Other Cold Start Factors](#other-cold-start-factors)
+
+## Monitoring with CloudWatch
+
+You can not optimize what you do not measure. Thankfully, AWS Lambda logs initialization time of your function to CloudWatch logs which you can query using [CloudWatch Insights](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AnalyzingLogData.html).
+
+This query below will give you a nice percentile breakdown for your application's init duration which is the code outside the handler method. Feel free to change the bin bucket from 1 hour to whatever time helps you. For example, using `1d` (1 day) over a longer duration (weeks) allows you to see statistical trends. In general, your `p50` should be under 5 seconds.
+
+```coffee
+fields @initDuration
+| filter ispresent(@initDuration)
+| stats pct(@initDuration, 5) as p5,
+        pct(@initDuration, 50) as p50,
+        pct(@initDuration, 95) as p95,
+        pct(@initDuration, 99) as p99
+  by bin(1h)
+```
+
+<img src="https://user-images.githubusercontent.com/2381/121985237-5fa3ee00-cd62-11eb-8202-5c7592509ad6.png" style="width:100%; border-radius:5px;" alt="Rails cold start data from CloudWatch Insights. Shows percentiles for p5, p50, p95, and p99.">
+
+## Rails Bootsnap by Shopify
+
+Reducing your Rails applications boot time should be your first option against cold starts. Bootsnap (https://github.com/Shopify/bootsnap) has been developed by Shopify to speed up Rails boot time for production environments using a mix of compile and load path caches. When complete, your deployed container will have everything it needs to boot faster! How much faster? Generally 1 to 3 seconds depending on your Lambda application.
+
+Adding Bootsnap to your Rails Lambda application is straightforward. First, add the gem to your production group in your `Gemfile`. Make sure to set Bundler's `:require` option to false which avoids using Bootsnap for development or testing.
+
+```ruby
+group :production do
+  gem 'bootsnap', require: false
+end
+```
+
+Next, we need to add the Bootsnap caches with your deployed container. Add these lines to your project's `Dockerfile` after your `COPY . .` declaration. It will run two commands. The first is the standard Bootsnap precompile which builds both the Ruby ISeq & YAML caches. The second line loads your application into memory and thus automatically creates the `$LOAD_PATH` cache.
+
+```dockerfile
+ENV BOOTSNAP_CACHE_DIR=/var/task/tmp/cache
+RUN bundle exec bootsnap precompile --gemfile . \
+ && bundle exec ruby app.rb
+```
+
+Lastly, we need to require Bootsnap's setup at just the right point. This is easy to do in Lamby's `app.rb` file by adding it right after Rails' config/boot.
+
+```ruby
+require_relative 'config/boot'
+require 'bootsnap/setup'
+```
+
+🏁 Afterward you should be able to verify that Bootsnap's caches are working. Measure your cold starts using a 1 day stats duration for better long term visibility.
+
+## Provisioned Concurrency
+
+AWS provides an option called [Provisioned Concurrency](https://docs.aws.amazon.com/lambda/latest/dg/configuration-concurrency.html) (PC) which allows you to warm instances prior to receiving requests. This lets you execute Lambda functions with super low latency and no cold starts. ⚠️ Beware! Provisioned concurrency comes with **additional execution costs**. Besides setting a static PC value, there are two fundamental methods for scaling with Provisioned Concurrency. Please use the [Concurrency CloudWatch Metrics](#concurrency-cloudwatch-metrics) section to help you make a determination on what method is right for you.
+
+1. [Auto Scaling](#auto-scaling)
+2. [Using a Schedule](#using-a-schedule)
+
+### Requirements
+
+Our <%= doc_link(:quick_start) %> cookiecutter includes both an `AutoPublishAlias` and an all at once `DeploymentPreference`. The publish alias is needed for provisioned concurrency. You can read about both in AWS "[Deploying serverless applications gradually](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/automating-updates-to-serverless-apps.html)" guide. The code snippets below assume your function's logical resource is `RailsLambda` and you have an alias named `live`.
+
+### Auto Scaling
+
+Here we are creating an [`AWS::AutoScaling::ScalingPolicy`](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-as-policy.html) and a [`AWS::ApplicationAutoScaling::ScalableTarget`](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-applicationautoscaling-scalabletarget.html) which effectively creates a managed CloudWatch Rule that monitors your application to scale it up and down as needed. In this example we set a maximum of `40` and minimal of `5` provisioned instances. We have a `TargetValue` of `0.4` which is a percentage of provisioned concurrency to trigger the CloudWatch Rules via the `ProvisionedConcurrencyUtilization` metric. **In this case, lower equals a more aggressive scaling strategy.**
+
+```yaml
+Resources:
+  RailsLambda:
+    # ...
+    Properties:
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 5
+
+  RailsScalableTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      MaxCapacity: 40
+      MinCapacity: 5
+      ResourceId: !Sub function:${RailsLambda}:live
+      RoleARN: !Sub arn:aws:iam::${AWS::AccountId}:role/aws-service-role/lambda.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_LambdaConcurrency
+      ScalableDimension: lambda:function:ProvisionedConcurrency
+      ServiceNamespace: lambda
+    DependsOn: RailsLambdaAliaslive
+
+  RailsScalingPolicy:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: utilization
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref RailsScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 0.4
+        PredefinedMetricSpecification:
+          PredefinedMetricType: LambdaProvisionedConcurrencyUtilization
+```
+
+Please read this related article. It goes into great detail on how short traffic bursts (common for most of us) can be missed by the standard CloudWatch Alarms and possible remediation to scale up.
+
+📚 [Lambda Provisioned Concurrency AutoScaling is Awesome. Make sure you understand how it works!](https://georgemao.medium.com/understanding-lambda-provisioned-concurrency-autoscaling-735eb14040cf)
+
+### Using a Schedule
+
+In this example we have measured via CloudWatch Metrics (image above) that our concurrent executions never really goes past `40` instances during daytime peak usage. In this case to totally remove cold starts from a small percentage of requests we can draw a big virtual box around the curves above to always keep `40` instances warm during our peak times starting at 6am EST and going back down to `0` Provisioned Concurrency at 11PM EST. Here is how we would do that with a Provisioned Concurrency schedule.
+
+```yaml
+Resources:
+  RailsScalableTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      MaxCapacity: 0
+      MinCapacity: 0
+      ResourceId: !Sub function:${RailsLambda}:live
+      RoleARN: !Sub arn:aws:iam::${AWS::AccountId}:role/aws-service-role/lambdaapplication-autoscaling. amazonaws.com/AWSServiceRoleForApplicationAutoScaling_LambdaConcurrency
+      ScalableDimension: lambda:function:ProvisionedConcurrency
+      ServiceNamespace: lambda
+      ScheduledActions:
+        - ScalableTargetAction:
+            MaxCapacity: 0
+            MinCapacity: 0
+          ScheduledActionName: ScaleDown
+          Schedule: "cron(0 3 * * ? *)"
+        - ScalableTargetAction:
+            MaxCapacity: 40
+            MinCapacity: 40
+          ScheduledActionName: ScaleUp
+          Schedule: "cron(0 10 * * ? *)"
+    DependsOn: RailsLambdaAliaslive
+```
+
+### Concurrency CloudWatch Metrics
+
+The graphs below were made using the following managed AWS Lambda CloudWatch Metrics. Please make sure to use your deploy alias of `:live` when targeting your functions resource in these reports.
+
+- `ConcurrentExecutions`
+- `ProvisionedConcurrentExecutions`
+- `ProvisionedConcurrencySpilloverInvocations`
+
+This chart shows that a static `ProvisionedConcurrentExecutions` of `5` can handle most invocations for the first 3 days. Later, for the remaining 4 days, auto scaling was added with a `TargetValue` of `0.4`. Because of the workload's spiky nature, the Invocations look almost 100% provisioned. However, the concurrent executions show otherwise.
+
+<img src="https://user-images.githubusercontent.com/2381/114174252-5df31f80-9906-11eb-871a-5fd692a03f11.png" style="width:100%; border-radius:5px;">
+
+Here is a 7 day view from the 4 day mark above. The `TargetValue` is still set to `0.4`. It illustrates how the default CloudWatch Rule for `ProvisionedConcurrencyUtilization` metrics over a 3 minute span are not quick enough to scale PC. It is possible to use a `TargetValue` of `0.1` to force the PC lines to meet the blue. But your cost at this point would be unrealistically high.
+
+<img src="https://user-images.githubusercontent.com/2381/114177314-4027b980-990a-11eb-819a-14ab00657ed4.png" style="width:100%; border-radius:5px;" >
+
+## Other Cold Start Factors
+
+Most of these should be considered before using Provisioned Concurrency.
+
+**Client Connect Timeouts** - Your Lambda application may be used by clients who have a low [http open timeout](https://ruby-doc.org/stdlib/libdoc/net/http/rdoc/Net/HTTP.html#open_timeout-attribute-method). If this is the case, you may have to increase client timeouts, leverage provisioned concurrency, and/or reduce initialization time.
+
+**Update Ruby** - New versions of Ruby typically boot and run faster. Ruby 2.7 is slightly faster than 2.5 and has a smaller ECR footprint. As of this writing there is no official Ruby 3 AWS ECR/Lambda image, but [creating your own](https://hichaelmart.medium.com/using-container-images-with-aws-lambda-7ffbd23697f1) should be relatively easy.
+
+**Memory & vCPU** - There has been evidence in the past that increased Memory/vCPU could reduce cold starts. We have not seen evidence of this. For example, we recommend that Rails functions use `1792` for its `MemorySize` equal to 1 vCPU. Any lower would sacrifice response times. Tests showed that increasing this to `3008` equal to 2 vCPUs did nothing for a basic Rails application but cost more. However, if your function does concurrent work doing initialization, consider testing different values here.
+
+**Lazy DB/Resource Connections** - Rails is really good at lazy loading database connections. This is important to keep the "Init" phase of the [Lambda execution lifecycle](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html#runtimes-lifecycle) quick and under 10s. This allows the first "Invoke" to connect to other resources. To keep init duration low, make sure your application does not eagerly connect to resources. Both ActiveRecord and Memcached w/Dalli are lazy loaded by default.
+
+**ActiveRecord Schema Cache** - Commonly called Rails' best kept performance feature, the [schema cache](https://kirshatrov.com/2016/12/13/schema-cache/) can help reduce first request response time after Rails is initialized. So it should not help the init time but it could very easily help the first invoke times.
+
+**Reduce Image Size** - Sort of related to your Ruby version, always make sure that your ECR image is as small as possible. Lambda Containers supports up to 10GB for your image. There is no data on how much this could effect cold starts. So please [share your stories](https://github.com/customink/lamby/discussions).
