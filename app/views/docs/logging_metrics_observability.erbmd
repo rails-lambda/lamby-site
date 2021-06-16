@@ -1,4 +1,3 @@
-
 # Logging, Metrics, & Observability
 
 One of the greatest things of AWS Lambda is that you get all the benfits of CloudWatch logging built into the platform. Logging is just a simple Ruby `puts` command away. A few great things come with this:
@@ -8,7 +7,6 @@ One of the greatest things of AWS Lambda is that you get all the benfits of Clou
 CloudWatch Logs Insights enables you to interactively search and analyze your log data in Amazon CloudWatch Logs. You can perform queries to help you quickly and effectively respond to operational issues. If an issue occurs, you can use CloudWatch Logs Insights to identify potential causes and validate deployed fixes.
 
 [🎥 YouTube: Analyze Log Data with CloudWatch Logs Insights](https://www.youtube.com/watch?v=2s2xcwm8QrM)
-
 
 ## CloudWatch Embedded Metrics
 
@@ -28,6 +26,5 @@ As demand changes and technologies evolve, it’s important to ensure efficient 
 
 [🎥 Monitoring Performance with CloudWatch Dashboards - AWS Virtual Workshop](https://www.youtube.com/watch?v=_eWaPVski6o)
 
-
-<%# doc_next :xyz %>
+<%= doc_next :cold_starts %>
 <%= disqus %>

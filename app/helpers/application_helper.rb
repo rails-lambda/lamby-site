@@ -11,7 +11,9 @@ module ApplicationHelper
   def doc_link(slug, options = {})
     name = doc_name(slug)
     name << options.delete(:link_suffix).to_s
-    link_to name, doc_lpath(slug, options), options
+    dopts = options.except(:class)
+    lopts = options.slice(:class)
+    link_to name, doc_lpath(slug, dopts), lopts
   end
 
   def doc_name(slug)
@@ -26,6 +28,7 @@ module ApplicationHelper
     when :activejob_and_lambda then 'ActiveJob & Lambda'
     when :logging_metrics_observability then 'Logging, Metrics, & Observability'
     when :database_options then 'Database & VPCs'
+    when :cold_starts then 'Cold Starts'
     else slug.to_s.titleize
     end
   end
@@ -36,8 +39,7 @@ module ApplicationHelper
 
   def doc_next(slug)
     content_tag :div, class: 'lb-Page-nav' do
-      doc_link slug, link_suffix: ' →', class:
-        'lb-Button lb-Button-fullResponsive mui-btn mui-btn--large mui-btn--danger mui-btn--raised'
+      doc_link slug, link_suffix: ' →', class: 'lb-Button lb-Button-fullResponsive mui-btn mui-btn--large mui-btn--danger mui-btn--raised'
     end
   end
 
