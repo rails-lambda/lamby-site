@@ -60,14 +60,13 @@ This YAML file at the root of your project describes your [SAM application](http
 
 ### Files - `Dockerfile`, `Dockerfile-build`, & `docker-compose.yml`
 
-Your `Dockerfile` should use one of the AWS [provided runtimes](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-build.html) from their public ECR repository and typically do a simple copy of your built project and some optional cleanup. For example:
+Your `Dockerfile` should use one of the AWS [provided runtimes](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-build.html) from their public ECR repository and typically do a simple copy of your built project and other tasks. For example:
 
 ```dockerfile
 FROM public.ecr.aws/lambda/ruby:2.7
 ARG RAILS_ENV
 ENV RAILS_ENV=$RAILS_ENV
 COPY . .
-RUN rm -rf log test ...
 CMD ["app.handler"]
 ```
 
