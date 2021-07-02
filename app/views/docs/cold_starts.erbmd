@@ -7,6 +7,7 @@ Cold starts (or init times) are an [incredibly addictive](https://docs.aws.amazo
 - [Monitoring with CloudWatch](#monitoring-with-cloudwatch)
 - [Rails Bootsnap by Shopify](#rails-bootsnap-by-shopify)
 - [Provisioned Concurrency (Deleting Cold Starts)](#provisioned-concurrency)
+- [Gradual Deployments](#gradual-deployments)
 - [Other Cold Start Factors](#other-cold-start-factors)
 
 ## Monitoring with CloudWatch
@@ -150,6 +151,12 @@ This chart shows that a static `ProvisionedConcurrentExecutions` of `5` can hand
 Here is a 7 day view from the 4 day mark above. The `TargetValue` is still set to `0.4`. It illustrates how the default CloudWatch Rule for `ProvisionedConcurrencyUtilization` metrics over a 3 minute span are not quick enough to scale PC. It is possible to use a `TargetValue` of `0.1` to force the PC lines to meet the blue. But your cost at this point would be unrealistically high.
 
 <img src="https://user-images.githubusercontent.com/2381/114177314-4027b980-990a-11eb-819a-14ab00657ed4.png" style="width:100%; border-radius:5px;" >
+
+## Gradual Deployments
+
+As mentioned in the [Provisioned Concurrency](#provisioned-concurrency) section we use a simple `DeploymentPreference` value called `AllAtOnce`. When a deploy happens, Lambda will need to download your new ECR image before your application is initialized. In certain high traffic scenarios along with a potentially slow loading application, deploys can be a thundering herd effect causing your concurrency to spike and a small percentage of users having longer response times.
+
+Please see AWS' "[Deploying serverless applications gradually](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/automating-updates-to-serverless-apps.html)" guide for full details but one way to soften this would be to roll out your new code in 10 minutes total via the `Linear10PercentEvery1Minute` deployment preference. This will automatically create a [AWS CodeDeploy](https://aws.amazon.com/codedeploy/) application and deployments for you. So cool!
 
 ## Other Cold Start Factors
 
