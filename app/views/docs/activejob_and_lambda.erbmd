@@ -1,5 +1,7 @@
 # ActiveJob & Lambda
 
+## 🥋 Lambdakiq
+
 Background tasks with ActiveJob on AWS Lambda is a reimagination of the problem for Rails. Instead of starting up long running process that poll for work, we instead use the event-driven architecture of AWS Lambda to our advantage using a gem named [Lambdakiq](https://github.com/customink/lambdakiq):
 
 <a href="https://github.com/customink/lambdakiq"><img width="100%" alt="Lambdakiq - ActiveJob on SQS & Lambda" src="https://raw.githubusercontent.com/customink/lambdakiq/main/images/Lambdakiq.png"/></a>
@@ -17,6 +19,12 @@ Lambdakiq, is a drop-in replacement for [Sidekiq](https://github.com/mperham/sid
 - Dead messages are stored for up to 14 days.
 
 Learn more at Lambdakiq on GitHub: https://github.com/customink/lambdakiq
+
+## 👊 LambdaPunch
+
+Asynchronous background job processing for AWS Lambda with Ruby using [Lambda Extensions](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-extensions-api.html). Inspired by the [SuckerPunch](https://github.com/brandonhilkert/sucker_punch) gem but specifically tooled to work with Lambda's invoke model.
+
+<a href="https://github.com/customink/lambda_punch"><img width="100%" alt="Async Processing Using Lambda Extensions" src="https://user-images.githubusercontent.com/2381/123561512-c23fb580-d776-11eb-9780-71d606cd8f2c.png"></a>
 
 <%= doc_next :logging_metrics_observability %>
 <%= disqus %>
