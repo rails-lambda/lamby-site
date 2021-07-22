@@ -173,3 +173,6 @@ Most of these should be considered before using Provisioned Concurrency.
 **ActiveRecord Schema Cache** - Commonly called Rails' best kept performance feature, the [schema cache](https://kirshatrov.com/2016/12/13/schema-cache/) can help reduce first request response time after Rails is initialized. So it should not help the init time but it could very easily help the first invoke times.
 
 **Reduce Image Size** - Sort of related to your Ruby version, always make sure that your ECR image is as small as possible. Lambda Containers supports up to 10GB for your image. There is no data on how much this could effect cold starts. So please [share your stories](https://github.com/customink/lamby/discussions).
+
+<%= doc_next :running_tasks %>
+<%= disqus %>

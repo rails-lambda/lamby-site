@@ -84,26 +84,7 @@ Technically the gem above is not needed with container deployment package types 
 
 ## Rails Database Migrations
 
-A best practice for containerized Rails applications should be that [any migration being deployed should be compatible with the code that is already running](https://www.cloudbees.com/blog/rails-migrations-zero-downtime/). Once a migration is deployed and ready to run, Lamby supports this by sending an event to your Lambda function in the following command runner format.
-
-```json
-{
-  "lamby": {
-    "runner": "./bin/rails db:migrate"
-  }
-}
-```
-
-This event can happen in any way that makes sense for you. For example, you could use the [AWS CLI's invoke](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/invoke.html) feature in a deploy pipeline. Another simple method would be to use the [test feature for Lambda](https://aws.amazon.com/blogs/compute/improved-testing-on-the-aws-lambda-console/) within the AWS Console.
-
-The runner has a default expression check of `%r{\A\./bin/(rails|rake) db:migrate.*}` which limits the type of commands that can be run by those whom have IAM capabilities to invoke your function. This can be removed to allow any commands or you can add addition patterns via the Lamby config by adding lines like these in your `app.rb` file below the Lamby require. For example:
-
-```ruby
-Lamby.config.runner_patterns.clear
-Lamby.config.runner_patterns.push %r{\A/bin/foo.*}
-```
-
-Lastly, you may want to consider changing the `Timeout` property of your `RailsLambda` resource from 30s to something longer. A Lambda function can have a maximum of 15m execution time for an invoke. Just remember that API Gateway integration will always be limited to 30s above the function's timeout. So these timeouts can operate independently.
+Please see the <%= doc_link(:running_tasks) %> guide on how to use Lamby's task runner for migrations or other on-demand tasks or code.
 
 ## Using Aurora Serverless
 

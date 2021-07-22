@@ -12,6 +12,7 @@ Think of our provided bin scripts as starting points! You should add to or adjus
 - [Using Private Gems on GitHub](#using-private-gems-on-github)
 - [ECR Repository](#ecr-repository)
 - [Multiple Environments](#multiple-environments)
+- [Deploy with GitHub Actions](/docs/quick_start#deploy-with-github-actions)
 
 ## Overview of Deploy Process
 

@@ -29,6 +29,7 @@ module ApplicationHelper
     when :logging_metrics_observability then 'Logging, Metrics, & Observability'
     when :database_options then 'Database & VPCs'
     when :cold_starts then 'Cold Starts'
+    when :running_tasks then 'Running Tasks'
     else slug.to_s.titleize
     end
   end
