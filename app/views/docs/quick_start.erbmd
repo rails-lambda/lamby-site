@@ -28,7 +28,7 @@ $ docker run \
   --rm \
   --interactive \
   --volume "${PWD}:/var/task:delegated" \
-  lambci/lambda:build-ruby2.7 \
+  public.ecr.aws/sam/build-ruby2.7 \
   sam init --location "gh:customink/lamby-cookiecutter"
 ```
 
