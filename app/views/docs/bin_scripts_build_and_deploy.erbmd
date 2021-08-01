@@ -12,6 +12,7 @@ Think of our provided bin scripts as starting points! You should add to or adjus
 - [Using Private Gems on GitHub](#using-private-gems-on-github)
 - [ECR Repository](#ecr-repository)
 - [Multiple Environments](#multiple-environments)
+- [Permissions Needed](#permissions-needed)
 - [Deploy with GitHub Actions](/docs/quick_start#deploy-with-github-actions)
 
 ## Overview of Deploy Process
@@ -50,6 +51,10 @@ export RAILS_ENV="staging"
 ```
 
 For GitHub Actions, you could setup additional workflows or extend the existing deploy workflow to use branch conditions and/or extra GitHub Secrets to a different deploy user in another AWS account.
+
+## Permissions Needed
+
+In order to have our deploy scripts work, you must have permission to create the needed Resources and IAM Roles/Permissions for your application to work. Most hobby users have admin level access to their own AWS account. If this is not the case, please consider starting with AWS SAM's [recommended permissions](https://lamby.custominktech.com/docs/bin_scripts_build_and_deploy) needed for deploying functions. We also cover this in our [Deploy with GitHub Actions](/docs/quick_start#deploy-with-github-actions) section of our quick start guide.
 
 <%= doc_next :environment_and_configuration %>
 <%= disqus %>
