@@ -70,7 +70,8 @@ COPY . .
 CMD ["app.handler"]
 ```
 
-The `Dockerfile-build` facilitates both the local development and the build environment to prepare the copy above. This follows a typical good practice for Docker called [multi-stage](https://docs.docker.com/develop/develop-images/multistage-build/) builds. We recommend using SAM's build images (ex: `amazon/aws-sam-cli-build-image-ruby2.7`) for your development needs. Installing additional tooling like a SAM version and JavaScript for compiling assets should be done in this image. All docker compose commands leverage this image.
+The `Dockerfile-build` facilitates local development/test for your Rails application. It also serves as the build/deploy environment. This follows a typical good practice for Docker called [multi-stage](https://docs.docker.com/develop/develop-images/multistage-build/) builds. We recommend using [SAM's build images](https://docs.aws.amazon.com/serverless-application-model/latest
+/developerguide/serverless-image-repositories.html)) (ex: `public.ecr.aws/sam/build-ruby2.7`) for your development needs. Installing additional tooling like a SAM version and JavaScript for compiling assets should be done in this image. All docker compose commands leverage this image.
 
 ### Files - `bin`
 
