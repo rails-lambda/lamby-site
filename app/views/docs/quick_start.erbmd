@@ -32,7 +32,7 @@ $ docker run \
   sam init --location "gh:customink/lamby-cookiecutter"
 ```
 
-If you have the SAM CLI installed on your system, use can use this command.
+If you have the SAM CLI installed on your system, you can use this command.
 
 ```shell
 $ sam init --location "gh:customink/lamby-cookiecutter"
