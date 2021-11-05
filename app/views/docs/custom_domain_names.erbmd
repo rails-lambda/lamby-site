@@ -60,7 +60,9 @@ From here there are various ways to setup Route53 and route traffic to your Lamb
 
 From here all we need is a simple DNS entry in Route53 that points to the "API Gateway domain name" we created in the step above. That domain name looks something like: `d-byp3km86t3.execute-api.us-east-1.amazonaws.com`
 
-- AWS Console -> API Gateway
+- AWS Console -> Route 53 -> Hosted zones
+- Click on your domain
+- Click "Create record"
 - Click "Switch to wizard" if not selected already.
 - Select "Simple routing"
 - Click "Next"
@@ -80,7 +82,9 @@ From here all we need is a simple DNS entry in Route53 that points to the "API G
 
 From here all we need is a simple DNS entry in Route53 that points to our Application Load Balancer's DNS name CloudFormation output. That domain name looks something like: `internal-myapp-rails-bj5cmdxb307p-856336498.us-east-1.elb.amazonaws.com`
 
-- AWS Console -> API Gateway
+- AWS Console -> Route 53 -> Hosted zones
+- Click on your domain
+- Click "Create record"
 - Click "Switch to wizard" if not selected already.
 - Select "Simple routing"
 - Click "Next"
