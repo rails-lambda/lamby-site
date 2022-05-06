@@ -26,31 +26,14 @@ Resources:
           RAILS_ENV: !Ref RailsEnv
           RUBYOPT: -W0
       FunctionName: !Sub lamby-${RailsEnv}
-      Events:
-        LambyHttpApiProxy:
-          Type: HttpApi
-          Properties:
-            ApiId: !Ref LambyHttpApi
-      Tags:
-        env: !Ref RailsEnv
-        group: shared
-        application: lamby
-      AutoPublishAlias: live
-
-  LambyHttpApi:
-    Type: AWS::Serverless::HttpApi
-    Properties:
-      StageName: !Ref RailsEnv
+      FunctionUrlConfig:
+        AuthType: NONE
       Tags:
         env: !Ref RailsEnv
         group: shared
         application: lamby
 
 Outputs:
-
-  LambyHttpApiUrl:
-    Description: API Gateway Endpoint
-    Value: !Sub "https://${LambyHttpApi}.execute-api.${AWS::Region}.amazonaws.com/${RailsEnv}/"
 
   LambyLambdaResourceArn:
     Description: Lamby Lambda ARN
