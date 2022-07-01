@@ -1,5 +1,9 @@
 # Environment & Configuration
 
+<div class="mui-panel sp-Flash sp-Flash--alert" style="margin-top:1.5rem;">
+  🆕 Rust Lambda Extension for any Runtime to preload SSM Parameters as Secure Environment Variables! <a href="https://github.com/customink/crypteia">Crypteia</a>
+</div>
+
 Most Rails applications require over a dozen environment variables to configure itself along with other popular gems used. Most notable is ActiveRecord's `DATABASE_URL` but others like `RAILS_MASTER_KEY` require us to consider how we configure your Lambda.
 
 There are numerous ways to configure environment variables ranging from "quick and dirty" by adding secrets to your git repo (DO NOT DO THIS) all the way to a strict "separation of config" from code using countless methods to achieve a proper [Twelve-Factor](https://12factor.net/config) app. We want to cover a few topics that may help you pick and choose what works best for you.
@@ -28,6 +32,8 @@ Our cookiecutter project integrates the [Dotenv](https://github.com/bkeepers/dot
 Please take some time to read their documentation. Alternatively, you can remove Dotenv all together and replace it with any other system that makes sense for you. Our starter project is just that, a starting point.
 
 ## SSM Parameter Store
+
+🆕 Please take a look at <a href="https://github.com/customink/crypteia">Crypteia</a>, a new Rust-based Lambda Extension for any Runtime to preload SSM Parameters as Secure Environment Variables!
 
 Please consider using AWS' [Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-paramstore.html) to store your credentials for each stage of your deploy and leverage our place holder in `bin/_build` under the "Environments & Configuration" section to pull your configurations into a Dotenv file to be packaged for deploy. Lamby provides a Rake task to help with this. For example, this will take every parameter under the `/my_awesome_lambda/production/env` path and save it to a `.env.production` file. The Lamby starter includes this SSM gem already. But make sure you check it is there.
 
