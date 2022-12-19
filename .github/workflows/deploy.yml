@@ -1,0 +1,34 @@
+name: Build & Deploy
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build Site
+        uses: devcontainers/ci@v0.2
+        with:
+          push: always
+          imageName: ghcr.io/customink/lamby-site-devcontainer
+          cacheFrom: ghcr.io/customink/lamby-site-devcontainer
+          runCmd: |
+            npm install
+            npm run build
+      - name: Deploy Site
+        uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.ref == 'refs/heads/master' }}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
