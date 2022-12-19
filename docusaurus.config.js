@@ -14,6 +14,8 @@ const config = {
   organizationName: 'customink',
   projectName: 'lamby',
   trailingSlash: false,
+  organizationName: 'customink',
+  deploymentBranch: 'gh-pages',
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],
