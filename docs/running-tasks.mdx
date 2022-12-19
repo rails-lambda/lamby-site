@@ -1,0 +1,78 @@
+---
+id: running-tasks
+title: Running Tasks
+toc_max_heading_level: 2
+---
+
+# Running Tasks
+
+It can be common for Rails engineers to fire up the [Rails console](https://guides.rubyonrails.org/command_line.html#bin-rails-console) for some quick debugging or to run code like a Rake task. That said, console'ing into a Lambda function is simply not an option and requires a different solution for on-demand tasks.
+
+## Lamby Runner Event
+
+Running a task on your Rails application can be done by sending your Lambda an event in the following format. This event can happen in any way that makes sense for you. For example, you could use the [AWS CLI's invoke](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/invoke.html) feature in a deploy pipeline. Another simple method would be to use the [test feature for Lambda](https://aws.amazon.com/blogs/compute/improved-testing-on-the-aws-lambda-console/) within the AWS Console. You cold even use a [GitHub Action](#github-actions-invoke-example)
+
+```json
+{
+  "lamby": {
+    "runner": "./bin/rails db:migrate"
+  }
+}
+```
+
+## Customizing Runner Patterns
+
+The runner has a single default expression check of `%r{\A\./bin/(rails|rake) db:migrate.*}` which limits the type of commands executed. This can be cleared to deny any command(s) or you can add addition pattern matchers via the Lamby config. To do so, add lines like these in your `app.rb` file below the `require 'lamby'`. For example, the first line would clear all patterns and allow no commands, the second would allow a simple bin file to be added.
+
+```ruby
+Lamby.config.runner_patterns.clear
+Lamby.config.runner_patterns.push %r{\A/bin/foo.*}
+```
+
+## Function Timeout Property
+
+You may want to consider changing the `Timeout` property of your `RailsLambda` resource in your `template.yaml` from 30s to something longer. A Lambda function can have a maximum of 15m execution time. Just remember that API Gateway integration will always be limited to 30s under the function's timeout. So these timeouts can operate independently.
+
+## GitHub Actions Invoke Example
+
+Similar to the [Deploy with GitHub Actions](/docs/quick-start) example in our <DocLink id="quick-start" /> guide, here is an `invoke.yml` workflow example that uses the AWS CLI to invoke your function with the needed JSON event format detailed above. Here is an example `payload` option you could paste into the workflow dispatch window. Note that quotes have to be escaped to flow through to GitHub Actions.
+
+```json
+{"lamby":{"runner":"./bin/rails runner \\"puts(\'HELLO\')\\""}}
+```
+
+This example above uses [Rails runner](https://guides.rubyonrails.org/command_line.html#bin-rails-runner) to invoke arbitrary code in a non-interactive way. ⚠️ Please ensure the `--stack-name` value below matches the same value in your `bin/_deploy` file and replace the `myapp-production` value with that.
+
+```yaml
+name: Invoke
+on:
+  workflow_dispatch:
+    inputs:
+      payload:
+        description: JSON Event Payload
+        required: true
+jobs:
+  invoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install AWS CLI
+        uses: unfor19/install-aws-cli-action@v1
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: { { "${{ secrets.AWS_ACCESS_KEY_ID }}" } }
+          aws-secret-access-key: { { "${{ secrets.AWS_SECRET_ACCESS_KEY }}" } }
+          aws-region: us-east-1
+      - name: Invoke
+        run: |
+          echo $'${{ github.event.inputs.payload }}' > payload.json
+          FUNCTION_NAME=$(aws cloudformation describe-stack-resources \
+            --stack-name "myapp-production" \
+            --query "StackResources[?LogicalResourceId=='RailsLambda'].PhysicalResourceId" \
+            --output text)
+          aws lambda invoke \
+            --function-name "$FUNCTION_NAME" \
+            --cli-binary-format raw-in-base64-out \
+            --payload file://./payload.json \
+            /dev/stdout | jq -r .body
+```

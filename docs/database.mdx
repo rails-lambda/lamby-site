@@ -1,0 +1,64 @@
+---
+id: database
+title: Database & VPCs
+toc_max_heading_level: 2
+---
+
+# Database & VPCs
+
+import DocLink from "../src/components/DocLink.js"
+
+Any database supported by Ruby or Rails can be used with Lambda assuming your VPC/Network allows those connections. This guide will not get into the details on how to setup or use various databases options within AWS itself like RDS, Aurora, or DynamoDB. However, we will address a few high level topics along with some conventions in our <DocLink id="quick-start" name="cookiecutter" /> project.
+
+## Our Cookiecutter
+
+Our <DocLink id="quick-start" /> project does not create a database but it does have a MySQL service attached to the dev container to faciliate quickly iterating toward using one. The two key files' snippets are below. If you decide to use switch to a different database like PostgreSQL, make adjustments to these files and your `Gemfile` as needed.
+
+```yaml title="config/database.yml"
+default: &default
+  adapter: mysql2
+  username: root
+  password: <%= ENV["MYSQL_ROOT_PASSWORD"] %>
+  host: <%= ENV.fetch("MYSQL_HOST") { "localhost" } %>
+```
+
+```yaml title=".devcontainer/docker-compose.yml"
+services:
+  app:
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_ROOT_PASSWORD=root
+```
+
+## VPC Configuration
+
+Most Rails applications within AWS are deployed to a private subnet(s) within a VPC which allows you to have direct network access to your relational database. For most folks, this is [the default VPC](https://docs.aws.amazon.com/vpc/latest/userguide/default-vpc.html) which means finding your subnet ids and security groups are fairly easy. Once you have those, add this [VpcConfig](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-lambda-function-vpcconfig.html) to your project's `template.yaml` file within the existing globals section.
+
+```yaml title="template.yaml"
+Globals:
+  Function:
+    VpcConfig:
+      SubnetIds:
+        - subnet-09792e6cd06dd59ad
+        - subnet-0501f3136415021da
+      SecurityGroupIds:
+        - sg-07be99aff5fb14557
+```
+
+Adding it here will ensure every function within your stack has a common VPC setting. Using a `VpcConfig` should automatically add the `AWSLambdaVPCAccessExecutionRole` managed policy to your Lambda's execution role. If not, you can manually add it to your [`Policies`](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html#sam-function-policies) section.
+
+```yaml title="template.yaml"
+RailsLambda:
+  Properties:
+    Policies:
+      # highlight-next-line
+      - AWSLambdaVPCAccessExecutionRole
+```
+
+## Database Migrations
+
+Please see the <DocLink id="running-tasks" /> guide on how to use Lamby's task runner for migrations or other on-demand tasks like Rake.
+
+## Using DynamoDB
+
+In some cases Rails with DynamoDB is an excellent choice. If this sounds right for you, I highly recommend using the [Aws::Record](https://github.com/aws/aws-sdk-ruby-record) gem which leverages the `aws-sdk-dynamodb` in a very Rails like ActiveModel way. Please [share your stories](https://github.com/customink/lamby/issues/new) with us.

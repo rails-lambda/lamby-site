@@ -1,0 +1,65 @@
+---
+id: assets
+title: JavaScript & Assets
+toc_max_heading_level: 2
+---
+
+# JavaScript & Assets
+
+import DocLink from "../src/components/DocLink.js"
+import ThemedImage from '@theme/ThemedImage'
+import useBaseUrl from "@docusaurus/useBaseUrl"
+
+:::note
+Assets require a <DocLink id="custom-domain" name="Custom Domain Name" /> to link properly when using API Gateway.
+:::
+
+Some might remember a process where [precompiling Rails CSS & JavaScript assets](https://guides.rubyonrails.org/asset_pipeline.html#in-production) meant having Node and other dependencies installed on our production servers. In contrast, using container practices which embrace a multi-stage build process only has Node.js installed on the build image. Compiled assets along with other application code and dependencies are copied to the final production ECR image. This helps keep the production image small and secure.
+
+## CSS & JavaScript Ready!
+
+Our <DocLink id="quick-start" /> cookiecutter project is ready to hit the ground running with all the latest Rails defaults for JavaScript & CSS development. We do this by adding Node.js to the development container which is also used to build your production image. See our <DocLink id="anatomy" /> guide for details.
+
+For example, we can add the [TailwindCSS Rails](https://github.com/rails/tailwindcss-rails) gem, run the `./bin/rails tailwindcss:install` command, and edit the temporary starter index page like so. Once redeployed, we should see our Hello TailwindCSS page working correctly.
+
+```ruby title="Gemfile"
+gem 'tailwindcss-rails'
+```
+
+```html title="app/views/application/index.html.erb"
+<h1 class="
+    text-center
+    text-9xl
+    text-blue-400
+    mt-5
+    ">Hello TailwindCSS</h1>
+```
+
+<ThemedImage
+  alt="TailwindCSS on Rails on Lambda"
+  sources={{
+    light: useBaseUrl('/img/docs/tailwindcss-light.png'),
+    dark: useBaseUrl('/img/docs/tailwindcss-dark.png'),
+  }}
+/>
+
+## Serving Static Assets
+
+Our <DocLink id="quick-start" /> cookiecutter project leverages Rails' built in ability to serve static assets. We do this by setting this environment variable in your `Dockerfile`.
+
+```docker title="Dockerfile"
+ENV RAILS_SERVE_STATIC_FILES=1
+```
+
+We also add this configuration to your `config/environments/production.rb` file. In this case we are setting the cache control to 30 days, which you can change. The `X-Lamby-Base64` header signals to the Lamby rack adapter that the content requires base64 binary encoding.
+
+```ruby title="config/environments/production.rb"
+config.public_file_server.headers = {
+  'Cache-Control' => "public, max-age=#{30.days.seconds.to_i}",
+  'X-Lamby-Base64' => '1'
+}
+```
+
+## Using CloudFront
+
+[CloudFront](https://aws.amazon.com/cloudfront/) is an amazing CDN and is pretty easy to setup with Rails. No crazy S3 bucket is needed. Simply point CloudFront to your Rails app and allow the origin to set the cache headers. Because we set the `public_file_server` headers above, everything should work out perfectly.

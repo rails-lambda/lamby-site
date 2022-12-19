@@ -1,7 +1,0 @@
-#!/bin/bash
-set -e
-
-docker-compose run \
-  -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
-  cicd \
-  ./bin/_deploy

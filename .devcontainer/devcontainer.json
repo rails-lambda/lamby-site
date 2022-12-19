@@ -1,0 +1,28 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:18",
+  "customizations": {
+    "codespaces": {
+      "openFiles": [
+        "README.md"
+      ]
+    },
+    "vscode": {
+      "extensions": [
+        "unifiedjs.vscode-mdx"
+      ]
+	  }
+	},
+	"features": {
+    "ghcr.io/devcontainers/features/common-utils": {},
+    "ghcr.io/devcontainers/features/sshd:latest": {}
+  },
+  "forwardPorts": [3080],
+  "portsAttributes": {
+    "3080": {
+      "label": "Site",
+      "onAutoForward": "openPreview"
+    }
+  },
+  "postCreateCommand": ".devcontainer/postCreate.sh",
+  "postAttachCommand": ".devcontainer/postAttach.sh"
+}
