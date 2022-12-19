@@ -1,41 +1,22 @@
-# Website
+# Lamby Site
 
-This website is built using [Docusaurus 2](https://docusaurus.io/), a modern static website generator.
+<a href="https://lamby.custominktech.com"><img src="https://raw.githubusercontent.com/customink/lamby/master/images/social2.png" alt="Lamby: Simple Rails & AWS Lambda Integration using Rack." align="right" width="450" style="margin-left:1rem;margin-bottom:1rem;" /></a>
 
-### Installation
+- Documentation and blog site for Lamby
+- Uses Docusaurus as our static site generator.
+- Leverages development containers & Codespaces.
+- Easily contribute by opening a pull request.
 
-```
-$ yarn
-```
+**[Lamby: Simple Rails & AWS Lambda Integration using Rack.](https://lamby.custominktech.com)**
 
-### Local Development
+## Contributing
 
-```
-$ yarn start
-```
+This project is built for [GitHub Codespcaes](https://github.com/features/codespaces) using the [Development Container](https://containers.dev) specification. Once you have the repo cloned and setup with a dev container using either Codespaces or [VS Code](#using-vs-code), run the following commands. This will install packages and run tests.
 
-This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
-
-### Build
-
-```
-$ yarn build
+```shell
+npm start
 ```
 
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
+#### Using VS Code
 
-### Deployment
-
-Using SSH:
-
-```
-$ USE_SSH=true yarn deploy
-```
-
-Not using SSH:
-
-```
-$ GIT_USER=<Your GitHub username> yarn deploy
-```
-
-If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
+If you have the [Visual Studio Code Dev Container](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension installed you can easily clone this repo locally, use the "Open Folder in Container..." command. This allows you to use the integrated terminal for the commands above.
