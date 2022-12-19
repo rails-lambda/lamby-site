@@ -1,0 +1,107 @@
+---
+id: quick-start
+toc_max_heading_level: 2
+---
+
+import DocLink from "../src/components/DocLink.js"
+import ThemedImage from '@theme/ThemedImage'
+import useBaseUrl from "@docusaurus/useBaseUrl"
+
+# Quick Start
+
+### Deploy a new Rails APP to Lambda in 5 minutes!
+
+Lamby can be used with <DocLink id="anatomy" name="existing" /> Rails v5 application or higher. The quickest way to learn how Rails works on Lambda is to deploy a new application to your AWS account using our [cookiecutter project](https://github.com/customink/lamby-cookiecutter) template.
+
+:::note
+Before you get started, make sure that you have Docker installed, an AWS account, and Visual Studio Code open. 🚢 [Install Docker](https://www.docker.com) ⛅️ [AWS Account](https://aws.amazon.com/free) 📝 [Install VS Code](https://code.visualstudio.com)
+:::
+
+## Rails Project Template
+
+We created a [customink/lamby-cookiecutter](https://github.com/customink/lamby-cookiecutter) repository which allows you to initialize a new project from a GitHub template, commonly called a [cookiecutter](https://github.com/cookiecutter/cookiecutter). Run this terminal command to create a new Rails project with Lamby already installed.
+
+```shell
+docker run \
+  --rm \
+  --interactive \
+  --volume "${PWD}:/var/task" \
+  ghcr.io/customink/lamby-cookiecutter \
+  "gh:customink/lamby-cookiecutter"
+```
+
+You will be prompted for a project name. Choose something short, no spaces, and with underscores for word breaks. Example: `new_service`.
+
+```
+project_name [my_awesome_lambda]: 
+```
+
+## Development Container
+
+Your new Rails project with Lamby leverages [GitHub Codespaces](https://github.com/features/codespaces) which itself is built atop of the [Development Container](https://containers.dev) specification. In short, this means your project's containers are easy to use by any editor, even outside of Codespaces. 
+
+VS Code makes this incredibly easy. Within a new window, open the command pallet and type "dev container open" and select that action to `Open Foler in Container...`. When prompted, select the project folder created in the previous step.
+
+<ThemedImage
+  alt="Docusaurus themed image"
+  sources={{
+    light: useBaseUrl('/img/docs/devcontainer-open-light.png'),
+    dark: useBaseUrl('/img/docs/devcontainer-open-dark.png'),
+  }}
+/>
+
+When the dev container's build is complete, VS Code will display the project folder within the container. This container uses the same base Docker image as the one we are going to deploy to AWS. Unlike the production image, this continer comes with all sorts of build utilties, including the AWS & SAM CLI which we are going to use in the next step to deploy your Rails application to AWS Lambda. 
+
+## Deploy to Lambda
+
+Open the integrated terminal by typing `View: Toggle Terminal` in the command pallet. This VS Code terminal is within your development container, an official Ruby Ubuntu image.
+
+<ThemedImage
+  alt="Docusaurus themed image"
+  sources={{
+    light: useBaseUrl('/img/docs/devcontainer-console-light.png'),
+    dark: useBaseUrl('/img/docs/devcontainer-console-dark.png'),
+  }}
+/>
+
+First configure the AWS CLI with your AWS access key and secret.
+
+```shell
+aws configure
+```
+
+Now we can run the deploy script which uses the AWS SAM CLI.
+
+```shell
+./bin/deploy
+```
+
+:::caution
+Deploy scripts are best run via automated CI/CD system such as GitHub Actions. We describe this process more later in the guides.
+:::
+
+## Yay! Your're on Rails!
+
+At the end of the deploy process above, you will see SAM print the outputs for the CloudFormation template being deployed. This includes your Lambda Function URL, a free web server proxy to your Lambda container running Rails. 
+
+```
+CloudFormation outputs from deployed stack
+-------------------------------------------------------------------------------------------
+Outputs                                                                                                          
+-------------------------------------------------------------------------------------------
+Key                 RailsLambdaUrl                                                                               
+Description         Lambda Function URL                                                                          
+Value               https://b4hsncwngvxg6rv67b64r545ly0jrwnk.lambda-url.us-east-1.on.aws/                        
+-------------------------------------------------------------------------------------------
+
+Successfully created/updated stack - new-service-production in us-east-1
+```
+
+Open your browser and go to the URL. You should see the familiar welcome to Rails screen.
+
+<img alt="Yay! You're on Rails with AWS Lambda containers" src={require('@site/static/img/docs/you-are-on-rails-and-lambda.png').default} style={{width: '100%', borderRadius: '5px'}} />
+
+
+## What Just Happened?
+
+You just deployed a new Rails application to AWS Lambda containers using a basic Ruby Ubuntu Docker base image. Every part of your application is wrapped up neatly in a single CloudFormation stack. This stack has everything you need for a server-side API and/or a client JavaScript application hosted on AWS Lambda. Please take some time to explore how Lamby works in the next sections.

@@ -1,0 +1,47 @@
+.heroImageWhimsical {
+  padding: 16.6vw 0;
+  background-image: url("/static/img/lamby-rails-containers.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+[data-theme='dark'] .heroImageWhimsical {
+  background-image: url("/static/img/lamby-rails-dark.jpg");
+}
+
+.heroImageArch {
+  padding: 15vw 0;
+  background-image: url("/static/img/lamby-rails-arch.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+[data-theme='dark'] .heroImageArch {
+  background-image: url("/static/img/lamby-rails-arch-dark.png");
+}
+
+.heroBanner {
+  padding: 2rem 0 3rem 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme='dark'] .heroBanner {
+  color: white;
+  background-color: #002634;
+}
+
+@media screen and (min-width: 996px) {
+  .heroTitle {
+    padding: 0 20%;
+  }
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

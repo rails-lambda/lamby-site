@@ -1,8 +1,0 @@
-#!/bin/bash
-set -e
-
-docker-compose run \
-  -p 4040:4040 \
-  -e RUBYOPT='-W0' \
-  cicd \
-  ./bin/_server

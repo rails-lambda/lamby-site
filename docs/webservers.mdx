@@ -1,0 +1,110 @@
+---
+id: webservers
+title: Web Proxy Integrations
+toc_max_heading_level: 2
+---
+
+# Web Proxy Integrations
+
+import DocLink from "../src/components/DocLink.js"
+
+We recommend using Lambda Function URLs which are free, work with JavaScript & CSS assets out of the box, and are easy to map to a custom domain name. However, here are some SAM YAML snippets if you would like to use an alternate web server integration for your application. Remember, Lamby automatically detects which integration you are using.
+
+:::note
+The code snippets below are shown in diff format when compared to the latest files in the <DocLink id="quick-start" /> cookiecutter project template.
+:::
+
+## API Gateway HTTP API
+
+The [HTTP API](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api.html) is the most modern integration after Function URLs. It is also really easy to add into our template file.
+
+```diff
+--- template.yaml
++++ template.yaml
+@@ -28,14 +28,22 @@ Resources:
+       DockerTag: web
+     Properties:
+       AutoPublishAlias: live
+-      FunctionUrlConfig:
+-        AuthType: NONE
+       DeploymentPreference:
+         Type: AllAtOnce
++      Events:
++        HttpApiProxy:
++          Type: HttpApi
++          Properties:
++            ApiId: !Ref RailsHttpApi
+       MemorySize: 1792
+       PackageType: Image
+       Timeout: 30
+ 
++  RailsHttpApi:
++     Type: AWS::Serverless::HttpApi
++     Properties:
++       StageName: !Ref RailsEnv
+```
+
+
+## API Gateway REST API
+
+The [REST API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-rest-api.html) is a little more verbose, but it essentially sets up a simple proxy that Lamby can use. The integration `uri` lines use the `:live` alias since our starter defaults to using an `AutoPublishAlias: live`
+
+## Application Load Balancer
+
+Using Lambda's [ALB Integration](https://docs.aws.amazon.com/lambda/latest/dg/services-alb.html) is a great way to setup your application on a private VPC. However the limit response payloads to less than 1MB vs. the 6MB limit for API Gateway. Using [Rack::Deflater](https://gist.github.com/metaskills/363e39e2e8cbccf280b5d5804b384bd2) can help with this if needed. These resources make use of the VPC subnets and security groups mentioned in the <DocLink id="database" /> guide.
+
+```diff
+--- template.yaml
++++ template.yaml
+@@ -28,14 +28,52 @@ Resources:
+       DockerTag: web
+     Properties:
+       AutoPublishAlias: live
+-      FunctionUrlConfig:
+-        AuthType: NONE
+       DeploymentPreference:
+         Type: AllAtOnce
+       MemorySize: 1792
+       PackageType: Image
+       Timeout: 30
+ 
++  RailsLoadBalancer:
++    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
++    Properties:
++      Scheme: internal
++      SubnetIds:
++        - subnet-09792e6cd06dd59ad
++        - subnet-0501f3136415021da
++      SecurityGroupIds:
++        - sg-07be99aff5fb14557
++
++  RailsLoadBalancerHttpsListener:
++    Type: AWS::ElasticLoadBalancingV2::Listener
++    Properties:
++      Certificates:
++        - CertificateArn: arn:aws:acm:us-east-1:123456789012:certificate/38613b58-c21e-11eb-8529-0242ac130003
++      DefaultActions:
++        - TargetGroupArn: !Ref RailsLoadBalancerTargetGroup
++          Type: forward
++      LoadBalancerArn: !Ref RailsLoadBalancer
++      Port: 443
++      Protocol: HTTPS
++
++  RailsLoadBalancerTargetGroup:
++    Type: AWS::ElasticLoadBalancingV2::TargetGroup
++    DependsOn: RailsLambdaInvokePermission
++    Properties:
++      TargetType: lambda
++      TargetGroupAttributes:
++        - Key: lambda.multi_value_headers.enabled
++          Value: true
++      Targets:
++        - Id: !GetAtt RailsLambda.Arn
++
++  RailsLambdaInvokePermission:
++    Type: AWS::Lambda::Permission
++    Properties:
++      FunctionName: !GetAtt RailsLambda.Arn
++      Action: "lambda:InvokeFunction"
++      Principal: elasticloadbalancing.amazonaws.com
+```
