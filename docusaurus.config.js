@@ -13,6 +13,7 @@ const config = {
   favicon: 'img/favicon.ico',
   organizationName: 'customink',
   projectName: 'lamby',
+  trailingSlash: false,
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],
