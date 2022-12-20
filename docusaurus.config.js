@@ -1,121 +1,119 @@
 // @ts-check
-const path = require('path');
-const lightCodeTheme = require('prism-react-renderer/themes/github');
-const darkCodeTheme = require('prism-react-renderer/themes/dracula');
+const path = require("path");
+const lightCodeTheme = require("prism-react-renderer/themes/github");
+const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Lamby - Simple Rails & AWS Lambda Integration using Rack',
-  url: 'https://technology.customink.com',
-  baseUrl: '/lamby-site',
-  onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/favicon.ico',
-  organizationName: 'customink',
-  projectName: 'lamby-site',
+  title: "Lamby - Simple Rails & AWS Lambda Integration using Rack",
+  url: "https://technology.customink.com",
+  baseUrl: "/lamby-site",
+  onBrokenLinks: "throw",
+  onBrokenMarkdownLinks: "warn",
+  favicon: "img/favicon.ico",
+  organizationName: "customink",
+  projectName: "lamby-site",
   trailingSlash: false,
-  organizationName: 'customink',
-  deploymentBranch: 'gh-pages',
+  organizationName: "customink",
+  deploymentBranch: "gh-pages",
   i18n: {
-    defaultLocale: 'en',
-    locales: ['en'],
+    defaultLocale: "en",
+    locales: ["en"],
   },
   presets: [
     [
-      'classic',
+      "classic",
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
-          sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/customink/lamby-site/tree/main',
+          sidebarPath: require.resolve("./sidebars.js"),
+          editUrl: "https://github.com/customink/lamby-site/tree/main",
         },
         blog: {
-          showReadingTime: true
+          showReadingTime: true,
         },
         theme: {
-          customCss: require.resolve('./src/css/custom.css'),
+          customCss: require.resolve("./src/css/custom.css"),
         },
       }),
     ],
   ],
   markdown: {
-    mermaid: true
+    mermaid: true,
   },
-  themes: [
-    '@docusaurus/theme-mermaid'
-  ],
+  themes: ["@docusaurus/theme-mermaid"],
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'Lamby',
+        title: "Lamby",
         logo: {
-          alt: 'Lamby Logo',
-          src: 'img/lamby-logo-small.png',
+          alt: "Lamby Logo",
+          src: "img/lamby-logo-small.png",
         },
         items: [
           {
-            href: '/docs/quick-start',
-            label: 'Quick Start',
-            position: 'left',
+            href: "/docs/quick-start",
+            label: "Quick Start",
+            position: "left",
           },
           {
-            type: 'doc',
-            docId: 'anatomy',
-            position: 'left',
-            label: 'Documentation',
-          },
-          { 
-            to: '/blog', 
-            label: 'Updates Blog', 
-            position: 'left'
+            type: "doc",
+            docId: "anatomy",
+            position: "left",
+            label: "Documentation",
           },
           {
-            href: 'https://github.com/customink/lamby',
-            label: 'GitHub',
-            position: 'right',
+            to: "/blog",
+            label: "Updates Blog",
+            position: "left",
+          },
+          {
+            href: "https://github.com/customink/lamby",
+            label: "GitHub",
+            position: "right",
           },
         ],
       },
       footer: {
-        style: 'light',
+        style: "light",
         links: [
           {
-            title: 'Guides',
+            title: "Guides",
             items: [
               {
-                label: 'Quick Start',
-                to: '/docs/quick-start',
+                label: "Quick Start",
+                to: "/docs/quick-start",
               },
               {
-                label: 'Documentation',
-                to: '/docs/anatomy',
+                label: "Documentation",
+                to: "/docs/anatomy",
               },
             ],
           },
           {
-            title: 'Community',
+            title: "Community",
             items: [
               {
-                label: 'Twitter @CustomInkTech',
-                href: 'https://twitter.com/custominktech',
+                label: "Twitter @CustomInkTech",
+                href: "https://twitter.com/custominktech",
               },
               {
-                label: 'Technology Blog on Dev.to',
-                href: 'https://dev.to/customink'
+                label: "Technology Blog on Dev.to",
+                href: "https://dev.to/customink",
               },
             ],
           },
           {
-            title: 'More',
+            title: "More",
             items: [
               {
-                label: 'Lamby Blog',
-                to: '/blog',
+                label: "Lamby Blog",
+                to: "/blog",
               },
               {
-                label: 'GitHub Project',
-                href: 'https://github.com/customink/lamby',
+                label: "GitHub Project",
+                href: "https://github.com/customink/lamby",
               },
             ],
           },
@@ -125,21 +123,20 @@ const config = {
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
-        additionalLanguages: [
-          'ruby', 
-          'docker',
-          'yaml'
-        ]
+        additionalLanguages: ["ruby", "docker", "yaml"],
       },
       metadata: [
-        {name: 'keywords', content: 'rails, rack, lambda, serverless, containers'}
+        {
+          name: "keywords",
+          content: "rails, rack, lambda, serverless, containers",
+        },
       ],
       colorMode: {
-        defaultMode: 'light',
+        defaultMode: "light",
         disableSwitch: false,
-        respectPrefersColorScheme: true
-      }
-    })
+        respectPrefersColorScheme: true,
+      },
+    }),
 };
 
 module.exports = config;
