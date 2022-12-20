@@ -131,11 +131,6 @@ const config = {
           content: "rails, rack, lambda, serverless, containers",
         },
       ],
-      colorMode: {
-        defaultMode: "light",
-        disableSwitch: false,
-        respectPrefersColorScheme: true,
-      },
     }),
 };
 
