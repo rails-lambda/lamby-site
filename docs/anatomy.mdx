@@ -101,9 +101,9 @@ RailsLambda:
     Timeout: 30
 ```
 
-- Your Rails function will have a `MemorySize` of 1,792 MB of RAM and 1 vCPU. This is the sweet spot for Rails speed and cost optimization. Remember, your not running a web server in a single function nor scaling by memory.
+- Your Rails function will have a `MemorySize` of 1,792 MB of RAM and 1 vCPU. This is the sweet spot for Rails speed and cost optimization. Remember, you're not running a web server in a single function nor scaling by memory.
 - The `FunctionUrlConfig` has been configured to be a public HTTP proxy. You can change this to IAM authentication or swap out to other web server integrations like API Gateway if you need their features. Details in other guides.
-- The maximum amount of `Timeout` for an HTTP integratin is 30 seconds.
+- The maximum amount of `Timeout` for an HTTP integration is 30 seconds.
 
 <img alt="AWS SAM Introduction" src={require('@site/static/img/docs/aws_sam_introduction.png').default} style={{width:'100%',borderRadius:'5px',marginBottom:'0.5rem'}} />
 
