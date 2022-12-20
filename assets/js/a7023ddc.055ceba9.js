@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunklamby=self.webpackChunklamby||[]).push([[713],{3457:a=>{a.exports=JSON.parse('[{"label":"rails","permalink":"/blog/tags/rails","count":1},{"label":"lambda","permalink":"/blog/tags/lambda","count":1},{"label":"containers","permalink":"/blog/tags/containers","count":1}]')}}]);

@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunklamby=self.webpackChunklamby||[]).push([[487],{6652:a=>{a.exports=JSON.parse('{"permalink":"/lamby-site/blog/tags/lambda","page":1,"postsPerPage":10,"totalPages":1,"totalCount":1,"blogDescription":"Blog","blogTitle":"Blog"}')}}]);
