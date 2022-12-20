@@ -27,7 +27,7 @@ const config = {
       ({
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
-          editUrl: "https://github.com/customink/lamby-site/tree/main",
+          editUrl: "https://github.com/customink/lamby-site/tree/master",
         },
         blog: {
           showReadingTime: true,
