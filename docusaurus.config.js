@@ -6,13 +6,13 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Lamby - Simple Rails & AWS Lambda Integration using Rack',
-  url: 'https://lamby.custominktech.com',
+  url: 'https://technology.customink.com',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
   organizationName: 'customink',
-  projectName: 'lamby',
+  projectName: 'lamby-site',
   trailingSlash: false,
   organizationName: 'customink',
   deploymentBranch: 'gh-pages',
