@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunklamby=self.webpackChunklamby||[]).push([[535],{5641:e=>{e.exports=JSON.parse('{"title":"Recent posts","items":[{"title":"Welcome Lamby v4!","permalink":"/lamby-site/blog/welcome-to-lamby-v4"}]}')}}]);
