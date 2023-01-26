@@ -12,7 +12,7 @@ import DocLink from "../src/components/DocLink.js"
 If you are following our <DocLink id="quick-start" name="cookiecutter" /> pattern, then you are using Lambda's free Function URLs. Using a custom domain name with FURLs is as easy as adding CloudFront. FURLs also work out of the box with <DocLink id="assets" />. 
 :::
 
-For API Gateway, custom domain names are the only way to get <DocLink id="assets" /> working correctly. The instructures below are simple ClickOps process for setting these up. First, no matter which web integration you are using, you will need to support SSL traffic with a custom certificate.
+For API Gateway, custom domain names are the only way to get <DocLink id="assets" /> working correctly. The instructions below are simple ClickOps process for setting these up. First, no matter which web integration you are using, you will need to support SSL traffic with a custom certificate.
 
 ## Secure Certificate with ACM
 
@@ -33,7 +33,7 @@ Verification will take about 3 minutes. From the Certificate Manager dashboard, 
 
 ## API Gateway Custom Domain Names
 
-No mater if you have HTTP API, REST API Public, or REST API Private with an ALB; you will need to specify a Custom Domain Name in API Gateway. The only exception would be if you are using an Application Load Balancer without REST API. Here are the ClickOps steps to setup an API Gateway Custom Domain Name:
+No matter if you have HTTP API, REST API Public, or REST API Private with an ALB; you will need to specify a Custom Domain Name in API Gateway. The only exception would be if you are using an Application Load Balancer without REST API. Here are the ClickOps steps to setup an API Gateway Custom Domain Name:
 
 - AWS Console -> API Gateway
 - Click "Custom domain names" in the left panel.
@@ -82,7 +82,7 @@ From here all we need is a simple DNS entry in Route53 that points to the "API G
 
 ## Simple CloudFront Distribution
 
-Baisc refernce steps for creating a CloudFront distribution. If you are using FURLs, then your "origin Domain Name" would end with something like `...lambda-url.us-east-1.on.aws`. If you are using API Gateway, it would be the API Gateway's custom domain and would look like this `d-xxxxxxxxxx.execute-api.us-east-1.amazonaws.com`. The final CloudFront distribution name (`dxxxxxxxxxxxxx.cloudfront.net`) would be the Route53 target instead. Here are the steps to create your CloudFront Distribution:
+Baisc reference steps for creating a CloudFront distribution. If you are using FURLs, then your "origin Domain Name" would end with something like `...lambda-url.us-east-1.on.aws`. If you are using API Gateway, it would be the API Gateway's custom domain and would look like this `d-xxxxxxxxxx.execute-api.us-east-1.amazonaws.com`. The final CloudFront distribution name (`dxxxxxxxxxxxxx.cloudfront.net`) would be the Route53 target instead. Here are the steps to create your CloudFront Distribution:
 
 - AWS Console -> CloudFront -> Create Distribution -> Web -> Get Started
 - Origin Domain Name: b4hsncwngvxg6rv67b64r545ly0jrwnk.lambda-url.us-east-1.on.aws
