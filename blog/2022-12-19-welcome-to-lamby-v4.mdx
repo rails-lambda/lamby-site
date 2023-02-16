@@ -70,7 +70,7 @@ We now encourage bringing your own containers by using Lambda's Runtime Interfac
 file needed!
 
 ```docker title="Dockerfile"
-FROM ruby:3.1-bullseye
+FROM ruby:3.2-bullseye
 RUN gem install 'aws_lambda_ric'
 ENTRYPOINT [ "/usr/local/bundle/bin/aws_lambda_ric" ]
 CMD ["config/environment.Lamby.cmd"]
@@ -81,7 +81,7 @@ CMD ["config/environment.Lamby.cmd"]
 The [Crypteia](https://github.com/customink/crypteia) package is Rust Lambda Extension for any Runtime/Container to preload SSM Parameters as secure environment variables. It takes advantages of `LD_PRELOAD` to seamlessly fetch values from SSM when a process starts and then injects them as natively accesible Ruby `ENV` variables. Our <DocLink id="quick-start" /> guide's cookiecutter includes Crypteia already for you via a Docker `COPY` command into the Lambda Extension `/opt` directory.
 
 ```docker title="Dockerfile"
-FROM ruby:3.1-bullseye
+FROM ruby:3.2-bullseye
 # highlight-next-line
 COPY --from=ghcr.io/customink/crypteia-extension-debian:latest /opt /opt
 ```

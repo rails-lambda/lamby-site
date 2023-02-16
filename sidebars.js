@@ -4,6 +4,7 @@ const sidebars = {
   docsSidebar: [
     { type: 'doc', id: 'quick-start' },
     { type: 'doc', id: 'anatomy' },
+    { type: 'doc', id: 'cpu' },
     { type: 'doc', id: 'environment' },
     { type: 'doc', id: 'database' },
     { type: 'doc', id: 'assets' },

@@ -2,6 +2,7 @@ import React from 'react';
 
 const DocNames = {
   "anatomy": "How Lamby Works",
+  "cpu": "CPU Architecture",
   "environment": 'ENV Variables & Secrets',
   "assets": 'JavaScript & Assets',
   "deploy": 'Build & Deploy',

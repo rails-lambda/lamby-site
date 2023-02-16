@@ -38,6 +38,10 @@ project_name [my_awesome_lambda]:
 
 ## Development Container
 
+:::caution
+Is your local computer an `x86_64` system such as an older Intel Mac or Windows? Our starter defaults to an `arm64` deployment target. If needed, see our <DocLink id="cpu" /> guide on how to switch to `x86_64`.
+:::
+
 Your new Rails project with Lamby leverages [GitHub Codespaces](https://github.com/features/codespaces) which itself is built atop of the [Development Container](https://containers.dev) specification. In short, this means your project's containers are easy to use by any editor, even outside of Codespaces. 
 
 VS Code makes this incredibly easy. Within a new window, open the command pallet and type "dev container open" and select that action to `Open Folder in Container...`. When prompted, select the project folder created in the previous step.
