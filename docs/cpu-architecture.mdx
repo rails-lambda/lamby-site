@@ -4,17 +4,17 @@ title: CPU Architecture
 toc_max_heading_level: 2
 ---
 
-import DocLink from "../src/components/DocLink.js"
+import DocLink from "../src/components/DocLink.js";
 
 # CPU Architecture
 
-Our [cookiecutter](https://github.com/customink/lamby-cookiecutter) project defaults to building a Linux container image targeting the `arm64` architecture vs the traditional `x86_64` cpu type. Applications that use arm64 (AWS Graviton2 processor) can achieve significantly better price and performance than the equivalent workloads running  an on x86_64 architecture.
+Our [cookiecutter](https://github.com/customink/lamby-cookiecutter) project defaults to building a Linux container image targeting the `arm64` architecture vs the traditional `x86_64` cpu type. Applications that use arm64 (AWS Graviton2 processor) can achieve significantly better price and performance than the equivalent workloads running an on x86_64 architecture.
 
 Deploying arm64 applications is still a relatively new process and requires a few special considerations from local development to your CI/CD tooling. AWS Lambda makes this easy using the [Architectures](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-function.html#cfn-lambda-function-architectures) setting of the `AWS::Lambda::Function` CloudFormation resource. However, here are a few things you should know.
 
 ## Docker Images
 
-Most base Docker images are now build for [multiple platforms](https://www.docker.com/blog/faster-multi-platform-builds-dockerfile-cross-compilation-guide/). Consider the following `Dockerfile`: 
+Most base Docker images are now build for [multiple platforms](https://www.docker.com/blog/faster-multi-platform-builds-dockerfile-cross-compilation-guide/). Consider the following `Dockerfile`:
 
 ```dockerfile
 FROM ruby:3.2-bullseye
@@ -37,7 +37,7 @@ All the images in our starter project are multi-platform. This means any host ca
 
 Though there are numerous ways to deploy containers using techniques such as emulation. However, we recommend you following one simple rule. Matching your “Development Host OS/Arch” to that of your target “Deployment Host OS/Arch” provides the least development friction. Use a CI/CD platform that matches your deployment target.
 
-:::caution 
+:::caution
 Currently GitHub Actions does not support native arm64 runners. They are [working to add](https://github.com/actions/runner-images/issues/5631) this feature.
 :::
 
@@ -58,12 +58,12 @@ default-machine: &default-machine
 +  resource_class: large
 ```
 
-Now open up your AWS SAM serverless `template.yaml` file, find the `RailsLambda` resource and change your Architecture property from `arm64` to `x86_64`.
+Now open up your AWS SAM serverless `template.yaml` file, find the `Globals` section and change your Architecture property from `arm64` to `x86_64`.
 
 ```diff title="template.yaml"
- Properties:
-   Architectures:
--    - arm64
-+    - x86_64
+Globals:
+  Function:
+    Architectures:
+-     - arm64
++     - x86_64
 ```
-
