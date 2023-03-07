@@ -41,7 +41,7 @@ Though there are numerous ways to deploy containers using techniques such as emu
 Currently GitHub Actions does not support native arm64 runners. They are [working to add](https://github.com/actions/runner-images/issues/5631) this feature.
 :::
 
-Our <DocLink id="quickstart" /> guide has your first deploy happening from your local machine. Since we default to `arm64` this should work fine if you are on a Mac with Apple Silicon. But what if you are on a Windows or Linux system with an `x86_64` architecture? Your function will not work since your application's system dependences (like mysq2) will be compiled for the wrong architecture. Depending on your needs, you may have to switch back to `x86_64` as described below.
+Our <DocLink id="quick-start" /> guide has your first deploy happening from your local machine. Since we default to `arm64` this should work fine if you are on a Mac with Apple Silicon. But what if you are on a Windows or Linux system with an `x86_64` architecture? Your function will not work since your application's system dependences (like mysq2) will be compiled for the wrong architecture. Depending on your needs, you may have to switch back to `x86_64` as described below.
 
 For more information on deployments, see our <DocLink id="anatomy" /> guide.
 
