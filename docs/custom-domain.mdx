@@ -1,20 +1,33 @@
 ---
 id: custom-domain
 title: Custom Domain Names
-toc_max_heading_level: 2
+toc_max_heading_level: 3
 ---
 
 # Custom Domain Names
 
-import DocLink from "../src/components/DocLink.js"
+import DocLink from "../src/components/DocLink.js";
 
-:::info
-If you are following our <DocLink id="quick-start" name="cookiecutter" /> pattern, then you are using Lambda's free Function URLs. Using a custom domain name with FURLs is as easy as adding CloudFront. FURLs also work out of the box with <DocLink id="assets" />. 
-:::
+## Function URLs
 
-For API Gateway, custom domain names are the only way to get <DocLink id="assets" /> working correctly. The instructions below are simple ClickOps process for setting these up. First, no matter which web integration you are using, you will need to support SSL traffic with a custom certificate.
+If you are following our latest <DocLink id="quick-start" name="cookiecutter" /> pattern, then you are using Lambda's free Function URLs (FURL) which allows <DocLink id="assets" /> to work out of the box. Using a custom domain name with a FURL is as easy as adding CloudFront. To see your FURL in the AWS Console, open the Lambda section -> Click Your Function Name -> Open Versions Tab -> Open Configuration Tab -> Click alias: live. Your Function URL will appear in the upper right. Ex: `uniquestring.lambda-url.us-east-1.on.aws`. Custom Domain Name Steps:
 
-## Secure Certificate with ACM
+- [Secure Certificate with ACM](#secure-certificate-with-acm)
+- [Simple CloudFront Distribution](#simple-cloudFront-distribution)
+- [Create a Route53 Record](#create-a-route53-record)
+
+## API Gateway
+
+For API Gateway Lamby users, their Custom Domain Name featue is the only way to get <DocLink id="assets" /> working correctly by removing the stage path. You can optionally add a CloudFront distribution above this for edge caching. Custom Domain Name Steps:
+
+- [Secure Certificate with ACM](#secure-certificate-with-acm)
+- [API Gateway Custom Domain Names](#api-gateway-custom-domain-names)
+- [Simple CloudFront Distribution](#simple-cloudFront-distribution)
+- [Create a Route53 Record](#create-a-route53-record)
+
+## Individual Steps
+
+### Secure Certificate with ACM
 
 We are going to use [AWS Certificate Manager](https://docs.aws.amazon.com/acm/latest/userguide/acm-overview.html) to secure your HTTPS traffic under your custom domain. Again, this assumes your domain is setup in Route53 since you will need to validate the certificate and AWS makes that super easy with DNS.
 
@@ -31,30 +44,63 @@ We are going to use [AWS Certificate Manager](https://docs.aws.amazon.com/acm/la
 
 Verification will take about 3 minutes. From the Certificate Manager dashboard, you can wait and/or hit the 🔄 button and the Status will change from "Pending validation" to "Issued".
 
-## Simple CloudFront Distribution
+### Simple CloudFront Distribution
 
-Baisc reference steps for creating a CloudFront distribution. If you are using FURLs, then your "origin Domain Name" would end with something like `...lambda-url.us-east-1.on.aws`. If you are using API Gateway, it would be the API Gateway's custom domain and would look like this `d-xxxxxxxxxx.execute-api.us-east-1.amazonaws.com`. The final CloudFront distribution name (`dxxxxxxxxxxxxx.cloudfront.net`) would be the Route53 target instead. Here are the steps to create your CloudFront Distribution:
+Basic reference steps for creating a CloudFront distribution. If you are editing an existing CloudFront distribution, some of these settings might be in your default behavior vs the distribution.
 
-- AWS Console -> CloudFront -> Create Distribution -> Web -> Get Started
-- Origin Domain Name: b4hsncwngvxg6rv67b64r545ly0jrwnk.lambda-url.us-east-1.on.aws
-- Origin Path: /production (⚠️ Not needed for FURLs)
-- Minimum Origin SSL Protocol: TLSv1.2
-- Origin Protocol Policy: HTTPS Only
-- Origin Custom Headers: X-Forwarded-Host myapp.example.com (⚠️ IMPORTANT)
-- Viewer Protocol Policy: Redirect HTTP to HTTPS
-- Allowed HTTP Methods: GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE
-- Cached HTTP Methods: OPTIONS
-- Cache Based on Selected Request Headers: Whitelist - Accept (⚠️ Allows `respond_to` to work)
-- Object Caching: Use Origin Cache Headers
-- Forward Cookies: All
-- Query String Forwarding and Caching: Forward all, cached based on all
-- Compress Objects Automatically: Yes
-- Alternate Domain Names (CNAMEs): myapp.example.com
-- SSL Certificate: Custom SSL Certificate (select \*.example.com from step above)
+- Origin:
+  - Origin Domain: Function URL or API Gateway Custom Domain Name Endpoint Config
+  - Protocol: HTTPS only
+  - Minimum Origin SSL Protocol: TLSv1.2
+  - Origin Path: /production (⚠️ Ignore for FURLs. API Gateway stage name.)
+  - Add Custom Header: X-Forwarded-Host myapp.example.com
+- Default Cache Behavior:
+  - Compress Objects Automatically: Yes
+  - Viewer Protocol Policy: Redirect HTTP to HTTPS
+  - Allowed HTTP Methods: GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE
+    - Cached HTTP Methods: ✔️ OPTIONS
+  - Legacy cache settings:
+    - Headers: Include the following headers
+      - Accept
+    - Query Strings: All
+    - Cookies: All
+- Settings:
+  - Price Class: Use only North America and Europe
+  - Alternate domain name (CNAME): myapp.example.com
+  - Custom SSL Certificate (select \*.example.com from ACM steps)
 
-## API Gateway Custom Domain Names
+This process takes a while to fully deploy. Once done you will have a CloudFront domain name looking something like `dxxxxxxxxxxxxx.cloudfront.net`. You can now <a href="#create-a-route53-record">Create a Route53 Record</a> alias for `myapp.example.com` to this CloudFront distribution domain name.
 
-No matter if you have HTTP API, REST API Public, or REST API Private with an ALB; you will need to specify a Custom Domain Name in API Gateway. The only exception would be if you are using an Application Load Balancer without REST API. Here are the ClickOps steps to setup an API Gateway Custom Domain Name:
+Feel free to create an additional behavior for the `/assets` path using the `CachingOptimized` cache policy and `None` for the Origin request policy. This will ensure the asset pipeline files are edge-cached and compressed.
+
+### Create a Route53 Record
+
+From here all we need is a DNS entry in Route53 that points to our origin. Typically this would be to your CloudFront distribution. However, it could be to
+
+"API Gateway domain name" we created in the step above. That domain name looks something like: `d-byp3km86t3.execute-api.us-east-1.amazonaws.com`
+
+- AWS Console -> Route 53 -> Hosted zones
+- Click on your domain
+- Click "Create record"
+- Click "Switch to wizard" if not selected already.
+- Select "Simple routing"
+- Click "Next"
+- Click "Define simple record"
+- Record name. Ex: `myapp`
+- Record type: `A - Routes traffic to an IPv4 address and some AWS resources`
+- Value/Route traffic to: (either or)
+  - Alias to CloudFront distribution
+    - Endpoint: `dxxxxxxxxxxxxx.cloudfront.net`
+  - Alias to API Gateway API
+    - Choose Region: Ex: `us-east-1`
+    - Choose endpoint: Should autofill, Ex: `d-xxxxxxxxxx.execute-api.us-east-1.amazonaws.com`
+- Evaluate target health: `No`
+- Click "Define simple record"
+- Click "Create records"
+
+### API Gateway Custom Domain Names
+
+Any <DocLink id="webservers" /> with API Gateway will need to leverage its Custom Domain Name feature. The only exception would be if you are using an Application Load Balancer without REST API.
 
 - AWS Console -> API Gateway
 - Click "Custom domain names" in the left panel.
@@ -71,35 +117,8 @@ After this has been created, the mappings tab should be selected. From here we n
 - You should see "No API mappings have been configured..." message
 - Click "Configure API mappings" button.
 - Click "Add new mapping" button.
-- Select your API: Ex: `myapp-main (HTTP - 511n0spvi9)`.
-- Select your Stage: Ex: `staging`.
-  - If you see `Stage` and `staging` ignore Stage. Known REST bug.
+- Select your API: Ex: `myapp (HTTP - 511n0spvi9)`.
+- Select your Stage: Ex: `production`.
+  - If you see `Stage` and `production` ignore Stage. Known REST bug.
 - Leave `Path` empty.
 - Click the "Save" button.
-
-From here there are various ways to setup Route53 and route traffic to your Lambda application. This work simply sets up API Gateway to understand how traffic is routed via what is called [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication). Choose one of the methods below matching your need for Route53.
-
-## Route53 for API Gateway
-
-✅ Make sure to complete the "API Gateway Custom Domain Names" section first.
-
-From here all we need is a simple DNS entry in Route53 that points to the "API Gateway domain name" we created in the step above. That domain name looks something like: `d-byp3km86t3.execute-api.us-east-1.amazonaws.com`
-
-- AWS Console -> Route 53 -> Hosted zones
-- Click on your domain
-- Click "Create record"
-- Click "Switch to wizard" if not selected already.
-- Select "Simple routing"
-- Click "Next"
-- Click "Define simple record"
-- Record name. Ex: `myapp`
-- Record type: `A - Routes traffic to an IPv4 address and some AWS resources`
-- Value/Route traffic to: `Alias to API Gateway API`
-- Choose Region: Ex: `us-east-1`
-- Choose endpoint: Should autofill, Ex: `d-byp3km86t3.execute-api.us-east-1.amazonaws.com`
-- Evaluate target health: `No`
-- Click "Define simple record"
-- Click "Create records"
-
-
-This process takes a while to fully deploy. Once done you will have a CloudFront domain name looking something like `dxxxxxxxxxxxxx.cloudfront.net`. Head to Route53 and create an alias for `myapp.example.com` to this CloudFront distibution domain name.
