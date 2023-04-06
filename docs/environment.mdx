@@ -47,7 +47,7 @@ FROM ruby:3.2-bullseye
 COPY --from=ghcr.io/customink/crypteia-extension-debian:latest /opt /opt
 ```
 
-Usage is simply done by adding variables to your SAM template and accessing the values fetched from SSM like any other environment variable. Please read the Crypteia's [documentation](https://github.com/customink/crypteia) for full details.
+Usage is simply done by adding variables to your SAM template and accessing the values fetched from SSM like any other environment variable. Please read the Crypteia's [documentation](https://github.com/customink/crypteia) for full details on how to add [IAM Permissions](https://github.com/customink/crypteia#iam-permissions) to read SSM Parameters.
 
 ``` title="template.yaml"
 Globals:
