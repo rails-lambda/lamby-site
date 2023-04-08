@@ -31,6 +31,27 @@ We are going to use [AWS Certificate Manager](https://docs.aws.amazon.com/acm/la
 
 Verification will take about 3 minutes. From the Certificate Manager dashboard, you can wait and/or hit the 🔄 button and the Status will change from "Pending validation" to "Issued".
 
+## Simple CloudFront Distribution
+
+Baisc reference steps for creating a CloudFront distribution. If you are using FURLs, then your "origin Domain Name" would end with something like `...lambda-url.us-east-1.on.aws`. If you are using API Gateway, it would be the API Gateway's custom domain and would look like this `d-xxxxxxxxxx.execute-api.us-east-1.amazonaws.com`. The final CloudFront distribution name (`dxxxxxxxxxxxxx.cloudfront.net`) would be the Route53 target instead. Here are the steps to create your CloudFront Distribution:
+
+- AWS Console -> CloudFront -> Create Distribution -> Web -> Get Started
+- Origin Domain Name: b4hsncwngvxg6rv67b64r545ly0jrwnk.lambda-url.us-east-1.on.aws
+- Origin Path: /production (not needed for FURLs)
+- Minimum Origin SSL Protocol: TLSv1.2
+- Origin Protocol Policy: HTTPS Only
+- Origin Custom Headers: X-Forwarded-Host myapp.example.com (⚠️ IMPORTANT)
+- Viewer Protocol Policy: Redirect HTTP to HTTPS
+- Allowed HTTP Methods: GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE
+- Cached HTTP Methods: OPTIONS
+- Cache Based on Selected Request Headers: Whitelist - Accept (⚠️ Allows `respond_to` to work)
+- Object Caching: Use Origin Cache Headers
+- Forward Cookies: All
+- Query String Forwarding and Caching: Forward all, cached based on all
+- Compress Objects Automatically: Yes
+- Alternate Domain Names (CNAMEs): myapp.example.com
+- SSL Certificate: Custom SSL Certificate (select \*.example.com from step above)
+
 ## API Gateway Custom Domain Names
 
 No matter if you have HTTP API, REST API Public, or REST API Private with an ALB; you will need to specify a Custom Domain Name in API Gateway. The only exception would be if you are using an Application Load Balancer without REST API. Here are the ClickOps steps to setup an API Gateway Custom Domain Name:
@@ -80,25 +101,5 @@ From here all we need is a simple DNS entry in Route53 that points to the "API G
 - Click "Define simple record"
 - Click "Create records"
 
-## Simple CloudFront Distribution
-
-Baisc reference steps for creating a CloudFront distribution. If you are using FURLs, then your "origin Domain Name" would end with something like `...lambda-url.us-east-1.on.aws`. If you are using API Gateway, it would be the API Gateway's custom domain and would look like this `d-xxxxxxxxxx.execute-api.us-east-1.amazonaws.com`. The final CloudFront distribution name (`dxxxxxxxxxxxxx.cloudfront.net`) would be the Route53 target instead. Here are the steps to create your CloudFront Distribution:
-
-- AWS Console -> CloudFront -> Create Distribution -> Web -> Get Started
-- Origin Domain Name: b4hsncwngvxg6rv67b64r545ly0jrwnk.lambda-url.us-east-1.on.aws
-- Origin Path: /production (not needed for FURLs)
-- Minimum Origin SSL Protocol: TLSv1.2
-- Origin Protocol Policy: HTTPS Only
-- Origin Custom Headers: X-Forwarded-Host myapp.example.com (⚠️ IMPORTANT)
-- Viewer Protocol Policy: Redirect HTTP to HTTPS
-- Allowed HTTP Methods: GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE
-- Cached HTTP Methods: OPTIONS
-- Cache Based on Selected Request Headers: Whitelist - Accept (⚠️ Allows `respond_to` to work)
-- Object Caching: Use Origin Cache Headers
-- Forward Cookies: All
-- Query String Forwarding and Caching: Forward all, cached based on all
-- Compress Objects Automatically: Yes
-- Alternate Domain Names (CNAMEs): myapp.example.com
-- SSL Certificate: Custom SSL Certificate (select \*.example.com from step above)
 
 This process takes a while to fully deploy. Once done you will have a CloudFront domain name looking something like `dxxxxxxxxxxxxx.cloudfront.net`. Head to Route53 and create an alias for `myapp.example.com` to this CloudFront distibution domain name.
