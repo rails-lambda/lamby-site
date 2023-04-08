@@ -8,7 +8,7 @@ toc_max_heading_level: 3
 
 import DocLink from "../src/components/DocLink.js";
 
-## Function URLs
+## Function URL
 
 If you are following our latest <DocLink id="quick-start" name="cookiecutter" /> pattern, then you are using Lambda's free Function URLs (FURL) which allows <DocLink id="assets" /> to work out of the box. Using a custom domain name with a FURL is as easy as adding CloudFront. To see your FURL in the AWS Console, open the Lambda section -> Click Your Function Name -> Open Versions Tab -> Open Configuration Tab -> Click alias: live. Your Function URL will appear in the upper right. Ex: `uniquestring.lambda-url.us-east-1.on.aws`. Custom Domain Name Steps:
 
@@ -77,9 +77,7 @@ Feel free to create an additional behavior for the `/assets` path using the `Cac
 
 ### Create a Route53 Record
 
-From here all we need is a DNS entry in Route53 that points to our origin. Typically this would be to your CloudFront distribution. However, it could be to
-
-"API Gateway domain name" we created in the step above. That domain name looks something like: `d-byp3km86t3.execute-api.us-east-1.amazonaws.com`
+From here all we need is a DNS entry in Route53 that points to our origin. Typically this would be to your CloudFront distribution. Like the one you may have created for your [Function URLs](#function-url) or your [API Gateway](#api-gateway] custom domain name.
 
 - AWS Console -> Route 53 -> Hosted zones
 - Click on your domain
@@ -102,7 +100,7 @@ From here all we need is a DNS entry in Route53 that points to our origin. Typic
 
 ### API Gateway Custom Domain Names
 
-Any <DocLink id="webservers" /> with API Gateway will need to leverage its Custom Domain Name feature. The only exception would be if you are using an Application Load Balancer without REST API.
+Any <DocLink id="webservers" /> with API Gateway will need to leverage its Custom Domain Name feature. The only exception would be if you are using an Application Load Balancer without REST API. When completed, your final endpoint would look like this `d-byp3km86t3.execute-api.us-east-1.amazonaws.com` and would then become an CloudFront origin.
 
 - AWS Console -> API Gateway
 - Click "Custom domain names" in the left panel.
