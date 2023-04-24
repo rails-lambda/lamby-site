@@ -10,13 +10,42 @@ import DocLink from "../src/components/DocLink.js"
 import ThemedImage from '@theme/ThemedImage'
 import useBaseUrl from "@docusaurus/useBaseUrl"
 
-:::note
-Assets require a <DocLink id="custom-domain" name="Custom Domain Name" /> to link properly when using API Gateway.
-:::
+Assets require a <DocLink id="custom-domain" name="Custom Domain Name" /> to link properly when using API Gateway. For Function URLs, the work out of the box. Both API Gateway and Function URLs can benefit from a CloudFront CDN to cache `/assets` and avoid hitting your backend function on each request.
 
-Some might remember a process where [precompiling Rails CSS & JavaScript assets](https://guides.rubyonrails.org/asset_pipeline.html#in-production) meant having Node and other dependencies installed on our production servers. In contrast, using container practices which embrace a multi-stage build process only has Node.js installed on the build image. Compiled assets along with other application code and dependencies are copied to the final production ECR image. This helps keep the production image small and secure.
+## Serving Static Assets
 
-## CSS & JavaScript Ready!
+Our <DocLink id="quick-start" /> cookiecutter project leverages Rails' built in ability to serve static assets. We do this by setting this environment variable in your `Dockerfile`.
+
+```docker title="Dockerfile"
+ENV RAILS_SERVE_STATIC_FILES=1
+```
+
+We also add this configuration to your `config/environments/production.rb` file. In this case we are setting the cache control to 30 days, which you can change. The `X-Lamby-Base64` header signals to the Lamby rack adapter that the content requires base64 binary encoding.
+
+```ruby title="config/environments/production.rb"
+config.public_file_server.headers = {
+  'Cache-Control' => "public, max-age=#{30.days.seconds.to_i}",
+  'X-Lamby-Base64' => '1'
+}
+```
+
+## Adding CloudFront
+
+[CloudFront](https://aws.amazon.com/cloudfront/) is an amazing CDN and is pretty easy to setup with Rails. Simply point CloudFront to your Rails app and allow the origin to set the cache headers. Because we set the `public_file_server` headers above, everything should work out perfectly. Assuming you have setup a <DocLink id="custom-domain" name="Custom Domain Name" /> via CloudFront, here is how to setup an behavior for your `/assets` path. From your CloudFront distribution
+
+- Click the "Behaviors" tab 
+- Click "Create Behavior" button
+- Path Pattern: `/assets/*`
+- Select your API Gateway or Function URL origin.
+- Compress objects automatically: Yes
+- Viewer protocol policy: Redirect HTTP to HTTPS
+- Allowed HTTP Methods: GET, HEAD
+- Restrict viewer access: No
+- 🔘 Cache policy and origin request policy (recommended)
+  - Cache policy: CachingOptimized
+  - Origin request policy: None
+
+## JavaScript Ready
 
 Our <DocLink id="quick-start" /> cookiecutter project is ready to hit the ground running with all the latest Rails defaults for JavaScript & CSS development. We do this by adding Node.js to the development container which is also used to build your production image. See our <DocLink id="anatomy" /> guide for details.
 
@@ -43,23 +72,3 @@ gem 'tailwindcss-rails'
   }}
 />
 
-## Serving Static Assets
-
-Our <DocLink id="quick-start" /> cookiecutter project leverages Rails' built in ability to serve static assets. We do this by setting this environment variable in your `Dockerfile`.
-
-```docker title="Dockerfile"
-ENV RAILS_SERVE_STATIC_FILES=1
-```
-
-We also add this configuration to your `config/environments/production.rb` file. In this case we are setting the cache control to 30 days, which you can change. The `X-Lamby-Base64` header signals to the Lamby rack adapter that the content requires base64 binary encoding.
-
-```ruby title="config/environments/production.rb"
-config.public_file_server.headers = {
-  'Cache-Control' => "public, max-age=#{30.days.seconds.to_i}",
-  'X-Lamby-Base64' => '1'
-}
-```
-
-## Using CloudFront
-
-[CloudFront](https://aws.amazon.com/cloudfront/) is an amazing CDN and is pretty easy to setup with Rails. No crazy S3 bucket is needed. Simply point CloudFront to your Rails app and allow the origin to set the cache headers. Because we set the `public_file_server` headers above, everything should work out perfectly.
