@@ -4,7 +4,7 @@ title: ENV Variables & Secrets
 toc_max_heading_level: 2
 ---
 
-import DocLink from "../src/components/DocLink.js"
+import DocLink from "../src/components/DocLink.js";
 
 # Environment Configuration & Secrets
 
@@ -27,7 +27,7 @@ If you deploy to multiple environments, you can even have these be dynamic by le
 Mappings:
   SomeService:
     staging:
-      Url: https://straging.some-service.com/api
+      Url: https://staging.some-service.com/api
     production:
       Url: https://prod.some-service.com/api
 # ...
@@ -39,17 +39,17 @@ Globals:
 
 ## Secrets with Crypteia
 
-The [Crypteia](https://github.com/customink/crypteia) package is Rust Lambda Extension for any Runtime/Container to preload SSM Parameters as secure environment variables. It takes advantages of `LD_PRELOAD` to seamlessly fetch values from SSM when a process starts and then injects them as natively accesible Ruby `ENV` variables. Our <DocLink id="quick-start" /> guide's cookiecutter includes Crypteia already for you via a Docker `COPY` command into the Lambda Extension `/opt` directory.
+The [Crypteia](https://github.com/rails-lambda/crypteia) package is Rust Lambda Extension for any Runtime/Container to preload SSM Parameters as secure environment variables. It takes advantages of `LD_PRELOAD` to seamlessly fetch values from SSM when a process starts and then injects them as natively accesible Ruby `ENV` variables. Our <DocLink id="quick-start" /> guide's cookiecutter includes Crypteia already for you via a Docker `COPY` command into the Lambda Extension `/opt` directory.
 
 ```docker title="Dockerfile"
 FROM ruby:3.2-bullseye
 # highlight-next-line
-COPY --from=ghcr.io/customink/crypteia-extension-debian:latest /opt /opt
+COPY --from=ghcr.io/rails-lambda/crypteia-extension-debian:latest /opt /opt
 ```
 
-Usage is simply done by adding variables to your SAM template and accessing the values fetched from SSM like any other environment variable. Please read the Crypteia's [documentation](https://github.com/customink/crypteia) for full details on how to add [IAM Permissions](https://github.com/customink/crypteia#iam-permissions) to read SSM Parameters.
+Usage is simply done by adding variables to your SAM template and accessing the values fetched from SSM like any other environment variable. Please read the Crypteia's [documentation](https://github.com/rails-lambda/crypteia) for full details on how to add [IAM Permissions](https://github.com/rails-lambda/crypteia#iam-permissions) to read SSM Parameters.
 
-``` title="template.yaml"
+```title="template.yaml"
 Globals:
   Environment:
     Variables:
@@ -72,4 +72,3 @@ If your application uses other AWS resources like EventBridge or S3, you may be 
 - [AWS SAM Policy Templates](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-policy-templates.html): Are pre-defined sets of permissions that you can add to your AWS SAM templates to manage access and permissions between your AWS Lambda functions, AWS Step Functions state machines and the resources they interact with.
 
 If needed, you can use the lower level [`Policies`](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html#sam-function-policies) property of your `AWS::Serverless::Function` resource to attach any inline policies to your application's IAM Role.
-

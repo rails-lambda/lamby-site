@@ -5,9 +5,9 @@ toc_max_heading_level: 2
 
 # Cold Starts
 
-import DocLink from "../src/components/DocLink.js"
-import ThemedImage from '@theme/ThemedImage'
-import useBaseUrl from "@docusaurus/useBaseUrl"
+import DocLink from "../src/components/DocLink.js";
+import ThemedImage from "@theme/ThemedImage";
+import useBaseUrl from "@docusaurus/useBaseUrl";
 
 Cold starts (or init times) are an [incredibly addictive](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html#runtimes-lifecycle) topic. In many cases they can be ignored as an optimization to perform when the time and data suggests action. In practice, the more traffic your function handles the less likely cold starts are an issue since they statistically disappear under the [99th percentile](https://aws.amazon.com/blogs/aws/amazon-cloudwatch-update-percentile-statistics-and-new-dashboard-widgets/). However in rare cases, you may want to optimize for them. This guide can help you make decisions on how to go about it.
 
@@ -34,14 +34,18 @@ fields @initDuration
 <ThemedImage
   alt="Rails cold start data from CloudWatch Insights. Shows percentiles for p5, p50, p95, and p99."
   sources={{
-    light: useBaseUrl('/img/docs/cold-start-cloudwatch-insights-percentiles.png'),
-    dark: useBaseUrl('/img/docs/cold-start-cloudwatch-insights-percentiles-dark.png'),
+    light: useBaseUrl(
+      "/img/docs/cold-start-cloudwatch-insights-percentiles.png"
+    ),
+    dark: useBaseUrl(
+      "/img/docs/cold-start-cloudwatch-insights-percentiles-dark.png"
+    ),
   }}
 />
 
 ## Bootsnap by Shopify
 
-Reducing your Rails applications boot time should be your first option against cold starts. [Bootsnap](https://github.com/Shopify/bootsnap) has been developed by Shopify to speed up Rails boot time for production environments using a mix of compile and load path caches. When complete, your deployed container will have everything it needs to boot faster! 
+Reducing your Rails applications boot time should be your first option against cold starts. [Bootsnap](https://github.com/Shopify/bootsnap) has been developed by Shopify to speed up Rails boot time for production environments using a mix of compile and load path caches. When complete, your deployed container will have everything it needs to boot faster!
 
 How much faster? Generally 1 to 3 seconds depending on your Lambda application. Adding Bootsnap to your Rails Lambda application is straightforward. First, add the gem to your production group in your `Gemfile`.
 
@@ -152,8 +156,8 @@ This chart shows that a static `ProvisionedConcurrentExecutions` of `5` can hand
 <ThemedImage
   alt="Rails in Lambda Concurrent Executions, Invocations, and Provisioned Executions & Spill Invokes"
   sources={{
-    light: useBaseUrl('/img/docs/cold-start-concurrency.png'),
-    dark: useBaseUrl('/img/docs/cold-start-concurrency-dark.png'),
+    light: useBaseUrl("/img/docs/cold-start-concurrency.png"),
+    dark: useBaseUrl("/img/docs/cold-start-concurrency-dark.png"),
   }}
 />
 
@@ -162,8 +166,8 @@ Here is a 7 day view from the 4 day mark above. The `TargetValue` is still set t
 <ThemedImage
   alt="Rails in Lambda Concurrent Executions and Provisioned Executions"
   sources={{
-    light: useBaseUrl('/img/docs/cold-start-concurrency-vs-spilled.png'),
-    dark: useBaseUrl('/img/docs/cold-start-concurrency-vs-spilled-dark.png'),
+    light: useBaseUrl("/img/docs/cold-start-concurrency-vs-spilled.png"),
+    dark: useBaseUrl("/img/docs/cold-start-concurrency-vs-spilled-dark.png"),
   }}
 />
 
@@ -187,4 +191,4 @@ Most of these should be considered before using Provisioned Concurrency.
 
 **ActiveRecord Schema Cache** - Commonly called Rails' best kept performance feature, the [schema cache](https://kirshatrov.com/2016/12/13/schema-cache/) can help reduce first request response time after Rails is initialized. So it should not help the init time but it could very easily help the first invoke times.
 
-**Reduce Image Size** - Sort of related to your Ruby version, always make sure that your ECR image is as small as possible. Lambda Containers supports up to 10GB for your image. There is no data on how much this could effect cold starts. So please [share your stories](https://github.com/customink/lamby/discussions).
+**Reduce Image Size** - Sort of related to your Ruby version, always make sure that your ECR image is as small as possible. Lambda Containers supports up to 10GB for your image. There is no data on how much this could effect cold starts. So please [share your stories](https://github.com/rails-lambda/lamby/discussions).

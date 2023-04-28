@@ -6,7 +6,7 @@ toc_max_heading_level: 2
 
 # Database & VPCs
 
-import DocLink from "../src/components/DocLink.js"
+import DocLink from "../src/components/DocLink.js";
 
 Any database supported by Ruby or Rails can be used with Lambda assuming your VPC/Network allows those connections. This guide will not get into the details on how to setup or use various databases options within AWS itself like RDS, Aurora, or DynamoDB. However, we will address a few high level topics along with some conventions in our <DocLink id="quick-start" name="cookiecutter" /> project.
 
@@ -61,4 +61,4 @@ Please see the <DocLink id="running-tasks" /> guide on how to use Lamby's task r
 
 ## Using DynamoDB
 
-In some cases Rails with DynamoDB is an excellent choice. If this sounds right for you, I highly recommend using the [Aws::Record](https://github.com/aws/aws-sdk-ruby-record) gem which leverages the `aws-sdk-dynamodb` in a very Rails like ActiveModel way. Please [share your stories](https://github.com/customink/lamby/issues/new) with us.
+In some cases Rails with DynamoDB is an excellent choice. If this sounds right for you, I highly recommend using the [Aws::Record](https://github.com/aws/aws-sdk-ruby-record) gem which leverages the `aws-sdk-dynamodb` in a very Rails like ActiveModel way. Please [share your stories](https://github.com/rails-lambda/lamby/issues/new) with us.

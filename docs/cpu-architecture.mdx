@@ -8,7 +8,7 @@ import DocLink from "../src/components/DocLink.js";
 
 # CPU Architecture
 
-Our [cookiecutter](https://github.com/customink/lamby-cookiecutter) project defaults to building a Linux container image targeting the `arm64` architecture vs the traditional `x86_64` cpu type. Applications that use arm64 (AWS Graviton2 processor) can achieve significantly better price and performance than the equivalent workloads running an on x86_64 architecture.
+Our [cookiecutter](https://github.com/rails-lambda/lamby-cookiecutter) project defaults to building a Linux container image targeting the `arm64` architecture vs the traditional `x86_64` cpu type. Applications that use arm64 (AWS Graviton2 processor) can achieve significantly better price and performance than the equivalent workloads running an on x86_64 architecture.
 
 Deploying arm64 applications is still a relatively new process and requires a few special considerations from local development to your CI/CD tooling. AWS Lambda makes this easy using the [Architectures](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-function.html#cfn-lambda-function-architectures) setting of the `AWS::Lambda::Function` CloudFormation resource. However, here are a few things you should know.
 
@@ -47,7 +47,7 @@ For more information on deployments, see our <DocLink id="anatomy" /> guide.
 
 ## Switching to x86_64
 
-Based off the current state of our [cookiecutter](https://github.com/customink/lamby-cookiecutter) project, here are the changes required to switch to a `x86_64` deployment target. First, change your CircleCI workflows default machine from `arm.large`` to a standard large.
+Based off the current state of our [cookiecutter](https://github.com/rails-lambda/lamby-cookiecutter) project, here are the changes required to switch to a `x86_64` deployment target. First, change your CircleCI workflows default machine from `arm.large`` to a standard large.
 
 ```diff title=".circleci/config.yml"
 default-machine: &default-machine

@@ -6,15 +6,14 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: "Lamby - Simple Rails & AWS Lambda Integration using Rack",
-  url: "https://technology.customink.com",
+  url: "https://lamby.cloud",
   baseUrl: "/",
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
   favicon: "img/favicon.ico",
-  organizationName: "customink",
   projectName: "lamby-site",
   trailingSlash: false,
-  organizationName: "customink",
+  organizationName: "rails-lambda",
   deploymentBranch: "gh-pages",
   i18n: {
     defaultLocale: "en",
@@ -27,7 +26,7 @@ const config = {
       ({
         docs: {
           sidebarPath: require.resolve("./sidebars.js"),
-          editUrl: "https://github.com/customink/lamby-site/tree/master",
+          editUrl: "https://github.com/rails-lambda/lamby-site/tree/master",
         },
         blog: {
           showReadingTime: true,
@@ -69,7 +68,7 @@ const config = {
             position: "left",
           },
           {
-            href: "https://github.com/customink/lamby",
+            href: "https://github.com/rails-lambda/lamby",
             label: "GitHub",
             position: "right",
           },
@@ -113,7 +112,7 @@ const config = {
               },
               {
                 label: "GitHub Project",
-                href: "https://github.com/customink/lamby",
+                href: "https://github.com/rails-lambda/lamby",
               },
             ],
           },

@@ -1,13 +1,13 @@
 # Lamby Site
 
-<a href="https://lamby.custominktech.com"><img src="https://raw.githubusercontent.com/customink/lamby/master/images/social2.png" alt="Lamby: Simple Rails & AWS Lambda Integration using Rack." align="right" width="450" style="margin-left:1rem;margin-bottom:1rem;" /></a>
+<a href="https://lamby.cloud"><img src="https://raw.githubusercontent.com/rails-lambda/lamby/master/images/social2.png" alt="Lamby: Simple Rails & AWS Lambda Integration using Rack." align="right" width="450" style="margin-left:1rem;margin-bottom:1rem;" /></a>
 
 - Documentation and blog site for Lamby
 - Uses Docusaurus as our static site generator.
 - Leverages development containers & Codespaces.
 - Easily contribute by opening a pull request.
 
-**[Lamby: Simple Rails & AWS Lambda Integration using Rack.](https://lamby.custominktech.com)**
+**[Lamby: Simple Rails & AWS Lambda Integration using Rack.](https://lamby.cloud)**
 
 ## Contributing
 

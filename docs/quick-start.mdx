@@ -11,7 +11,7 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
 
 ### Deploy a new Rails APP to Lambda in 5 minutes!
 
-Lamby can be used with <DocLink id="anatomy" name="existing" /> Rails v5 application or higher. The quickest way to learn how Rails works on Lambda is to deploy a new application to your AWS account using our [cookiecutter project](https://github.com/customink/lamby-cookiecutter) template.
+Lamby can be used with <DocLink id="anatomy" name="existing" /> Rails v5 application or higher. The quickest way to learn how Rails works on Lambda is to deploy a new application to your AWS account using our [cookiecutter project](https://github.com/rails-lambda/lamby-cookiecutter) template.
 
 :::note
 Before you get started, make sure that you have Docker installed, an AWS account, and Visual Studio Code open. 🚢 [Install Docker](https://www.docker.com) ⛅️ [AWS Account](https://aws.amazon.com/free) 📝 [Install VS Code](https://code.visualstudio.com)
@@ -19,15 +19,15 @@ Before you get started, make sure that you have Docker installed, an AWS account
 
 ## Rails Project Template
 
-We created a [customink/lamby-cookiecutter](https://github.com/customink/lamby-cookiecutter) repository which allows you to initialize a new project from a GitHub template, commonly called a [cookiecutter](https://github.com/cookiecutter/cookiecutter). Run this terminal command to create a new Rails project with Lamby already installed.
+We created a [rails-lambda/lamby-cookiecutter](https://github.com/rails-lambda/lamby-cookiecutter) repository which allows you to initialize a new project from a GitHub template, commonly called a [cookiecutter](https://github.com/cookiecutter/cookiecutter). Run this terminal command to create a new Rails project with Lamby already installed.
 
 ```shell
 docker run \
   --rm \
   --interactive \
   --volume "${PWD}:/var/task" \
-  ghcr.io/customink/lamby-cookiecutter \
-  "gh:customink/lamby-cookiecutter"
+  ghcr.io/rails-lambda/lamby-cookiecutter \
+  "gh:rails-lambda/lamby-cookiecutter"
 ```
 
 You will be prompted for a project name. Choose something short, no spaces, and with underscores for word breaks. Example: `new_service`.

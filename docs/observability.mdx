@@ -4,7 +4,7 @@ title: Logging & Observability
 toc_max_heading_level: 2
 ---
 
-import DocLink from "../src/components/DocLink.js"
+import DocLink from "../src/components/DocLink.js";
 
 # Logging & Observability
 
@@ -45,14 +45,14 @@ CloudWatch Logs Insights enables you to interactively search and analyze your lo
 
 ## CloudWatch Embedded Metrics
 
-The [CloudWatch Embedded Metric Format](https://aws.amazon.com/blogs/mt/enhancing-workload-observability-using-amazon-cloudwatch-embedded-metric-format/) enables CloudWatch to ingest complex high-cardinality application data in the form of logs and easily generate actionable metrics and alarms from them. By sending your logs in the new Embedded Metric Format, you can now easily create custom metrics without having to instrument or maintain separate code, while gaining powerful analytical capabilities on your log data. You can get started with embedded metrics by using our [customink/aws-embedded-metrics-customink](https://github.com/customink/aws-embedded-metrics-customink) Ruby gem. The following Lamby-friendly libraries use this format:
+The [CloudWatch Embedded Metric Format](https://aws.amazon.com/blogs/mt/enhancing-workload-observability-using-amazon-cloudwatch-embedded-metric-format/) enables CloudWatch to ingest complex high-cardinality application data in the form of logs and easily generate actionable metrics and alarms from them. By sending your logs in the new Embedded Metric Format, you can now easily create custom metrics without having to instrument or maintain separate code, while gaining powerful analytical capabilities on your log data. You can get started with embedded metrics by using our [rails-lambda/aws-embedded-metrics](https://github.com/rails-lambda/aws-embedded-metrics) Ruby gem. The following Lamby-friendly libraries use this format:
 
-- [Crypteia](https://github.com/customink/crypteia): SSM Parameters as secure ENV variables.
-- [Lambdakiq](https://github.com/customink/lambdakiq): ActiveJob on SQS & Lambda.
+- [Crypteia](https://github.com/rails-lambda/crypteia): SSM Parameters as secure ENV variables.
+- [Lambdakiq](https://github.com/rails-lambda/lambdakiq): ActiveJob on SQS & Lambda.
 
 ## New Relic
 
-Some older Application Performance Monitor (APM) gems can be used with Lambda but you must flush their data after each request in a way that does not impact response performance. You can do this with the [LambdaPunch](https://github.com/customink/lambda_punch).
+Some older Application Performance Monitor (APM) gems can be used with Lambda but you must flush their data after each request in a way that does not impact response performance. You can do this with the [LambdaPunch](https://github.com/rails-lambda/lambda_punch).
 
 ```ruby
 config.lambda.handled_proc = Proc.new do |_event, context|
@@ -61,4 +61,10 @@ config.lambda.handled_proc = Proc.new do |_event, context|
 end
 ```
 
-<a href="https://github.com/customink/lambda_punch"><img alt="Async Processing Using Lambda Extensions" src={require('@site/static/img/docs/lambdapunch.png').default} style={{width:'100%',marginBottom:'0.5rem'}} /></a>
+<a href="https://github.com/rails-lambda/lambda_punch">
+  <img
+    alt="Async Processing Using Lambda Extensions"
+    src={require("@site/static/img/docs/lambdapunch.png").default}
+    style={{ width: "100%", marginBottom: "0.5rem" }}
+  />
+</a>

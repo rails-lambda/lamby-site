@@ -6,13 +6,24 @@ toc_max_heading_level: 2
 
 # ActiveJob & Background Processing
 
-import DocLink from "../src/components/DocLink.js"
+import DocLink from "../src/components/DocLink.js";
 
 ## Lambdakiq
 
-<a href="https://github.com/customink/lambdakiq"><img alt="Lambdakiq - ActiveJob on SQS & Lambda" src={require('@site/static/img/docs/lambdakiq.png').default} style={{width:'50%',float:'right',marginLeft:'2rem',marginBottom:'1rem'}} /></a>
+<a href="https://github.com/rails-lambda/lambdakiq">
+  <img
+    alt="Lambdakiq - ActiveJob on SQS & Lambda"
+    src={require("@site/static/img/docs/lambdakiq.png").default}
+    style={{
+      width: "50%",
+      float: "right",
+      marginLeft: "2rem",
+      marginBottom: "1rem",
+    }}
+  />
+</a>
 
-Using ActiveJob on AWS Lambda is a reimagination of the problem for Rails. Instead of starting up long running process that polls for work, we instead use the event-driven architecture of AWS Lambda to our advantage using a gem named [Lambdakiq](https://github.com/customink/lambdakiq) which is mostly a drop-in replacement for [Sidekiq](https://github.com/mperham/sidekiq). 
+Using ActiveJob on AWS Lambda is a reimagination of the problem for Rails. Instead of starting up long running process that polls for work, we instead use the event-driven architecture of AWS Lambda to our advantage using a gem named [Lambdakiq](https://github.com/rails-lambda/lambdakiq) which is mostly a drop-in replacement for [Sidekiq](https://github.com/mperham/sidekiq).
 
 It allows you to leverage AWS' managed infrastructure to the fullest extent. Gone are the days of managing pods and long polling processes. Instead AWS delivers messages directly to your Rails' job functions and scales it up and down as needed. Observability is built in using AWS CloudWatch Metrics, Dashboards, and Alarms. Key Features:
 
@@ -24,12 +35,23 @@ It allows you to leverage AWS' managed infrastructure to the fullest extent. Gon
 - Supports ActiveJob's wait/delay. Up to 15 minutes.
 - Dead messages are stored for up to 14 days.
 
-Learn more on GitHub: https://github.com/customink/lambdakiq
+Learn more on GitHub: https://github.com/rails-lambda/lambdakiq
 
 ## LambdaPunch
 
-<a href="https://github.com/customink/lambda_punch"><img alt="Async Processing Using Lambda Extensions" src={require('@site/static/img/docs/lambdapunch.png').default} style={{width:'50%',float:'right',marginLeft:'2rem',marginBottom:'1rem'}} /></a>
+<a href="https://github.com/rails-lambda/lambda_punch">
+  <img
+    alt="Async Processing Using Lambda Extensions"
+    src={require("@site/static/img/docs/lambdapunch.png").default}
+    style={{
+      width: "50%",
+      float: "right",
+      marginLeft: "2rem",
+      marginBottom: "1rem",
+    }}
+  />
+</a>
 
-You may need lightweight background job processing similiar to how [SuckerPunch](https://github.com/brandonhilkert/sucker_punch) gem works. The only way to do this for Lambda is to use the [LambdaPunnch](https://github.com/customink/lambda_punch) gem. LambdaPunch is a [Lambda Extensions](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-extensions-api.html) that works with the Lambda invoke model. This solution is required if you are using New Relic as described in our <DocLink id="observability" /> guide.
+You may need lightweight background job processing similiar to how [SuckerPunch](https://github.com/brandonhilkert/sucker_punch) gem works. The only way to do this for Lambda is to use the [LambdaPunnch](https://github.com/rails-lambda/lambda_punch) gem. LambdaPunch is a [Lambda Extensions](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-extensions-api.html) that works with the Lambda invoke model. This solution is required if you are using New Relic as described in our <DocLink id="observability" /> guide.
 
-Learn more on GitHub: https://github.com/customink/lambda_punch
+Learn more on GitHub: https://github.com/rails-lambda/lambda_punch
