@@ -83,7 +83,7 @@ The [Crypteia](https://github.com/rails-lambda/crypteia) package is Rust Lambda 
 ```docker title="Dockerfile"
 FROM ruby:3.2-bullseye
 # highlight-next-line
-COPY --from=ghcr.io/rails-lambda/crypteia-extension-debian:latest /opt /opt
+COPY --from=ghcr.io/rails-lambda/crypteia-extension-debian:1 /opt /opt
 ```
 
 Usage is simply done by adding variables to your SAM template and accessing the values fetched from SSM like any other environment variable. Please read the Crypteia's [documentation](https://github.com/rails-lambda/crypteia) for full details.
