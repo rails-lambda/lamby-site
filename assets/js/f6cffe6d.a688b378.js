@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunklamby=self.webpackChunklamby||[]).push([[9416],{8139:e=>{e.exports=JSON.parse('{"permalink":"/blog/tags/websockets","page":1,"postsPerPage":10,"totalPages":1,"totalCount":1,"blogDescription":"Blog","blogTitle":"Blog"}')}}]);

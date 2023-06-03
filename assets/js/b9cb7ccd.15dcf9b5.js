@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunklamby=self.webpackChunklamby||[]).push([[5029],{8781:e=>{e.exports=JSON.parse('{"label":"extension","permalink":"/blog/tags/extension","allTagsPath":"/blog/tags","count":1}')}}]);

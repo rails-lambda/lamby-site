@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunklamby=self.webpackChunklamby||[]).push([[2138],{1459:s=>{s.exports=JSON.parse('{"label":"websockets","permalink":"/blog/tags/websockets","allTagsPath":"/blog/tags","count":1}')}}]);
