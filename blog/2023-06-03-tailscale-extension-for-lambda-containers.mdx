@@ -48,9 +48,17 @@ So far, everything is [working great](https://twitter.com/metaskills/status/1651
   <iframe width="560" height="315" src="https://www.youtube.com/embed/k02k38o4ih8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 </div>
 
-If you are curious to learn more about how Rails & Lambda work together, check out our [Lamby](https://lamby.cloud) project. The architecture of Lambda Containers works so well with Rails since our framework distills everything from HTTP, Jobs, Events, & WebSocket connections down to amazing `CMD` Docker contract. The architecture above at the proxy layer was easy to build and connect up to our single delegate function, `Lamby.cmd`. Shown below.
+If you are curious to learn more about how Rails & Lambda work together, check out our [Lamby](https://lamby.cloud) project. The architecture of Lambda Containers works so well with Rails since our framework distills everything from HTTP, Jobs, Events, & WebSocket connections down to Docker's `CMD` interface. The architecture above at the proxy layer was easy to build and connect up to our single delegate function, `Lamby.cmd`. Shown below:
 
 ![Architecture diagram of the use of a Lambda development proxy for WebSockets with API Gateway.](https://lamby.cloud/img/blog/tailscale/live-development-proxy-detail.png)
+
+For our Rails application on Lambda, here are the changes we made to leverage this. All outlined in our [WebSockets Demo Pull Request](https://github.com/rails-lambda/websocket-demo/pull/4).
+
+- Created a `.localdev` folder. Added a copy of our SAM template.yaml for all AWS Resources. 
+- Made a simple `.localdev/Dockerfile` that included the Tailscale Extension along with basic proxy code.
+- Leveraged Lamby's [Local Development Proxy Sever](https://github.com/rails-lambda/lamby/pull/164).
+- Ensured our Devcontainers exposed port 3000 to all local network devices so Tailscale could detect the service.
+
 
 I hope you find reasons to learn more about Tailscale and how using a SOCKS5 proxy from Lambda could help your development or production needs. More so, I hope you like the new Lambda Extension project of ours making it easy for containerized applications to use. Drop us a comment if you do.
 
