@@ -1,0 +1,60 @@
+---
+slug: tailscale-extension-for-lambda-containers
+title: Using Tailscale on Lambda for a Live Development Proxy
+authors: [kcollins]
+tags: [tailscale, websockets, lambda, extension, container]
+---
+
+import styles from './youtube.css';
+
+![Using Tailscale on Lambda for a Live Development Proxy](https://lamby.cloud/img/blog/tailscale/header.png)
+
+⚠️ DISCLAIMER: In no way am I advocating for the use of live proxies as a normal way to develop against cloud resources. However in some edge cases, such as developing a new system, live dev proxies or the general use of Tailscale in Lambda could be useful.
+
+## 🐋 Tailscale on Lambda
+
+[Tailscale](https://tailscale.com) makes networking easy. Like really easy. It shines in situations where private networks do not allow inbound connections. Tailscale can connect your devices and development environments for easy access to remote resources, or allow those remote systems to access your home or office network devices.
+
+A few years ago Corey Quinn wrote a Tailscale [Lambda Extension](https://www.lastweekinaws.com/blog/corey-writes-open-source-code-for-lambda-and-tailscale/). It is great and helped a lot of folks. Today, I'd like to share a new project based on Corey's work that makes it even easier to use Tailscale in Lambda Container. Check it out here.
+
+**[🔗 Tailscale Lambda Extension for Containers](https://github.com/rails-lambda/tailscale-extension)** on GitHub 🐙
+
+This new version tries to improve upon Corey's work. Initialization is now stable, there are more configuration options, and we even have multi-platform Docker container packages for both `x86_64` and `arm64`. We even have Amazon Linux 2 and Debian/Ubuntu variants. Installation is really easy, simply add one line to your Dockerfile. For example:
+
+```dockerfile
+FROM public.ecr.aws/lambda/ruby:3.2
+RUN yum install -y curl
+COPY --from=ghcr.io/rails-lambda/tailscale-extension-amzn:1 /opt /opt
+```
+
+Once your container starts, taking to any device within your tailnet can be done by using the local [SOCKS5](https://en.wikipedia.org/wiki/SOCKS) proxy. In the example below, we are using Ruby's [socksify](https://github.com/astro/socksify-ruby) gem.
+
+```ruby
+require 'socksify/http'
+Net::HTTP.socks_proxy('localhost', 1055).start(...) do |http|
+  # your http code here...
+end
+```
+
+## 🔌 ActionCable on Lambda 
+
+How did I use Tailscale for the [Rails on Lambda](https://lamby.cloud) work? A few months ago, I [started work](https://twitter.com/metaskills/status/1647714842550185985) on the last critical part of the Rails ecosystem which did not work on Lambda... [ActionCable](https://guides.rubyonrails.org/action_cable_overview.html) & WebSockets. Specifically, I wanted [Hotwire](https://hotwired.dev) to work.
+
+So far, everything is [working great](https://twitter.com/metaskills/status/1651067256242151424) with our new LambdaCable gem. Eventually it will be a drop-in adapter for ActionCable and join the ranks of other popular alternatives like [AnyCable](https://anycable.io). To bring the project to completion faster, I needed feedback loops that were much faster than deploying code to the cloud. I needed a development proxy! One where my Rails application would receive events from both Lambda's Function URLs and the WebSocket events from API Gateway. Illustrated below with a demo video.
+
+![Architecture diagram of the use of a Lambda development proxy for WebSockets with API Gateway.](https://lamby.cloud/img/blog/tailscale/live-development-proxy-overview.png)
+
+<div class="video-container">
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/k02k38o4ih8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+</div>
+
+If you are curious to learn more about how Rails & Lambda work together, check out our [Lamby](https://lamby.cloud) project. The architecture of Lambda Containers works so well with Rails since our framework distills everything from HTTP, Jobs, Events, & WebSocket connections down to amazing `CMD` Docker contract. The architecture above at the proxy layer was easy to build and connect up to our single delegate function, `Lamby.cmd`. Shown below.
+
+![Architecture diagram of the use of a Lambda development proxy for WebSockets with API Gateway.](https://lamby.cloud/img/blog/tailscale/live-development-proxy-detail.png)
+
+I hope you find reasons to learn more about Tailscale and how using a SOCKS5 proxy from Lambda could help your development or production needs. More so, I hope you like the new Lambda Extension project of ours making it easy for containerized applications to use. Drop us a comment if you do.
+
+**[🔗 Tailscale Lambda Extension for Containers](https://github.com/rails-lambda/tailscale-extension)** on GitHub 🐙
+
+
+
