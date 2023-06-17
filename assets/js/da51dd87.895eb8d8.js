@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunklamby=self.webpackChunklamby||[]).push([[7984],{6320:l=>{l.exports=JSON.parse('{"label":"console","permalink":"/blog/tags/console","allTagsPath":"/blog/tags","count":1}')}}]);
