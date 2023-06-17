@@ -38,19 +38,19 @@ The Lambda Console is a CLI written in Node.js that will interactively create an
 1. CLI Runner
 2. Interactive Commands
 
-Think of the CLI Runner as a bash prompt. You can run any process command or interact with the filesystem or environment. For Rails users, running rake tasks or DB migrations. Running these tasks automatically assume the Lambda task root as the present working directory.
+Think of the CLI Runner as a bash prompt. You can run any process command or interact with the filesystem or environment. For Rails users, running rake tasks or DB migrations. These tasks assume the Lambda task root as the present working directory.
 
-Interactive commands are evaluated in the context of your running application. For Ruby and Rails applications, this simulates IRB (Interactive Ruby Shell). For [Lamby](https://lamby.cloud) users, this mode simulates the Rails console. Making it easy for users to query their DB or poke their models and code.
+Interactive commands however are evaluated in the context of your running application. For Ruby and Rails applications, this simulates IRB (Interactive Ruby Shell). For [Lamby](https://lamby.cloud) users, this mode simulates the Rails console. Making it easy for users to query their DB or poke their models and code.
 
 ## The Proposal
 
-There is nothing about the [Lambda Console](https://github.com/rails-lambda/lambda-console) that is coupled to Ruby or Rails. The idea is simple, as a Lambda community, could do the following?
+There is nothing about the [Lambda Console](https://github.com/rails-lambda/lambda-console) that is coupled to Ruby or Rails. The idea is simple, as a Lambda community, could we do the following?
 
 1. Finalize a Lambda Console request/response specification.
 2. Create more runtime-specific language implementations.
 2. Build an amazing CLI client for any runtime.
 
-Here is what we have today, the request specification is very simple, the [event structure](https://github.com/rails-lambda/lambda-console#event-structure) is only a few dozen lines of JSON schema.
+Here is what we have today. The request specification, a simple [event structure](https://github.com/rails-lambda/lambda-console#event-structure) that is only a few dozen lines of JSON schema.
 
 ```json
 { "X_LAMBDA_CONSOLE": { "run": "cat /etc/os-release" } }
@@ -60,14 +60,14 @@ Here is what we have today, the request specification is very simple, the [event
 { "X_LAMBDA_CONSOLE": { "interact": "User.find(1)" } }
 ```
 
-Any Lambda runtime code or framework could implment handling these event in their own language-specific pakages. Ruby makes these really easy and you can find them in the Lambda Console's first reference implementations.
+Any Lambda runtime code or framework could implement the handling of these event in their own language-specific pakages. You can find the Ruby implementation of these in the Lambda Console's first reference implementations.
 
 * Ruby: The [lambda-console-ruby](https://github.com/rails-lambda/lambda-console-ruby) gem for any Ruby Lambda.
 * Rails: Integrated into the [Lamby](https://github.com/rails-lambda/lamby) v5.0.0 for Rails on Lambda.
 
 ## The Possibilities
 
-What I really want is an amazing CLI client. The current Lambda Console CLI was hacked together in a few days using some amazing Node.js tools that make building interactive CLIs so so easy. But I've never done this before. If this type of tooling sounds interesting to you and you like Node.js, let me know! Here are some ideas on where I could see this going.
+What I really want is an amazing CLI client. The current Lambda Console CLI was hacked together in a few days using some amazing Node.js tools that make building interactive CLIs so so easy. But I've never done this before. If this type of tooling sounds interesting to you and you like Node.js, let me know! It would be amazing to see implementation packages for these for Node, PHP, Python, and other frameworks using these languages. Here are some ideas on where I could see this going.
 
 **Live STDOUT & STDERR:** We could take advantage of Lambda's new [Response Streaming](https://aws.amazon.com/blogs/compute/introducing-aws-lambda-response-streaming/) and send output buffers as they happen. 
 
