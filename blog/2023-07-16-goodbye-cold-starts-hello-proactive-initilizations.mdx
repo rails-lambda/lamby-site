@@ -34,7 +34,7 @@ Lamby will now publish [CloudWatch Embedded Metrics](https://docs.aws.amazon.com
   }}
 />
 
-This data shows the vast majority of your initialized Lambda Contaienrs are proactively initialized. Hence, no cold starts are felt by end users or consumers of your function. If you need to customize the name of your Rails application in the CloudWatch Metrics dimension, you can do so using this config.
+This data shows the vast majority of your initialized Lambda Containers are proactively initialized. Hence, no cold starts are felt by end users or consumers of your function. If you need to customize the name of your Rails application in the CloudWatch Metrics dimension, you can do so using this config.
 
 ```rails title="config/environments/production.rb"
 config.lamby.metrics_app_name = 'MyServiceName'
