@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunklamby=self.webpackChunklamby||[]).push([[4080],{126:a=>{a.exports=JSON.parse('{"label":"initialization","permalink":"/blog/tags/initialization","allTagsPath":"/blog/tags","count":1}')}}]);

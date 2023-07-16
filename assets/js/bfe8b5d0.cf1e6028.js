@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunklamby=self.webpackChunklamby||[]).push([[8522],{5848:a=>{a.exports=JSON.parse('{"label":"cold-starts","permalink":"/blog/tags/cold-starts","allTagsPath":"/blog/tags","count":1}')}}]);
