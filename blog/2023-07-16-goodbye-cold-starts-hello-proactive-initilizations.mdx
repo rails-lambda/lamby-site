@@ -1,0 +1,38 @@
+---
+title: Goodbye Cold Starts, Hello Proactive Initialization
+authors: [kcollins]
+tags: [rails, lambda, cold-starts, initialization]
+image: img/blog/proactive-init/lamby-cloud-watch-metrics-cold-start-v-proactive-init-dark.png
+---
+
+import ThemedImage from "@theme/ThemedImage";
+import useBaseUrl from "@docusaurus/useBaseUrl";
+
+As described in [AJ Stuyvenberg's](https://twitter.com/astuyve) post on the topic [Understanding AWS Lambda Proactive Initialization](https://aaronstuyvenberg.com/posts/understanding-proactive-initialization), AWS Lambda may have solved some of your cold start issues for you since March 2023. Stated in an excerpt [from AWS' docs](https://aaronstuyvenberg.com/posts/understanding-proactive-initialization):
+
+> For functions using unreserved (on-demand) concurrency, Lambda occasionally pre-initializes execution environments to reduce the number of cold start invocations. For example, Lambda might initialize a new execution environment to replace an execution environment that is about to be shut down. If a pre-initialized execution environment becomes available while Lambda is initializing a new execution environment to process an invocation, Lambda can use the pre-initialized execution environment.
+
+<!--truncate-->
+
+This means the [Monitoring with CloudWatch](#monitoring-with-cloudwatch) is just half the picture. But how much is your application potentially benefiting from proactive inits? Since [Lamby v5.1.0](https://github.com/rails-lambda/lamby/pull/169), you can now find out easily using CloudWatch Metrics. To turn metrics on, enable the config like so:
+
+```rails title="config/environments/production.rb"
+config.lamby.cold_start_metrics = true
+```
+
+Lamby will now publish [CloudWatch Embedded Metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format.html) in the `Lamby` namespace with a custom dimension for each application's name. Captured metrics include counts for Cold Starts vs. Proactive Initializations. Here is an example running sum of 3 days of data for a large Rails application in the `us-east-1` region.
+
+<ThemedImage
+  alt="Rails in Lambda Concurrent Executions, Invocations, and Provisioned Executions & Spill Invokes"
+  sources={{
+    light: useBaseUrl("/img/docs/lamby-cloud-watch-metrics-cold-start-v-proactive-init-light.png"),
+    dark: useBaseUrl("/img/docs/lamby-cloud-watch-metrics-cold-start-v-proactive-init-dark.png"),
+  }}
+/>
+
+This data shows the vast majority of your initialized Lambda Contaienrs are proactively initialized. Hence, no cold starts are felt by end users or consumers of your function. If you need to customize the name of your Rails application in the CloudWatch Metrics dimension, you can do so using this config.
+
+```rails title="config/environments/production.rb"
+config.lamby.metrics_app_name = 'MyServiceName'
+```
+

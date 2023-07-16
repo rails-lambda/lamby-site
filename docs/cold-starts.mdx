@@ -9,7 +9,7 @@ import DocLink from "../src/components/DocLink.js";
 import ThemedImage from "@theme/ThemedImage";
 import useBaseUrl from "@docusaurus/useBaseUrl";
 
-Cold starts (or init times) are an [incredibly addictive](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html#runtimes-lifecycle) topic. In many cases they can be ignored as an optimization to perform when the time and data suggests action. In practice, the more traffic your function handles the less likely cold starts are an issue since they statistically disappear under the [99th percentile](https://aws.amazon.com/blogs/aws/amazon-cloudwatch-update-percentile-statistics-and-new-dashboard-widgets/). However in rare cases, you may want to optimize for them. This guide can help you make decisions on how to go about it.
+Cold starts (or init times) are an [incredibly addictive](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html#runtimes-lifecycle) topic. In many cases they can be ignored as an optimization to perform when the time and data suggests action. In practice, the more traffic your function handles the less likely cold starts are an issue since they statistically disappear under the [99th percentile](https://aws.amazon.com/blogs/aws/amazon-cloudwatch-update-percentile-statistics-and-new-dashboard-widgets/). However in rare cases, you may want to optimize for them. This guide can help you make decisions on how to go about it. It also descibes how AWS may be doing this for you already with [Proactive Initialization](#proactive-initialization).
 
 :::info
 Modest sized Rails applications generally boot within 3 to 5 seconds. This happens exactly once for the duration of the function's lifecycle which could last for 30 minutes or more and service a huge amount of traffic with no latency.
@@ -43,9 +43,41 @@ fields @initDuration
   }}
 />
 
+:::info
+See the [Proactive Initialization](#proactive-initialization) section for more details on how to use Lamby's new CloudWatch Metrics to measure both cold starts and proactive initialization.
+:::
+
+## Proactive Initialization
+
+As described in [AJ Stuyvenberg's](https://twitter.com/astuyve) post on the topic [Understanding AWS Lambda Proactive Initialization](https://aaronstuyvenberg.com/posts/understanding-proactive-initialization), AWS Lambda may have solved some of your cold start issues for you since March 2023. Stated in an excerpt [from AWS' docs](https://aaronstuyvenberg.com/posts/understanding-proactive-initialization):
+
+> For functions using unreserved (on-demand) concurrency, Lambda occasionally pre-initializes execution environments to reduce the number of cold start invocations. For example, Lambda might initialize a new execution environment to replace an execution environment that is about to be shut down. If a pre-initialized execution environment becomes available while Lambda is initializing a new execution environment to process an invocation, Lambda can use the pre-initialized execution environment.
+
+This means the [Monitoring with CloudWatch](#monitoring-with-cloudwatch) is just half the picture. But how much is your application potentially benefiting from proactive inits? Since [Lamby v5.1.0](https://github.com/rails-lambda/lamby/pull/169), you can now find out easily using CloudWatch Metrics. To turn metrics on, enable the config like so:
+
+```rails title="config/environments/production.rb"
+config.lamby.cold_start_metrics = true
+```
+
+Lamby will now publish [CloudWatch Embedded Metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format.html) in the `Lamby` namespace with a custom dimension for each application's name. Captured metrics include counts for Cold Starts vs. Proactive Initializations. Here is an example running sum of 3 days of data for a large Rails application in the `us-east-1` region.
+
+<ThemedImage
+  alt="Rails in Lambda Concurrent Executions, Invocations, and Provisioned Executions & Spill Invokes"
+  sources={{
+    light: useBaseUrl("/img/docs/lamby-cloud-watch-metrics-cold-start-v-proactive-init-light.png"),
+    dark: useBaseUrl("/img/docs/lamby-cloud-watch-metrics-cold-start-v-proactive-init-dark.png"),
+  }}
+/>
+
+This data shows the vast majority of your initialized Lambda Contaienrs are proactively initialized. Hence, no cold starts are felt by end users or consumers of your function. If you need to customize the name of your Rails application in the CloudWatch Metrics dimension, you can do so using this config.
+
+```rails title="config/environments/production.rb"
+config.lamby.metrics_app_name = 'MyServiceName'
+```
+
 ## Bootsnap by Shopify
 
-Reducing your Rails applications boot time should be your first option against cold starts. [Bootsnap](https://github.com/Shopify/bootsnap) has been developed by Shopify to speed up Rails boot time for production environments using a mix of compile and load path caches. When complete, your deployed container will have everything it needs to boot faster!
+Reducing your Rails applications boot time should be your first optimization option against true cold starts. [Bootsnap](https://github.com/Shopify/bootsnap) has been developed by Shopify to speed up Rails boot time for production environments using a mix of compile and load path caches. When complete, your deployed container will have everything it needs to boot faster!
 
 How much faster? Generally 1 to 3 seconds depending on your Lambda application. Adding Bootsnap to your Rails Lambda application is straightforward. First, add the gem to your production group in your `Gemfile`.
 
@@ -65,10 +97,26 @@ RUN bundle exec bootsnap precompile --gemfile . \
 
 Afterward you should be able to verify that Bootsnap's caches are working. Measure your cold starts using a 1 day stats duration for better long term visibility.
 
+## Other Cold Start Factors
+
+Most of these should be considered before using [Provisioned Concurrency](#provisioned-concurrency). Also note, that [Proactive Initialization](#proactive-initialization) may be masking some of these optimizations for you already. That said, consider the following:
+
+**Client Connect Timeouts** - Your Lambda application may be used by clients who have a low [http open timeout](https://ruby-doc.org/stdlib/libdoc/net/http/rdoc/Net/HTTP.html#open_timeout-attribute-method). If this is the case, you may have to increase client timeouts, leverage provisioned concurrency, and/or reduce initialization time.
+
+**Update Ruby** - New versions of Ruby typically boot and run faster. Since our <DocLink id="quick-start" name="cookiecutter" /> project uses custom Ruby Ubuntu with Lambda containers, updating Ruby should be as easy as changing a few lines of code.
+
+**Memory & vCPU** - It has been proposed that increased Memory/vCPU could reduce cold starts. We have not seen any evidence of this. For example, we recommend that Rails functions use `1792` for its `MemorySize` equal to 1 vCPU. Any lower would sacrifice response times. Tests showed that increasing this to `3008` equal to 2 vCPUs did nothing for a basic Rails application but cost more. However, if your function does concurrent work doing initialization, consider testing different values here.
+
+**Lazy DB/Resource Connections** - Rails is really good at lazy loading database connections. This is important to keep the "Init" phase of the [Lambda execution lifecycle](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html#runtimes-lifecycle) quick and under 10s. This allows the first "Invoke" to connect to other resources. To keep init duration low, make sure your application does not eagerly connect to resources. Both ActiveRecord and Memcached w/Dalli are lazy loaded by default.
+
+**ActiveRecord Schema Cache** - Commonly called Rails' best kept performance feature, the [schema cache](https://kirshatrov.com/2016/12/13/schema-cache/) can help reduce first request response time after Rails is initialized. So it should not help the init time but it could very easily help the first invoke times.
+
+**Reduce Image Size** - Sort of related to your Ruby version, always make sure that your ECR image is as small as possible. Lambda Containers supports up to 10GB for your image. There is no data on how much this could effect cold starts. So please [share your stories](https://github.com/rails-lambda/lamby/discussions).
+
 ## Provisioned Concurrency
 
 :::caution
-Provisioned concurrency comes with additional execution costs.
+Provisioned concurrency comes with additional execution costs. Now that we have [Proactive Initialization](#proactive-initialization) it may never be needed.
 :::
 
 AWS provides an option called [Provisioned Concurrency](https://docs.aws.amazon.com/lambda/latest/dg/configuration-concurrency.html) (PC) which allows you to warm instances prior to receiving requests. This lets you execute Lambda functions with super low latency and no cold starts. Besides setting a static PC value, there are two fundamental methods for scaling with Provisioned Concurrency. Please use the [Concurrency CloudWatch Metrics](#concurrency-cloudwatch-metrics) section to help you make a determination on what method is right for you.
@@ -176,19 +224,3 @@ Here is a 7 day view from the 4 day mark above. The `TargetValue` is still set t
 As mentioned in the [Provisioned Concurrency](#provisioned-concurrency) section we use a simple `DeploymentPreference` value called `AllAtOnce`. When a deploy happens, Lambda will need to download your new ECR image before your application is initialized. In certain high traffic scenarios along with a potentially slow loading application, deploys can be a thundering herd effect causing your concurrency to spike and a small percentage of users having longer response times.
 
 Please see AWS' "[Deploying serverless applications gradually](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/automating-updates-to-serverless-apps.html)" guide for full details but one way to soften this would be to roll out your new code in 10 minutes total via the `Linear10PercentEvery1Minute` deployment preference. This will automatically create a [AWS CodeDeploy](https://aws.amazon.com/codedeploy/) application and deployments for you. So cool!
-
-## Other Cold Start Factors
-
-Most of these should be considered before using Provisioned Concurrency.
-
-**Client Connect Timeouts** - Your Lambda application may be used by clients who have a low [http open timeout](https://ruby-doc.org/stdlib/libdoc/net/http/rdoc/Net/HTTP.html#open_timeout-attribute-method). If this is the case, you may have to increase client timeouts, leverage provisioned concurrency, and/or reduce initialization time.
-
-**Update Ruby** - New versions of Ruby typically boot and run faster. Since our <DocLink id="quick-start" name="cookiecutter" /> project uses custom Ruby Ubuntu with Lambda containers, updating Ruby should be as easy as changing a few lines of code.
-
-**Memory & vCPU** - It has been proposed that increased Memory/vCPU could reduce cold starts. We have not seen any evidence of this. For example, we recommend that Rails functions use `1792` for its `MemorySize` equal to 1 vCPU. Any lower would sacrifice response times. Tests showed that increasing this to `3008` equal to 2 vCPUs did nothing for a basic Rails application but cost more. However, if your function does concurrent work doing initialization, consider testing different values here.
-
-**Lazy DB/Resource Connections** - Rails is really good at lazy loading database connections. This is important to keep the "Init" phase of the [Lambda execution lifecycle](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html#runtimes-lifecycle) quick and under 10s. This allows the first "Invoke" to connect to other resources. To keep init duration low, make sure your application does not eagerly connect to resources. Both ActiveRecord and Memcached w/Dalli are lazy loaded by default.
-
-**ActiveRecord Schema Cache** - Commonly called Rails' best kept performance feature, the [schema cache](https://kirshatrov.com/2016/12/13/schema-cache/) can help reduce first request response time after Rails is initialized. So it should not help the init time but it could very easily help the first invoke times.
-
-**Reduce Image Size** - Sort of related to your Ruby version, always make sure that your ECR image is as small as possible. Lambda Containers supports up to 10GB for your image. There is no data on how much this could effect cold starts. So please [share your stories](https://github.com/rails-lambda/lamby/discussions).
