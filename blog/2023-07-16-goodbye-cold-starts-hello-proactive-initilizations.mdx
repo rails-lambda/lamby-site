@@ -23,10 +23,14 @@ config.lamby.cold_start_metrics = true
 Lamby will now publish [CloudWatch Embedded Metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format.html) in the `Lamby` namespace with a custom dimension for each application's name. Captured metrics include counts for Cold Starts vs. Proactive Initializations. Here is an example running sum of 3 days of data for a large Rails application in the `us-east-1` region.
 
 <ThemedImage
-  alt="Rails in Lambda Concurrent Executions, Invocations, and Provisioned Executions & Spill Invokes"
+  alt="A CloudWatch Metrics graph showing a running sum of cold starts vs proactive inits for a large Rails application on Lambda"
   sources={{
-    light: useBaseUrl("/img/docs/lamby-cloud-watch-metrics-cold-start-v-proactive-init-light.png"),
-    dark: useBaseUrl("/img/docs/lamby-cloud-watch-metrics-cold-start-v-proactive-init-dark.png"),
+    light: useBaseUrl(
+      "/img/docs/lamby-cloud-watch-metrics-cold-start-v-proactive-init-light.png"
+    ),
+    dark: useBaseUrl(
+      "/img/docs/lamby-cloud-watch-metrics-cold-start-v-proactive-init-dark.png"
+    ),
   }}
 />
 
@@ -35,4 +39,3 @@ This data shows the vast majority of your initialized Lambda Contaienrs are proa
 ```rails title="config/environments/production.rb"
 config.lamby.metrics_app_name = 'MyServiceName'
 ```
-
