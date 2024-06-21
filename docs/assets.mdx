@@ -31,7 +31,7 @@ config.public_file_server.headers = {
 
 ## Adding CloudFront
 
-[CloudFront](https://aws.amazon.com/cloudfront/) is an amazing CDN and is pretty easy to setup with Rails. Simply point CloudFront to your Rails app and allow the origin to set the cache headers. Because we set the `public_file_server` headers above, everything should work out perfectly. Assuming you have setup a <DocLink id="custom-domain" name="Custom Domain Name" /> via CloudFront, here is how to setup an behavior for your `/assets` path. From your CloudFront distribution
+[CloudFront](https://aws.amazon.com/cloudfront/) is an amazing CDN and is pretty easy to setup with Rails. Simply point CloudFront to your Rails app and allow the origin to set the cache headers. Because we set the `public_file_server` headers above, everything should work out perfectly. Assuming you have setup a <DocLink id="custom-domain" name="Custom Domain Name" /> via CloudFront, here is how to setup a behavior for your `/assets` path. From your CloudFront distribution
 
 - Click the "Behaviors" tab 
 - Click "Create Behavior" button
