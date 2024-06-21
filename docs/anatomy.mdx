@@ -69,7 +69,7 @@ gem 'lamby'
 
 ## Runtime Container
 
-You will need some [`Dockerfile`](https://github.com/rails-lambda/lamby-cookiecutter/blob/master/%7B%7Bcookiecutter.project_name%7D%7D/Dockerfile) to build your Lambda container image. Referencing architecture diagram above mentions something called a RIC (Rick). The RIC is short for the Lambda [Runtime Interface Client](https://github.com/aws/aws-lambda-ruby-runtime-interface-client). It is a small interface packaged as a Ruby gem that acts as the `ENTRYPOINT` for any [OCI](https://opencontainers.org) continer image to run on the AWS Lambda platform. Below you can see that we are using an [Official Ruby](https://hub.docker.com/_/ruby) Ubuntu variant base image, installing the RIC and setting it as the entrypoint.
+You will need some [`Dockerfile`](https://github.com/rails-lambda/lamby-cookiecutter/blob/master/%7B%7Bcookiecutter.project_name%7D%7D/Dockerfile) to build your Lambda container image. Referencing architecture diagram above mentions something called a RIC (Rick). The RIC is short for the Lambda [Runtime Interface Client](https://github.com/aws/aws-lambda-ruby-runtime-interface-client). It is a small interface packaged as a Ruby gem that acts as the `ENTRYPOINT` for any [OCI](https://opencontainers.org) container image to run on the AWS Lambda platform. Below you can see that we are using an [Official Ruby](https://hub.docker.com/_/ruby) Ubuntu variant base image, installing the RIC and setting it as the entrypoint.
 
 ```docker title="Dockerfile"
 FROM ruby:3.2-bullseye
