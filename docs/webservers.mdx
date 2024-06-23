@@ -51,7 +51,7 @@ The [REST API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apig
 
 ## Application Load Balancer
 
-Using Lambda's [ALB Integration](https://docs.aws.amazon.com/lambda/latest/dg/services-alb.html) is a great way to setup your application on a private VPC. However the limit response payloads to less than 1MB vs. the 6MB limit for API Gateway. Using [Rack::Deflater](https://gist.github.com/metaskills/363e39e2e8cbccf280b5d5804b384bd2) can help with this if needed. These resources make use of the VPC subnets and security groups mentioned in the <DocLink id="database" /> guide.
+Using Lambda's [ALB Integration](https://docs.aws.amazon.com/lambda/latest/dg/services-alb.html) is a great way to setup your application on a private VPC. However, they limit response payloads to less than 1MB vs. the 6MB limit for API Gateway. Using [Rack::Deflater](https://gist.github.com/metaskills/363e39e2e8cbccf280b5d5804b384bd2) can help with this if needed. These resources make use of the VPC subnets and security groups mentioned in the <DocLink id="database" /> guide.
 
 ```diff
 --- template.yaml
