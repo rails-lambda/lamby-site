@@ -69,7 +69,7 @@ Lamby will now publish [CloudWatch Embedded Metrics](https://docs.aws.amazon.com
   }}
 />
 
-This data shows the vast majority of your initialized Lambda Contaienrs are proactively initialized. Hence, no cold starts are felt by end users or consumers of your function. If you need to customize the name of your Rails application in the CloudWatch Metrics dimension, you can do so using this config.
+This data shows the vast majority of your initialized Lambda Containers are proactively initialized. Hence, no cold starts are felt by end users or consumers of your function. If you need to customize the name of your Rails application in the CloudWatch Metrics dimension, you can do so using this config.
 
 ```rails title="config/environments/production.rb"
 config.lamby.metrics_app_name = 'MyServiceName'
@@ -223,4 +223,4 @@ Here is a 7 day view from the 4 day mark above. The `TargetValue` is still set t
 
 As mentioned in the [Provisioned Concurrency](#provisioned-concurrency) section we use a simple `DeploymentPreference` value called `AllAtOnce`. When a deploy happens, Lambda will need to download your new ECR image before your application is initialized. In certain high traffic scenarios along with a potentially slow loading application, deploys can be a thundering herd effect causing your concurrency to spike and a small percentage of users having longer response times.
 
-Please see AWS' "[Deploying serverless applications gradually](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/automating-updates-to-serverless-apps.html)" guide for full details but one way to soften this would be to roll out your new code in 10 minutes total via the `Linear10PercentEvery1Minute` deployment preference. This will automatically create a [AWS CodeDeploy](https://aws.amazon.com/codedeploy/) application and deployments for you. So cool!
+Please see AWS' "[Deploying serverless applications gradually](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/automating-updates-to-serverless-apps.html)" guide for full details. However, one way to soften this would be to roll out your new code in 10 minutes total via the `Linear10PercentEvery1Minute` deployment preference. This will automatically create a [AWS CodeDeploy](https://aws.amazon.com/codedeploy/) application and deployments for you. So cool!
