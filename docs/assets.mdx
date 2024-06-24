@@ -10,7 +10,7 @@ import DocLink from "../src/components/DocLink.js"
 import ThemedImage from '@theme/ThemedImage'
 import useBaseUrl from "@docusaurus/useBaseUrl"
 
-Assets require a <DocLink id="custom-domain" name="Custom Domain Name" /> to link properly when using API Gateway. For Function URLs, the work out of the box. Both API Gateway and Function URLs can benefit from a CloudFront CDN to cache `/assets` and avoid hitting your backend function on each request.
+Assets require a <DocLink id="custom-domain" name="Custom Domain Name" /> to link properly when using API Gateway. For Function URLs, this works out of the box. Both API Gateway and Function URLs can benefit from a CloudFront CDN to cache `/assets` and avoid hitting your backend function on each request.
 
 ## Serving Static Assets
 
@@ -31,7 +31,7 @@ config.public_file_server.headers = {
 
 ## Adding CloudFront
 
-[CloudFront](https://aws.amazon.com/cloudfront/) is an amazing CDN and is pretty easy to setup with Rails. Simply point CloudFront to your Rails app and allow the origin to set the cache headers. Because we set the `public_file_server` headers above, everything should work out perfectly. Assuming you have setup a <DocLink id="custom-domain" name="Custom Domain Name" /> via CloudFront, here is how to setup an behavior for your `/assets` path. From your CloudFront distribution
+[CloudFront](https://aws.amazon.com/cloudfront/) is an amazing CDN and is pretty easy to setup with Rails. Simply point CloudFront to your Rails app and allow the origin to set the cache headers. Because we set the `public_file_server` headers above, everything should work out perfectly. Assuming you have setup a <DocLink id="custom-domain" name="Custom Domain Name" /> via CloudFront, here is how to setup a behavior for your `/assets` path. From your CloudFront distribution
 
 - Click the "Behaviors" tab 
 - Click "Create Behavior" button
@@ -41,7 +41,7 @@ config.public_file_server.headers = {
 - Viewer protocol policy: Redirect HTTP to HTTPS
 - Allowed HTTP Methods: GET, HEAD
 - Restrict viewer access: No
-- 🔘 Cache policy and origin request policy (recommended)
+- Cache policy and origin request policy (recommended)
   - Cache policy: CachingOptimized
   - Origin request policy: None
 
