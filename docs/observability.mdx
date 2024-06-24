@@ -8,11 +8,11 @@ import DocLink from "../src/components/DocLink.js";
 
 # Logging & Observability
 
-One of the greatest things of AWS Lambda is that you get all the benfits of CloudWatch logging built into the platform. Logging is just a simple Ruby `puts` command away. Here are a few amazing things to help you succeed with good logging and observability patterns in AWS with CloudWatch.
+One of the greatest things about AWS Lambda is that you get all the benefits of CloudWatch logging built into the platform. Logging is just a simple Ruby `puts` command away. Here are a few amazing things to help you succeed with good logging and observability patterns in AWS with CloudWatch.
 
 ## STDOUT is a Must!
 
-Lambda is a read-only file system. The Lamby gem will set the `RAILS_LOG_TO_STDOUT` environment variable on your behalf. It also freedom patches the core Ruby `Logger` class to force STDOUT. That said, be on the lookout for any rogue disk-based logging you may have to address. Older Rails applications may have to use a pattern like this.
+Lambda is a read-only file system. The Lamby gem will set the `RAILS_LOG_TO_STDOUT` environment variable on your behalf. It also patches the core Ruby `Logger` class to force STDOUT. That said, be on the lookout for any rogue disk-based logging you may have to address. Older Rails applications may have to use a pattern like this.
 
 ```ruby title="config/environments/production.rb"
 logger = ActiveSupport::Logger.new(STDOUT)
